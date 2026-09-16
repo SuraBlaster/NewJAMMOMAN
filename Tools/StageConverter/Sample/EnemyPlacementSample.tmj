@@ -1,0 +1,56 @@
+{
+  "compressionlevel": -1,
+  "height": 8,
+  "infinite": false,
+  "layers": [
+    {
+      "draworder": "topdown",
+      "id": 1,
+      "name": "Enemies",
+      "objects": [
+        {
+          "gid": 1,
+          "height": 64,
+          "id": 1,
+          "name": "Wave_Left",
+          "properties": [
+            { "name": "direction", "type": "string", "value": "Left" }
+          ],
+          "rotation": 0,
+          "visible": true,
+          "width": 96,
+          "x": 64,
+          "y": 160
+        },
+        { "gid": 2, "height": 64, "id": 2, "name": "Scatter", "rotation": 0, "visible": true, "width": 96, "x": 192, "y": 160 },
+        { "gid": 3, "height": 64, "id": 3, "name": "Mage", "rotation": 0, "visible": true, "width": 96, "x": 320, "y": 160 },
+        { "gid": 4, "height": 64, "id": 4, "name": "Fan", "rotation": 0, "visible": true, "width": 96, "x": 448, "y": 160 },
+        { "gid": 5, "height": 64, "id": 5, "name": "Hover", "rotation": 0, "visible": true, "width": 96, "x": 576, "y": 160 },
+        { "gid": 6, "height": 64, "id": 6, "name": "Fly", "rotation": 0, "visible": true, "width": 96, "x": 704, "y": 160 },
+        { "gid": 7, "height": 64, "id": 7, "name": "Egg", "rotation": 0, "visible": true, "width": 96, "x": 832, "y": 160 },
+        { "gid": 8, "height": 64, "id": 8, "name": "Boss", "rotation": 0, "visible": true, "width": 96, "x": 960, "y": 160 }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 2,
+  "nextobjectid": 9,
+  "orientation": "orthogonal",
+  "properties": [
+    { "name": "stageName", "type": "string", "value": "EnemyPlacementSample" }
+  ],
+  "renderorder": "right-down",
+  "tiledversion": "1.10.2",
+  "tileheight": 32,
+  "tilesets": [
+    { "firstgid": 1, "source": "EnemyPlacements.tsj" }
+  ],
+  "tilewidth": 32,
+  "type": "map",
+  "version": "1.10",
+  "width": 32
+}

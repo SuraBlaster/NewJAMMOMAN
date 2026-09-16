@@ -1,0 +1,42 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "position": {
+        "x": -2.0,
+        "y": -1.0
+      },
+      "rotationDegrees": 0.0,
+      "scale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "typeId": 100
+    },
+    {
+      "position": {
+        "x": -2.0,
+        "y": -2.0
+      },
+      "rotationDegrees": 0.0,
+      "scale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "typeId": 100
+    },
+    {
+      "position": {
+        "x": -1.0,
+        "y": -2.0
+      },
+      "rotationDegrees": 0.0,
+      "scale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "typeId": 100
+    }
+  ],
+  "stageName": "SampleInfiniteTileMap"
+}

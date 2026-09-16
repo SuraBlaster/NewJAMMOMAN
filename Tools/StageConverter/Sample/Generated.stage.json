@@ -1,0 +1,54 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "rotationDegrees": 0.0,
+      "scale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "typeId": 100
+    },
+    {
+      "position": {
+        "x": 2.0,
+        "y": -5.0
+      },
+      "rotationDegrees": -15.0,
+      "scale": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "typeId": 100
+    },
+    {
+      "position": {
+        "x": 2.989574174098731,
+        "y": -1.0300213541012437
+      },
+      "rotationDegrees": 0.0,
+      "scale": {
+        "x": 2.0,
+        "y": 0.5
+      },
+      "typeId": 100
+    },
+    {
+      "position": {
+        "x": 4.4718000251224685,
+        "y": -0.4773269689737469
+      },
+      "rotationDegrees": -30.0,
+      "scale": {
+        "x": 2.0,
+        "y": 0.5
+      },
+      "typeId": 100
+    }
+  ],
+  "stageName": "SampleConvertedStage"
+}

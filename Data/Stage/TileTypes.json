@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "definitions": [
+    {
+      "typeId": 100,
+      "name": "CubeBlock",
+      "category": "Ground",
+      "modelPath": "Data/Model/Cube/Cube.gltf",
+      "collision": true,
+      "defaultScale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      }
+    }
+  ]
+}

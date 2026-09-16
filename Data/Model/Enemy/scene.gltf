@@ -1,0 +1,538 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        0.9122271537780762,
+        0.9122271537780762,
+        0.41421031951904297
+      ],
+      "min": [
+        -0.9122270941734314,
+        -0.9122270941734314,
+        -0.7353647351264954
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 13404,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        1.0,
+        0.999819278717041,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        0.9959536194801331,
+        0.9876933097839355
+      ],
+      "min": [
+        0.03991308808326721,
+        0.004876190796494484
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 8936,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        0.9959536194801331,
+        0.9876933097839355
+      ],
+      "min": [
+        0.03991308808326721,
+        0.004876190796494484
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 17872,
+      "componentType": 5126,
+      "count": 1117,
+      "max": [
+        0.9959536194801331,
+        0.9876933097839355
+      ],
+      "min": [
+        0.03991308808326721,
+        0.004876190796494484
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 3264,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 26808,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        1.0299999713897705,
+        0.7875304222106934,
+        2.7120962142944336
+      ],
+      "min": [
+        -1.0299999713897705,
+        -0.7875306606292725,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 91056,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 17872,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        1.0,
+        0.9999998211860657,
+        0.9999956488609314,
+        1.0
+      ],
+      "min": [
+        -0.9993988871574402,
+        -1.0,
+        -0.9999884963035583,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 26808,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        0.987802267074585,
+        0.9958098530769348
+      ],
+      "min": [
+        0.004190185572952032,
+        0.004190185572952032
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 69640,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        0.987802267074585,
+        0.9958098530769348
+      ],
+      "min": [
+        0.004190185572952032,
+        0.004190185572952032
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 112472,
+      "componentType": 5126,
+      "count": 5354,
+      "max": [
+        0.987802267074585,
+        0.9958098530769348
+      ],
+      "min": [
+        0.004190185572952032,
+        0.004190185572952032
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 13056,
+      "componentType": 5125,
+      "count": 19890,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        0.4166666567325592
+      ],
+      "min": [
+        0.0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        8.146033536604591e-08,
+        8.146033536604591e-08,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -2.517262842616219e-08,
+        -6.877924363379861e-08,
+        -0.8443280458450317,
+        -0.30901700258255005
+      ],
+      "type": "VEC4"
+    }
+  ],
+  "animations": [
+    {
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 4,
+            "path": "rotation"
+          }
+        }
+      ],
+      "name": "Fan|Fan_Spin",
+      "samplers": [
+        {
+          "input": 14,
+          "interpolation": "LINEAR",
+          "output": 15
+        }
+      ]
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "EmilJoes Games (https://sketchfab.com/emiljoes)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/fnaf-desk-fan-ef2e767b20b142d087cde66164d86107",
+      "title": "FNAF Desk Fan"
+    },
+    "generator": "Sketchfab-14.10.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 92616,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 155304,
+      "byteOffset": 92616,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 155304,
+      "byteOffset": 247920,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 103536,
+      "byteOffset": 403224,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 80,
+      "byteOffset": 506760,
+      "name": "floatBufferViews"
+    },
+    {
+      "buffer": 0,
+      "byteLength": 320,
+      "byteOffset": 506840,
+      "byteStride": 16,
+      "name": "floatBufferViews"
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 507160,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/DeskFan_Mat_baseColor.png"
+    },
+    {
+      "uri": "textures/DeskFan_Mat_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/DeskFan_Mat_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "DeskFan_Mat",
+      "normalTexture": {
+        "index": 2
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.8
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Fan_DeskFan Mat_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "TEXCOORD_1": 4,
+            "TEXCOORD_2": 5
+          },
+          "indices": 6,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Base_DeskFan Mat_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 8,
+            "POSITION": 7,
+            "TANGENT": 9,
+            "TEXCOORD_0": 10,
+            "TEXCOORD_1": 11,
+            "TEXCOORD_2": 12
+          },
+          "indices": 13,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.6346916556358337,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.4092985792487272e-16,
+        -0.6346916556358337,
+        0.0,
+        0.0,
+        0.6346916556358337,
+        1.4092985792487272e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Desk Fan.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "Object_2"
+    },
+    {
+      "children": [
+        4,
+        6
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "Fan",
+      "rotation": [
+        8.146033536604591e-08,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": [
+        100.0,
+        100.0,
+        100.0
+      ],
+      "translation": [
+        7.372970856067695e-08,
+        168.14048767089844,
+        -1.8723463313108368e-07
+      ]
+    },
+    {
+      "mesh": 0,
+      "name": "Fan_DeskFan Mat_0"
+    },
+    {
+      "children": [
+        7
+      ],
+      "name": "Base",
+      "rotation": [
+        -0.7071068286895752,
+        0.0,
+        0.0,
+        0.7071067094802856
+      ],
+      "scale": [
+        100.0,
+        100.0,
+        100.0
+      ],
+      "translation": [
+        7.450580596923828e-07,
+        -0.06912350654602051,
+        -27.832170486450195
+      ]
+    },
+    {
+      "mesh": 1,
+      "name": "Base_DeskFan Mat_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

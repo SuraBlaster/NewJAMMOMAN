@@ -1,0 +1,71 @@
+{
+  "enemies": [
+    {
+      "direction": "Left",
+      "enemyType": "Wave",
+      "position": {
+        "x": 2.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Scatter",
+      "position": {
+        "x": 6.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Mage",
+      "position": {
+        "x": 10.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Fan",
+      "position": {
+        "x": 14.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Hover",
+      "position": {
+        "x": 18.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Fly",
+      "position": {
+        "x": 22.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Egg",
+      "position": {
+        "x": 26.0,
+        "y": -5.0
+      }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Boss",
+      "position": {
+        "x": 30.0,
+        "y": -5.0
+      }
+    }
+  ],
+  "formatVersion": 1,
+  "objects": [],
+  "stageName": "EnemyPlacementSample"
+}
