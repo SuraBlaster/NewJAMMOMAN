@@ -2,10 +2,12 @@
 #include <math.h>
 #include <Xinput.h>
 #include "GamePad.h"
+#include <algorithm>
 
 // çXêV
 void GamePad::Update()
 {
+	if (vibrating && std::chrono::steady_clock::now() >= vibration_end) StopVibration();
 	axis_lx = axis_ly = 0.0f;
 	axis_rx = axis_ry = 0.0f;
 	trigger_l = trigger_r = 0.0f;
@@ -184,4 +186,25 @@ void GamePad::Update()
 		button_down = ~button_state[1] & newButtonState;	// âüÇµÇΩèuä‘
 		button_up = ~newButtonState & button_state[1];	// ó£ÇµÇΩèuä‘
 	}
+}
+
+void GamePad::Vibrate(float left, float right, float duration)
+{
+    StopVibration();
+    if (duration <= 0.0f) return;
+    XINPUT_VIBRATION value{};
+    value.wLeftMotorSpeed = static_cast<WORD>((std::clamp)(left, 0.0f, 1.0f) * 65535.0f);
+    value.wRightMotorSpeed = static_cast<WORD>((std::clamp)(right, 0.0f, 1.0f) * 65535.0f);
+    if (XInputSetState(slot, &value) != ERROR_SUCCESS) return;
+    vibrating = true;
+    vibration_end = std::chrono::steady_clock::now()
+        + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(duration));
+}
+
+void GamePad::StopVibration()
+{
+    if (!vibrating) return;
+    XINPUT_VIBRATION value{};
+    XInputSetState(slot, &value);
+    vibrating = false;
 }

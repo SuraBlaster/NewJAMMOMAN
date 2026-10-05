@@ -10,7 +10,7 @@ class Sprite
 public:
 	Sprite(ID3D11Device* device);
 	// Set ignoreSRGB for display-color PNGs drawn to an UNORM back buffer.
-	Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB = false);
+	Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB = false, const char* pixelShaderFile = "Data/Shader/SpritePS.cso");
 
 	// 頂点データ
 	struct Vertex

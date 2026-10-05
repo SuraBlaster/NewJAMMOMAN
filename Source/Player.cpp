@@ -1,4 +1,10 @@
+#include "ModelManager.h"
 #include "Player.h"
+#include "EnemyBoss.h"
+#include "Audio/Audio.h"
+#include "SceneLoading.h"
+#include "SceneClear.h"
+#include "GameScene.h"
 #include "Camera.h"
 #include "GamePad.h"
 #include "Graphics.h"
@@ -6,7 +12,10 @@
 #include "Collision.h"
 #include "EnemyManager.h"
 #include "SetStage.h"
+#include "ShapeRenderer.h"
 #include <ImGui.h>
+#include "HitStopManager.h"
+
 
 namespace
 {
@@ -50,7 +59,7 @@ namespace
 Player::Player(ID3D11Device* device)
 {
 	const char* filename = "./Data/Model/Jammo/Jammo_Player.gltf";
-	model = std::make_shared<Model>(device, filename);
+	model = ModelManager::Instance().CreateInstance(device, filename);
 	animator = std::make_unique<Animator>(model.get(), 2);
 
 	SetStage::outputData data;
@@ -61,10 +70,12 @@ Player::Player(ID3D11Device* device)
 	// 上半身マスクの生成
 	upper_body_mask.BuildLayerMaskFromRoot(model.get(), "mixamorig:Spine1");
 
+	spawnEffect = std::make_unique<Effect>("Data/Effect/SpawnEffect.efkefc");
+
 	position.z = 0.0f;
 	rotation.y = DirectX::XMConvertToRadians(90);
 
-	scale.x = scale.y = scale.z = 0.01f;
+	scale.x = scale.y = scale.z = 0.0f;
 
 	// ステートの生成
 	states[static_cast<size_t>(StateId::Idle)] = std::make_unique<IdleState>(this);
@@ -75,27 +86,45 @@ Player::Player(ID3D11Device* device)
 	states[static_cast<size_t>(StateId::Dash)] = std::make_unique<DashState>(this);
 	states[static_cast<size_t>(StateId::WallSlide)] = std::make_unique<WallSlideState>(this);
 	states[static_cast<size_t>(StateId::WallKick)] = std::make_unique<WallKickState>(this);
-	SetState(StateId::Idle);
+	states[static_cast<size_t>(StateId::Clear)] = std::make_unique<ClearState>(this);
+	states[static_cast<size_t>(StateId::Damage)] = std::make_unique<DamageState>(this);
+	states[static_cast<size_t>(StateId::Death)] = std::make_unique<DeathState>(this);
+	states[static_cast<size_t>(StateId::Spawn)] = std::make_unique<SpawnState>(this);
+
+	
+	SetState(StateId::Spawn);
 
 	
 }
 
-void Player::Update(float elapsed_time)
+Player::~Player()
 {
-	UpdateStateMachine(elapsed_time);
-
-	UpdateVelocity(elapsed_time);
-
-	UpdateUpperBody(elapsed_time);
-
-	animator->Update(elapsed_time);
-
-	UpdateInvincibleTimer(elapsed_time);
-	Character::UpdateTransform();
-
-	UpdateSwordTrail(elapsed_time);
+    states[static_cast<size_t>(StateId::Clear)]->OnExit();
+    states[static_cast<size_t>(StateId::Death)]->OnExit();
 }
 
+void Player::Update(float elapsed_time)
+{
+    if (IsDead())
+    {
+        if (current_state != StateId::Death && next_state != StateId::Death)
+            SetState(StateId::Death);
+    }
+    else if (EnemyBoss::GetDefeat() && !IsClearing()) SetState(StateId::Clear);
+    UpdateStateMachine(elapsed_time);
+    if (IsClearing() || current_state == StateId::Death)
+    {
+        animator->Update(elapsed_time);
+        Character::UpdateTransform();
+        return;
+    }
+    UpdateVelocity(elapsed_time);
+    UpdateUpperBody(elapsed_time);
+    animator->Update(elapsed_time);
+    UpdateInvincibleTimer(elapsed_time);
+    Character::UpdateTransform();
+    UpdateSwordTrail(elapsed_time);
+}
 void Player::DrawGUI()
 {
 	ImGui::Begin("Player");
@@ -104,6 +133,17 @@ void Player::DrawGUI()
 		ImGui::InputFloat3("position", &position.x);
 		ImGui::InputFloat3("velocity", &velocity.x);
 		ImGui::Checkbox("Show sword collision", &show_sword_collision);
+		ImGui::Checkbox("Show body AABB", &show_body_aabb);
+		ImGui::SliderFloat("Body half width", &body_half_width, 0.05f, 2.0f);
+		ImGui::SliderFloat("Body half depth", &body_half_depth, 0.05f, 2.0f);
+		ImGui::SliderFloat("Body height", &body_height, 0.1f, 4.0f);
+		ImGui::Text(
+			"Grounded: %s",
+			is_ground ? "true" : "false");
+
+		ImGui::Text(
+			"Body overlap: %s",
+			has_body_overlap ? "true" : "false");
 	}
 	ImGui::End();
 
@@ -124,6 +164,24 @@ void Player::DrawGUI()
 
 void Player::DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const
 {
+	if (!shapeRenderer)
+	{
+		return;
+	}
+
+	// 身体のAABBを描画
+	if (show_body_aabb)
+	{
+		const AABB box = GetBodyAABB();
+
+		shapeRenderer->DrawBox(
+			box.GetCenter(),
+			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+			box.GetHalfSize(),
+			DirectX::XMFLOAT4{ 0.0f, 1.0f, 0.0f, 1.0f }
+		);
+	}
+
 	if (!shapeRenderer || !show_sword_collision
 		|| !is_blade_active || !has_sword_collision_debug_data)
 	{
@@ -172,6 +230,25 @@ void Player::SetBladeActive(bool active)
 void Player::SetTrailActive(bool active)
 {
 	is_trail_active = active;
+}
+
+AABB Player::GetBodyAABB() const
+{
+	AABB box;
+
+	box.min = {
+		position.x - body_half_width,
+		position.y,
+		position.z - body_half_depth
+	};
+
+	box.max = {
+		position.x + body_half_width,
+		position.y + body_height,
+		position.z + body_half_depth
+	};
+
+	return box;
 }
 
 void Player::RenderTrail(PrimitiveRenderer* primitiveRenderer)
@@ -359,113 +436,7 @@ void Player::UpdateVelocity(float elapsed_time)
 	// 重力処理
 	GravityChange(elapsed_time);
 
-	// 移動量
-	float move_x = velocity.x * elapsed_time;
-	float move_y = velocity.y * elapsed_time;
-	float move_z = velocity.z * elapsed_time;
-
-	// 水平移動処理
-	float move_xz_length = sqrtf(move_x * move_x + move_z * move_z);
-	if (move_xz_length > 0)
-	{
-		// キャラクターの半径（当たり判定の太さ）に合わせて調整してください
-		float margin = 0.4f;
-
-		// 移動方向を正規化
-		float move_dx = move_x / move_xz_length;
-		float move_dz = move_z / move_xz_length;
-
-		// レイの始点
-		DirectX::XMFLOAT3 s = {
-			position.x,
-			position.y + 0.5f,
-			position.z
-		};
-
-		// 実際の移動予定位置（終点）
-		DirectX::XMFLOAT3 e = {
-			position.x + move_x,
-			position.y + 0.5f,
-			position.z + move_z
-		};
-
-		// めり込み防止のため、レイをマージン分だけ長く飛ばして壁を「早めに」検知する
-		DirectX::XMFLOAT3 ray_e = {
-			position.x + move_dx * (move_xz_length + margin),
-			position.y + 0.5f,
-			position.z + move_dz * (move_xz_length + margin)
-		};
-
-		HitResult hit_result;
-		// 延長した ray_e でレイキャストを行う
-		if (CollisionManager::Instance().Raycast(s, ray_e, hit_result))
-		{
-			DirectX::XMVECTOR P = DirectX::XMLoadFloat3(&hit_result.position);
-			DirectX::XMVECTOR E = DirectX::XMLoadFloat3(&e); // 実際の移動先
-			DirectX::XMVECTOR N = DirectX::XMLoadFloat3(&hit_result.normal);
-
-			// 移動予定位置(E) から 壁の交点(P) へのベクトル
-			DirectX::XMVECTOR EP = DirectX::XMVectorSubtract(E, P);
-
-			// E が壁平面からどれだけ離れているか（法線方向への射影）
-			float dist_to_plane = DirectX::XMVectorGetX(DirectX::XMVector3Dot(EP, N));
-
-			DirectX::XMFLOAT3 q;
-
-			// 実際の移動先 E が、壁からマージンの内側に入ろうとしている場合のみ押し出す
-			if (dist_to_plane < margin)
-			{
-				// 押し出し量 = 保ちたいマージン - 現在の壁との距離
-				float push_amount = margin - dist_to_plane;
-
-				// 壁に沿うように押し出した位置 Q を求める
-				DirectX::XMVECTOR Q = DirectX::XMVectorAdd(E, DirectX::XMVectorScale(N, push_amount));
-				DirectX::XMStoreFloat3(&q, Q);
-			}
-			else
-			{
-				// マージンより手前で止まる移動なら、そのまま移動させる
-				q = e;
-			}
-
-			// 壁際で壁ずり後の位置がめり込んでいないかレイキャストでチェックする
-			if (CollisionManager::Instance().Raycast(s, q, hit_result))
-			{
-				// めり込んでいた場合はプレイヤーの位置に今回レイキャストした交点を設定する
-				P = DirectX::XMLoadFloat3(&hit_result.position);
-				DirectX::XMVECTOR S = DirectX::XMLoadFloat3(&s);
-				DirectX::XMVECTOR PS = DirectX::XMVectorSubtract(S, P);
-				DirectX::XMVECTOR V = DirectX::XMVector3Normalize(PS);
-				P = DirectX::XMVectorAdd(P, DirectX::XMVectorScale(V, 0.001f));
-				DirectX::XMStoreFloat3(&q, P);
-			}
-
-			position.x = q.x;
-			position.z = q.z;
-		}
-		else
-		{
-			// 壁に当たらなかったので普通に移動
-			position.x += move_x;
-			position.z += move_z;
-		}
-	}
-
-	// 上下移動処理
-	DirectX::XMFLOAT3 start = { position.x, position.y + 1, position.z };
-	DirectX::XMFLOAT3 end = { position.x, position.y + move_y, position.z };
-	HitResult hit_result;
-	if (CollisionManager::Instance().Raycast(start, end, hit_result))
-	{
-		position.y = hit_result.position.y;
-		velocity.y = 0.0f;
-		is_ground = true;
-	}
-	else
-	{
-		position.y += velocity.y * elapsed_time;
-		is_ground = false;
-	}
+	MoveAndCollide(elapsed_time);
 }
 
 void Player::UpdateStateMachine(float elapsed_time)
@@ -778,10 +749,21 @@ void Player::GravityChange(float elapsed_time)
 {
 	if (wall_climb)
 	{
-		gravity = 2.0f;
-		velocity.y -= 2.0f;
+		constexpr float wallSlideGravity = 2.0f;
+		constexpr float maxWallSlideSpeed = 2.0f;
+
+		gravity = wallSlideGravity;
+		velocity.y -= gravity * elapsed_time;
+
+		if (velocity.y < -maxWallSlideSpeed)
+		{
+			velocity.y = -maxWallSlideSpeed;
+		}
+
+		return;
 	}
-	else if (velocity.y < 0.0f)
+
+	if (velocity.y < 0.0f)
 	{
 		gravity = 33.75f;
 	}
@@ -792,56 +774,256 @@ void Player::GravityChange(float elapsed_time)
 
 	velocity.y -= gravity * elapsed_time;
 
-	const float max_fall_speed = -gravity;
-	if (velocity.y < max_fall_speed)
+	const float maxFallSpeed = -gravity;
+
+	if (velocity.y < maxFallSpeed)
 	{
-		velocity.y = max_fall_speed;
+		velocity.y = maxFallSpeed;
 	}
 }
 
 bool Player::WallJudgement(float elapsed_time)
 {
+	const DirectX::XMFLOAT3 previousNormal = wallNormal;
 	wallNormal = {};
 
-	DirectX::XMFLOAT3 startPos = { position.x, position.y + 0.5f, position.z };
-	DirectX::XMVECTOR S = DirectX::XMLoadFloat3(&startPos);
-
-	// 前方ベクトルを正規化
-	DirectX::XMFLOAT3 forward = { transform._31, transform._32, transform._33 };
-	DirectX::XMVECTOR rayDir = DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&forward));
-
-	// velocity から1秒間の速度(長さ)を取得
-	DirectX::XMFLOAT2 XZLength = { velocity.x, velocity.z };
-	DirectX::XMVECTOR Vec = DirectX::XMLoadFloat2(&XZLength);
-	float speed = DirectX::XMVectorGetX(DirectX::XMVector2Length(Vec));
-
-	// 速度 × 経過時間 で「今フレームの実際の移動量」を算出
-	float moveDistance = speed * elapsed_time;
-
-	// 実際の移動量 ＋ キャラクターの半径をチェック距離とする
-	float checkDistance = moveDistance + 0.5f;
-
-	// 終点の計算
-	DirectX::XMVECTOR E = DirectX::XMVectorAdd(S, DirectX::XMVectorScale(rayDir, checkDistance));
-
-	DirectX::XMFLOAT3 s;
-	DirectX::XMFLOAT3 e;
-	DirectX::XMStoreFloat3(&s, S);
-	DirectX::XMStoreFloat3(&e, E);
-
-	HitResult hit_result;
-
-	// レイキャストを実行
-	if (CollisionManager::Instance().Raycast(s, e, hit_result))
+	// 接地中と、キック直後は壁につかまらない。
+	if (is_ground || wall_kick_lock_timer > 0.0f)
 	{
-		// 取得した法線で、その面が「壁」かどうかを判定する
-		if (hit_result.normal.y > -0.3f && hit_result.normal.y < 0.7f)
+		return false;
+	}
+
+	constexpr float checkDistance = 0.003f;
+
+	CollisionManager& manager =
+		CollisionManager::Instance();
+
+	const AABB body = GetBodyAABB();
+
+	auto checkWall = [&](float direction,
+		DirectX::XMFLOAT3& outNormal)
 		{
-			wallNormal = hit_result.normal;
-			return true;
+			TerrainSweepHit hit;
+
+			const SweepStatus status = manager.SweepTerrain(
+				body,
+				DirectX::XMFLOAT3{
+					direction * checkDistance, 0.0f, 0.0f
+				},
+				hit);
+
+			if (status != SweepStatus::Hit)
+			{
+				return false;
+			}
+
+			for (const DirectX::XMFLOAT3& normal : hit.normals)
+			{
+				// 調べた方向と向かい合う側面だけを採用する。
+				if (normal.x * direction < -0.5f)
+				{
+					outNormal = normal;
+					return true;
+				}
+			}
+
+			return false;
+		};
+
+	DirectX::XMFLOAT3 rightNormal = {};
+	DirectX::XMFLOAT3 leftNormal = {};
+
+	const bool rightWall = checkWall(1.0f, rightNormal);
+	const bool leftWall = checkWall(-1.0f, leftNormal);
+
+	if (!rightWall && !leftWall)
+	{
+		return false;
+	}
+
+	if (rightWall && leftWall)
+	{
+		// 両側が近い場合は、入力方向を優先する。
+		const float axisX = GamePad::Instance().GetAxisLX();
+
+		if (axisX > 0.1f)
+		{
+			wallNormal = rightNormal;
+		}
+		else if (axisX < -0.1f)
+		{
+			wallNormal = leftNormal;
+		}
+		else
+		{
+			// 入力がなければ、直前につかまっていた側を優先。
+			wallNormal = previousNormal.x > 0.0f
+				? leftNormal
+				: rightNormal;
 		}
 	}
-	return false;
+	else
+	{
+		wallNormal = rightWall ? rightNormal : leftNormal;
+	}
+
+	return true;
+}
+
+void Player::MoveAndCollide(float elapsed_time)
+{
+	if (elapsed_time <= 0.0f)
+	{
+		return;
+	}
+
+	CollisionManager& manager =
+		CollisionManager::Instance();
+
+	constexpr int maxIterations = 4;
+
+	// 接触直前で止めるための小さい距離。
+	constexpr float skin = 0.001f;
+
+	// 静止時の接地確認に使う距離。
+	constexpr float groundCheckDistance = 0.003f;
+
+	has_body_overlap = false;
+	is_ground = false;
+
+	DirectX::XMFLOAT3 remaining = {
+		velocity.x * elapsed_time,
+		velocity.y * elapsed_time,
+		velocity.z * elapsed_time
+	};
+
+	// 面へ向かう成分だけ取り除く。
+	auto removeInwardComponent = [](
+		DirectX::XMFLOAT3& value,
+		const DirectX::XMFLOAT3& normal)
+		{
+			const float inward =
+				value.x * normal.x +
+				value.y * normal.y +
+				value.z * normal.z;
+
+			if (inward < 0.0f)
+			{
+				value.x -= inward * normal.x;
+				value.y -= inward * normal.y;
+				value.z -= inward * normal.z;
+			}
+		};
+
+	for (int iteration = 0;
+		iteration < maxIterations;
+		++iteration)
+	{
+		TerrainSweepHit hit;
+
+		const SweepStatus status = manager.SweepTerrain(
+			GetBodyAABB(),
+			remaining,
+			hit);
+
+		if (status == SweepStatus::InitialOverlap)
+		{
+			// 今回は自動で押し戻さず、状態を表示して止める。
+			has_body_overlap = true;
+			velocity = { 0.0f, 0.0f, 0.0f };
+			return;
+		}
+
+		if (status == SweepStatus::NoHit)
+		{
+			position.x += remaining.x;
+			position.y += remaining.y;
+			position.z += remaining.z;
+			break;
+		}
+
+		// 接触面との間に、小さい隙間を残す。
+		float backoffTime = 0.0f;
+
+		for (const DirectX::XMFLOAT3& normal : hit.normals)
+		{
+			const float approach =
+				-(remaining.x * normal.x +
+					remaining.y * normal.y +
+					remaining.z * normal.z);
+
+			if (approach > 0.0f)
+			{
+				backoffTime = (std::max)(
+					backoffTime,
+					skin / approach);
+			}
+		}
+
+		const float travelTime = (std::max)(
+			0.0f,
+			hit.time - backoffTime);
+
+		position.x += remaining.x * travelTime;
+		position.y += remaining.y * travelTime;
+		position.z += remaining.z * travelTime;
+
+		// 実際に進んだ割合を除いた移動量。
+		const float remainingRatio = 1.0f - travelTime;
+
+		remaining.x *= remainingRatio;
+		remaining.y *= remainingRatio;
+		remaining.z *= remainingRatio;
+
+		for (const DirectX::XMFLOAT3& normal : hit.normals)
+		{
+			removeInwardComponent(remaining, normal);
+			removeInwardComponent(velocity, normal);
+		}
+
+		if (remaining.x == 0.0f &&
+			remaining.y == 0.0f &&
+			remaining.z == 0.0f)
+		{
+			break;
+		}
+	}
+
+	// 最終位置で接地を確認する。
+	// 上昇中は床へ吸着・接地させない。
+	if (velocity.y <= 0.0f)
+	{
+		TerrainSweepHit groundHit;
+
+		const SweepStatus groundStatus =
+			manager.SweepTerrain(
+				GetBodyAABB(),
+				DirectX::XMFLOAT3{
+					0.0f, -groundCheckDistance, 0.0f
+				},
+				groundHit);
+
+		if (groundStatus == SweepStatus::InitialOverlap)
+		{
+			has_body_overlap = true;
+			velocity = { 0.0f, 0.0f, 0.0f };
+			return;
+		}
+
+		if (groundStatus == SweepStatus::Hit)
+		{
+			for (const DirectX::XMFLOAT3& normal
+				: groundHit.normals)
+			{
+				if (normal.y > 0.5f)
+				{
+					is_ground = true;
+					velocity.y = 0.0f;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void Player::SetState(StateId state_id)
@@ -1032,6 +1214,12 @@ void Player::WallSlideState::OnEnter()
 
 void Player::WallSlideState::OnUpdate(float elapsed_time)
 {
+	if (owner->IsGround())
+	{
+		owner->wall_climb = false;
+		owner->SetState(StateId::Idle);
+		return;
+	}
 
 	if (!owner->WallJudgement(elapsed_time))
 	{
@@ -1070,12 +1258,11 @@ void Player::WallSlideState::OnUpdate(float elapsed_time)
 		owner->SetState(StateId::WallKick);
 		return;
 	}
-	if (owner->IsGround())
-	{
-		owner->wall_climb = false;
-		owner->SetState(StateId::Idle);
-		return;
-	}
+}
+
+void Player::WallSlideState::OnExit()
+{
+	owner->wall_climb = false;
 }
 
 void Player::WallKickState::OnEnter()
@@ -1096,10 +1283,11 @@ void Player::WallKickState::OnUpdate(float elapsed_time)
 	{
 		move = owner->InputMove();
 
-		if (owner->WallJudgement(elapsed_time))
+		if (owner->WallJudgement(elapsed_time) && owner->InputTowardWall())
 		{
 			owner->is_dash_jump = false;
 			owner->SetState(StateId::WallSlide);
+			return;
 		}
 	}
 
@@ -1253,3 +1441,164 @@ void Player::AttackState::OnUpdate(float elapsed_time)
 	}
 }
 
+
+void Player::ClearState::OnEnter()
+{
+    OnExit();
+    timer = 0.0f;
+    clear_audio_played = exit_started = scene_requested = false;
+    EnemyBoss::SetDefeat(false);
+    owner->velocity = { 0.0f, 0.0f, 0.0f };
+    owner->invincible_time = scene_change_time;
+    owner->input_move_x = owner->input_move_z = 0.0f;
+    owner->SetBladeActive(false);
+    owner->SetTrailActive(false);
+    owner->prev_blade_active = owner->prev_trail_active = false;
+    owner->trails.clear();
+    owner->is_upper_body_active = false;
+    owner->upper_body_weight = 0.0f;
+    owner->animator->SetLayerState(1, 0.0f, AnimationBlendMode::Override);
+    owner->animator->Play(0, "Idle_Seq_0", true);
+    Audio::Instance().Stop("SE_PLAYER_DAMAGE_SPARK");
+    Audio::Instance().Stop("SE_PLAYER_RUN");
+    Audio::Instance().Stop("SE_PLAYER_CHARGE");
+}
+
+void Player::ClearState::OnUpdate(float elapsed_time)
+{
+    const float step = (std::max)(elapsed_time, 0.0f);
+    timer += step;
+    if (!exit_started)
+    {
+        owner->velocity.x = owner->velocity.z = 0.0f;
+        owner->velocity.y -= owner->gravity * step;
+        owner->MoveAndCollide(step);
+    }
+    if (timer >= clear_audio_time && !clear_audio_played)
+    {
+        clear_audio_played = true;
+        Audio::Instance().Play("SE_CLEAR");
+    }
+    if (timer >= exit_effect_time && !exit_started)
+    {
+        exit_started = true;
+        if (!exit_effect) exit_effect = std::make_unique<Effect>("Data/Effect/ExitEffect.efkefc");
+        exit_handle = exit_effect->Play(owner->position);
+        Audio::Instance().Play("SE_PLAYER_RETURN");
+        owner->scale = { 0.0f, 0.0f, 0.0f };
+        owner->velocity = { 0.0f, 0.0f, 0.0f };
+    }
+    if (timer >= scene_change_time && !scene_requested)
+    {
+        scene_requested = true;
+        SceneManager::Instance().ChangeScene([]() {
+            return std::make_shared<SceneLoading>([]() { return std::make_shared<SceneClear>(); });
+        });
+    }
+}
+
+void Player::ClearState::OnExit()
+{
+    if (exit_effect && exit_handle >= 0) exit_effect->Stop(exit_handle);
+    exit_handle = -1;
+}
+
+void Player::OnDamaged()
+{
+	SetState(StateId::Damage);
+	velocity = { 0.0f, 0.0f, 0.0f };
+	input_move_x = 0.0f;
+	input_move_z = 0.0f;
+	SetBladeActive(false);
+	SetTrailActive(false);
+}
+
+void Player::OnDead()
+{
+    SetState(StateId::Death);
+    velocity = { 0.0f, 0.0f, 0.0f };
+    SetBladeActive(false);
+    SetTrailActive(false);
+}
+
+void Player::DeathState::OnEnter()
+{
+    OnExit();
+    active = true;
+    scene_requested = false;
+    timer = 0.0f;
+    owner->scale = { 0.0f, 0.0f, 0.0f };
+    owner->velocity = { 0.0f, 0.0f, 0.0f };
+    owner->input_move_x = owner->input_move_z = 0.0f;
+    owner->SetBladeActive(false);
+    owner->SetTrailActive(false);
+    owner->prev_blade_active = owner->prev_trail_active = false;
+    owner->trails.clear();
+    owner->is_upper_body_active = false;
+    owner->upper_body_weight = 0.0f;
+    owner->animator->SetLayerState(1, 0.0f, AnimationBlendMode::Override);
+    if (!death_effect) death_effect = std::make_unique<Effect>("Data/Effect/Death.efkefc");
+    death_handle = death_effect->Play(owner->position, effect_scale);
+    Audio::Instance().StopAll();
+    Audio::Instance().Play("SE_DEATH_GENERIC");
+    GamePad::Instance().Vibrate(vibration_power, vibration_power, vibration_duration);
+}
+
+void Player::DamageState::OnEnter()
+{
+	Camera::Instance().StartShake(0.3f, 0.15f);
+	HitStopManager::Instance().Request(0.1f);
+	owner->animator->Play(0, "Hit_Combat_F_Seq_0", false);
+}
+
+void Player::DamageState::OnUpdate(float elapsed_time)
+{
+	if (!owner->animator->IsPlaying(0))
+	{
+		owner->SetState(StateId::Idle);
+	}
+}
+
+void Player::DeathState::OnUpdate(float elapsed_time)
+{
+    if (!active || scene_requested) return;
+    timer += (std::max)(elapsed_time, 0.0f);
+    if (timer >= retry_delay)
+    {
+        scene_requested = true;
+        OnExit();
+        SceneManager::Instance().ChangeScene([]() {
+            return std::make_shared<SceneLoading>([]() { return std::make_shared<GameScene>(); });
+        });
+    }
+}
+
+void Player::DeathState::OnExit()
+{
+    if (death_effect && death_handle >= 0) death_effect->Stop(death_handle);
+    death_handle = -1;
+    if (active) GamePad::Instance().StopVibration();
+    active = false;
+}
+
+void Player::SpawnState::OnEnter()
+{
+	owner->animator->Play(0, "Spawn", false);
+	owner->spawnHandle = owner->spawnEffect->Play(owner->position);
+}
+
+void Player::SpawnState::OnUpdate(float elapsed_time)
+{
+	spawnTimer += elapsed_time;
+
+	if (!owner->animator->IsPlaying(0) && spawnTimer > SPAWN_END_TIME)
+	{
+		owner->SetState(StateId::Idle);
+		//Audio::Instance().Play("SE_PLAYER_AFTER_APPEAR");
+	}
+	else if (spawnTimer > SPAWN_ANIM_START_TIME && !hasSpawned)
+	{
+		owner->scale = { 0.01f, 0.01f, 0.01f };
+		hasSpawned = true;
+	}
+}

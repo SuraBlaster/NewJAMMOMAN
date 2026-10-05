@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyEgg.h"
 
 #include "EnemyManager.h"
@@ -10,7 +11,7 @@ EnemyEgg::EnemyEgg(
 	: device(device)
 	, player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/egg.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/egg.gltf");
 	position = spawnPosition;
 	scale = { 0.1f, 0.1f, 0.1f };
 	radius = 0.25f;

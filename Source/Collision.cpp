@@ -291,3 +291,141 @@ void Collision::TransformAABB(
 		outWorldMax.z = (std::max)(outWorldMax.z, world.z);
 	}
 }
+
+SweepStatus Collision::SweepAABB(const AABB& movingBox, const DirectX::XMFLOAT3& displacement, const AABB& obstacle, SweepHit& hit)
+{
+	hit = SweepHit{};
+
+	// 1. 開始時点で、体積を持って重なっているか。
+	// 面が触れているだけなら、初期めり込みにはしない。
+	const bool overlapping =
+		movingBox.min.x < obstacle.max.x &&
+		movingBox.max.x > obstacle.min.x &&
+		movingBox.min.y < obstacle.max.y &&
+		movingBox.max.y > obstacle.min.y &&
+		movingBox.min.z < obstacle.max.z &&
+		movingBox.max.z > obstacle.min.z;
+
+	if (overlapping)
+	{
+		return SweepStatus::InitialOverlap;
+	}
+
+	// 2. 障害物をプレイヤーの半サイズ分だけ膨らませる。
+	const DirectX::XMFLOAT3 center = movingBox.GetCenter();
+	const DirectX::XMFLOAT3 half = movingBox.GetHalfSize();
+
+	const float p[3] = {
+		center.x, center.y, center.z
+	};
+
+	const float d[3] = {
+		displacement.x, displacement.y, displacement.z
+	};
+
+	const float expandedMin[3] = {
+		obstacle.min.x - half.x,
+		obstacle.min.y - half.y,
+		obstacle.min.z - half.z
+	};
+
+	const float expandedMax[3] = {
+		obstacle.max.x + half.x,
+		obstacle.max.y + half.y,
+		obstacle.max.z + half.z
+	};
+
+	const float infinity =
+		std::numeric_limits<float>::infinity();
+
+	float axisEnter[3] = {
+		-infinity, -infinity, -infinity
+	};
+
+	float enterTime = -infinity;
+	float exitTime = infinity;
+
+	// 3. 各軸の進入時刻・退出時刻を求める。
+	for (int axis = 0; axis < 3; ++axis)
+	{
+		if (d[axis] == 0.0f)
+		{
+			// この軸では移動しない。
+			// 範囲外、または面に沿うだけなら進入しない。
+			if (p[axis] <= expandedMin[axis] ||
+				p[axis] >= expandedMax[axis])
+			{
+				return SweepStatus::NoHit;
+			}
+
+			continue;
+		}
+
+		const float t1 =
+			(expandedMin[axis] - p[axis]) / d[axis];
+
+		const float t2 =
+			(expandedMax[axis] - p[axis]) / d[axis];
+
+		const float nearTime = (std::min)(t1, t2);
+		const float farTime = (std::max)(t1, t2);
+
+		axisEnter[axis] = nearTime;
+
+		enterTime = (std::max)(enterTime, nearTime);
+		exitTime = (std::min)(exitTime, farTime);
+	}
+
+	// 4. 今回の移動区間で、箱の内部へ進入するか。
+	if (enterTime < 0.0f ||
+		enterTime > 1.0f ||
+		exitTime <= 0.0f ||
+		enterTime >= exitTime)
+	{
+		return SweepStatus::NoHit;
+	}
+
+	hit.time = enterTime;
+
+	// 5. 最後に進入した軸が、接触面になる。
+	// ほぼ同時なら複数の面として保持する。
+	constexpr float timeTolerance = 0.000001f;
+
+	for (int axis = 0; axis < 3; ++axis)
+	{
+		if (d[axis] == 0.0f)
+		{
+			continue;
+		}
+
+		if (std::abs(axisEnter[axis] - enterTime)
+	> timeTolerance)
+		{
+			continue;
+		}
+
+		DirectX::XMFLOAT3 normal = {
+			0.0f, 0.0f, 0.0f
+		};
+
+		const float sign =
+			d[axis] > 0.0f ? -1.0f : 1.0f;
+
+		if (axis == 0)
+		{
+			normal.x = sign;
+		}
+		else if (axis == 1)
+		{
+			normal.y = sign;
+		}
+		else
+		{
+			normal.z = sign;
+		}
+
+		hit.normals[hit.normalCount++] = normal;
+	}
+
+	return SweepStatus::Hit;
+}

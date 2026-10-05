@@ -1,0 +1,223 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 216,
+      "max": [
+        1.0,
+        1.0,
+        0.0872500017285347
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 216,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -4.404280673497851e-08
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5125,
+      "count": 420,
+      "max": [
+        215
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 400,
+      "max": [
+        0.9474878311157227,
+        0.9474879503250122,
+        0.09336391091346741
+      ],
+      "min": [
+        -0.9474878311157227,
+        -0.9474879503250122,
+        0.012932337820529938
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 400,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5125,
+      "count": 744,
+      "max": [
+        399
+      ],
+      "min": [
+        0
+      ],
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 2592,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2592,
+      "byteOffset": 2592,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1680,
+      "byteOffset": 5184,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4800,
+      "byteOffset": 6864,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4800,
+      "byteOffset": 11664,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 2976,
+      "byteOffset": 16464,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 19440,
+      "uri": "FloorTile_Basic.bin"
+    }
+  ],
+  "materials": [
+    {
+      "name": "Main",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.32157066464424133,
+          0.32157066464424133,
+          0.32157066464424133,
+          1.0
+        ],
+        "metallicFactor": 0.0
+      }
+    },
+    {
+      "name": "DarkGrey",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.19163785874843597,
+          0.19163785874843597,
+          0.19163785874843597,
+          1.0
+        ],
+        "metallicFactor": 0.0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0
+          },
+          "indices": 2,
+          "material": 0,
+          "mode": 4
+        },
+        {
+          "attributes": {
+            "NORMAL": 4,
+            "POSITION": 3
+          },
+          "indices": 5,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "FloorTile_Basic",
+      "rotation": [
+        -0.7071068286895752,
+        0.0,
+        0.0,
+        0.7071067094802856
+      ],
+      "scale": [
+        100.0,
+        100.0,
+        100.0
+      ],
+      "translation": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "samplers": [
+    {
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ Sprite::Sprite(ID3D11Device* device)
 }
 
 // コンストラクタ
-Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB)
+Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB, const char* pixelShaderFile)
 {
 	HRESULT hr = S_OK;
 
@@ -53,7 +53,7 @@ Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB)
 	{
 		hr = GpuResourceUtils::LoadPixelShader(
 			device,
-			"Data/Shader/SpritePS.cso",
+			pixelShaderFile,
 			pixelShader.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}

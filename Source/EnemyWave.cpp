@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyWave.h"
 
 #include <cmath>
@@ -19,7 +20,7 @@ namespace
 EnemyWave::EnemyWave(ID3D11Device* device, Player* player)
 	: player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Jammo/Jammo_Player.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
 	animator = std::make_unique<Animator>(model.get());
 	animator->Play(0, "Idle_Seq_0", true);
 	scale = { EnemyScale, EnemyScale, EnemyScale };
@@ -45,15 +46,7 @@ void EnemyWave::Update(float elapsedTime)
 		target_y_initialized = true;
 	}
 
-	switch (state)
-	{
-	case State::Rising:
-		UpdateRising(elapsedTime);
-		break;
-	case State::Attacking:
-		UpdateAttacking(elapsedTime);
-		break;
-	}
+	UpdateAttacking(elapsedTime);
 
 	CollideWithPlayer();
 	UpdateInvincibleTimer(elapsedTime);
@@ -65,18 +58,7 @@ void EnemyWave::SetDirection(Direction value)
 {
 	direction = value;
 	rotation.y = DirectX::XMConvertToRadians(
-		direction == Direction::Right ? -90.0f : 90.0f);
-}
-
-void EnemyWave::UpdateRising(float elapsedTime)
-{
-	position.y += rise_speed * elapsedTime;
-	if (position.y >= target_y)
-	{
-		position.y = target_y;
-		state = State::Attacking;
-		wave_time = 0.0f;
-	}
+	direction == Direction::Right ? -90.0f : 90.0f);
 }
 
 void EnemyWave::UpdateAttacking(float elapsedTime)

@@ -1,11 +1,16 @@
+#include "LoadingProfile.h"
 #include <imgui.h>
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
+#include "ViewVolume.h"
 #include "GameScene.h"
 #include <iostream>
 #include <stdexcept>
 #include <StageLoader.h>
+#include <cassert>
+#include <cmath>
+#include <algorithm>
 #include "EnemyManager.h"
 #include "EnemyBoss.h"
 #include "EnemyEgg.h"
@@ -15,6 +20,9 @@
 #include "EnemyMage.h"
 #include "EnemyScatter.h"
 #include "EnemyWave.h"
+#include <array>
+#include "Collision.h"
+#include "HitStopManager.h"
 
 namespace
 {
@@ -97,7 +105,21 @@ namespace
 // コンストラクタ
 GameScene::GameScene()
 {
+    LoadingProfile::Scope profile("GameScene");
+    DirectionalLight stageLight;
+    LightManager::Instance().SetDirectionalLight(stageLight);
 	ID3D11Device* device = Graphics::Instance().GetDevice();
+	backgroundEditor = std::make_unique<BackgroundEditor>(device);
+    backgroundFog = std::make_unique<BackgroundFog>(device);
+    backgroundCity = std::make_unique<BackgroundCity>(device);
+	playerGauge = std::make_unique<Sprite>(device, "Data/Sprite/PlayerGauge.png", true, "Data/Shader/HealthGaugePS.cso");
+	bossGauge = std::make_unique<Sprite>(device, "Data/Sprite/EnemyGauge.png", true, "Data/Shader/HealthGaugePS.cso");
+	D3D11_BUFFER_DESC gaugeBuffer = {};
+	gaugeBuffer.ByteWidth = sizeof(DirectX::XMFLOAT4) * 3;
+	gaugeBuffer.Usage = D3D11_USAGE_DEFAULT;
+	gaugeBuffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	if (FAILED(device->CreateBuffer(&gaugeBuffer, nullptr, gaugeConstants.GetAddressOf())))
+		throw std::runtime_error("Failed to create health gauge constants.");
 	float screenWidth = Graphics::Instance().GetScreenWidth();
 	float screenHeight = Graphics::Instance().GetScreenHeight();
 
@@ -129,20 +151,24 @@ GameScene::GameScene()
 		0.1f,								// ニアクリップ
 		1000.0f								// ファークリップ
 	);
-	camera.SetLookAt(
+	camera.SetLookAtWithShake(
 		{ 8, 3, 0 },		// 視点
 		{ 0, 2, 0 },		// 注視点
 		{ 0, 1, 0 }			// 上ベクトル
 	);
 
 	// 3Dオブジェクト
+	EnemyBoss::SetDefeat(false);
+	profile.Step("stage_json_and_camera");
 	player = std::make_unique<Player>(device);
+    profile.Step("player");
 	// 最初の接地記録より前に落下しても戻れるよう、生成位置を初期復帰位置にする。
 	lastSafePosition = player->GetPosition();
 	stage = std::make_unique<Stage>(
 		device,
 		stageData,
 		tileTypeManager);
+    profile.Step("stage");
 
 	
 
@@ -178,20 +204,42 @@ GameScene::GameScene()
 			EnemyManager::Instance().Register(spawnedEnemy);
 		}
 	}
+
+	profile.Step("enemies");
+    CollisionManager& collisionManager =
+		CollisionManager::Instance();
+
+	collisionManager.ClearTerrainAABBs();
+
+	for (const AABB& box : stage->GetTerrainAABBs())
+	{
+		collisionManager.RegisterTerrainAABB(box);
+	}
+    profile.Step("collision_registration");
+    LoadingProfile::gameReady = true;
 }
 
 GameScene::~GameScene()
 {
 	// EnemyWave は Player を非所有ポインタで参照するため、Player の破棄前に解放する。
 	EnemyManager::Instance().Clear();
+
+	CollisionManager::Instance().ClearTerrainAABBs();
 }
 
 // 更新処理
 void GameScene::Update(float elapsedTime)
 {
+    backgroundFog->Update(isPaused ? 0.0f : elapsedTime);
+    backgroundCity->Update(isPaused ? 0.0f : elapsedTime);
+    if (backgroundEditor->Update(elapsedTime)) return;
+	HitStopManager::Instance().Update(elapsedTime);
+
+	float scale_elapsed_time = elapsedTime * HitStopManager::Instance().GetTimeScale();
+
 	if (!isPaused)
 	{
-		player->Update(elapsedTime);
+		player->Update(scale_elapsed_time);
 
 		// 接地中の位置だけを記録し、空中では最後の安全な足場位置を保持する。
 		if (player->IsGround())
@@ -200,12 +248,33 @@ void GameScene::Update(float elapsedTime)
 		}
 
 		// 移動と接地判定の更新後に、Tiledで指定した落下範囲との重なりを調べる。
-		HandleFallRespawn();
+		if (!player->IsClearing() && !player->IsDead()) HandleFallRespawn();
 
 		// プレイヤーがボス戦開始エリアへ入った場合、保留中のボスを生成する。
-		TryStartBossEncounter();
+		if (!player->IsClearing() && !player->IsDead()) TryStartBossEncounter();
 
-		EnemyManager::Instance().Update(elapsedTime);
+		if (!player->IsDead()) EnemyManager::Instance().Update(scale_elapsed_time);
+
+		if (bossGaugeVisible && !player->IsDead())
+			bossGaugeIntroTime = (std::min)(bossGaugeIntroDuration,
+				bossGaugeIntroTime + (std::max)(0.0f, elapsedTime));
+		playerHealthTrail.Update(static_cast<float>(player->GetHealth()) /
+			(std::max)(1, player->GetMaxHealth()), elapsedTime);
+		if (bossGaugeVisible)
+		{
+			const auto boss = encounterBoss.lock();
+			const float ratio = boss ? static_cast<float>(boss->GetHealth()) /
+				(std::max)(1, boss->GetMaxHealth()) : 0.0f;
+			if (boss && !boss->IsDead() && bossGaugeIntroTime < bossGaugeIntroDuration)
+				bossHealthTrail.Reset(bossGaugeIntroTime / bossGaugeIntroDuration);
+			else
+				bossHealthTrail.Update(ratio, elapsedTime);
+		}
+	}
+
+	if (!isPaused)
+	{
+		Camera::Instance().ShakeUpdate(scale_elapsed_time);
 	}
 
 	ImGuiIO& io = ImGui::GetIO();
@@ -222,6 +291,9 @@ void GameScene::Update(float elapsedTime)
 
 	const BossApproachCameraZoneData* approachCameraZone =
 		FindBossApproachCameraZone(playerPosition);
+
+	const CameraLimitZoneData* cameraLimitZone =
+		FindCameraLimitZone(playerPosition);
 
 	// ボス部屋のカメラを最優先する。
 	if (bossEncounterZone != nullptr)
@@ -259,12 +331,38 @@ void GameScene::Update(float elapsedTime)
 		cameraController.Update(
 			elapsedTime,
 			playerPosition,
-			player->GetVelocity());
+			player->GetVelocity(),
+			cameraLimitZone);
 	}
 }
 
 void GameScene::Render(float elapsedTime)
 {
+    Graphics::Instance().Clear(0.055f, 0.075f, 0.10f, 1.0f);
+    if (IsBackgroundEditing())
+    {
+        auto& graphics = Graphics::Instance();
+        graphics.Clear(0.06f, 0.08f, 0.10f, 1.0f);
+        backgroundCity->Render();
+        RenderContext rc;
+        rc.deviceContext = graphics.GetDeviceContext();
+        rc.renderState = graphics.GetRenderState();
+        rc.camera = &Camera::Instance();
+        rc.lightManager = &LightManager::Instance();
+        rc.deviceContext->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        backgroundEditor->Render(graphics.GetModelRenderer());
+        graphics.GetModelRenderer()->Render(rc);
+        backgroundFog->Render();
+        return;
+    }
+    backgroundCity->Render();
+	// Run after world effects, in Debug and Release, then restore ImGui's state.
+	auto* hud = ImGui::GetForegroundDrawList();
+	hud->AddCallback([](const ImDrawList*, const ImDrawCmd* command)
+	{
+		static_cast<GameScene*>(command->UserCallbackData)->RenderHealthGauges();
+	}, this);
+	hud->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
@@ -273,6 +371,10 @@ void GameScene::Render(float elapsedTime)
 
 	Camera& camera = Camera::Instance();
 	LightManager& lightManager = LightManager::Instance();
+    const ViewVolume worldFrustum(camera.GetView(), camera.GetProjection());
+    const auto terrainVisible = [&](const AABB& box) {
+        return worldFrustum.Intersects(DirectX::BoundingBox(box.GetCenter(), box.GetHalfSize()));
+    };
 
 	// レンダーステート設定
 	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
@@ -282,10 +384,12 @@ void GameScene::Render(float elapsedTime)
 	// モデル描画をキューに積む
 	for (const auto& stageObject : stage->GetStageObjects())
 	{
+        AABB bounds;
+        if (stageObject->GetCollisionAABB(bounds) && !terrainVisible(bounds)) continue;
 		modelRenderer->Draw(
 			ShaderId::Model,
 			stageObject->GetModel(),
-			{ 0.5f, 0.5f, 0.5f, 1.0f },
+			{ 1.0f, 1.0f, 1.0f, 1.0f },
 			1.0f);
 	}
 	modelRenderer->Draw(ShaderId::Model, player->GetModel(), { 1,1,1,1 }, 1.0f);
@@ -313,10 +417,41 @@ void GameScene::Render(float elapsedTime)
 	rc.renderState = renderState;
 	rc.camera = &camera;
 	rc.lightManager = &lightManager;
+	backgroundEditor->Render(modelRenderer);
 	modelRenderer->Render(rc);
+    backgroundFog->Render();
 
+	// 実際に衝突判定へ登録した箱を表示する。
+	for (const AABB& box : stage->GetTerrainAABBs())
+	{
+        if (!terrainVisible(box)) continue;
+		shapeRenderer->DrawBox(
+			box.GetCenter(),
+			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+			box.GetHalfSize(),
+			DirectX::XMFLOAT4{ 0.0f, 0.8f, 1.0f, 1.0f }
+		);
+	}
+
+	for (const auto& stageObject : stage->GetStageObjects())
+	{
+		AABB box;
+
+		if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
+		{
+			continue;
+		}
+
+		shapeRenderer->DrawBox(
+			box.GetCenter(),
+			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+			box.GetHalfSize(),
+			DirectX::XMFLOAT4{ 1.0f, 0.8f, 0.0f, 1.0f }
+		);
+	}
 	// 実際の刀判定と同じ掃引カプセルをデバッグ表示する。
 	player->DrawDebugPrimitive(shapeRenderer);
+	
 	EnemyManager::Instance().DrawPrimitive(shapeRenderer);
 #ifdef _DEBUG
 	EnemyManager::Instance().DrawDebugPrimitive(shapeRenderer);
@@ -360,6 +495,9 @@ void GameScene::Render(float elapsedTime)
 // GUI描画処理
 void GameScene::DrawGUI()
 {
+    backgroundFog->DrawGUI();
+    backgroundCity->DrawGUI();
+    if (backgroundEditor->IsEditing()) return;
 	if (ImGui::Begin("Debug"))
 	{
 		ImGui::Checkbox(u8"ゲーム時間を停止", &isPaused);
@@ -382,7 +520,9 @@ bool GameScene::IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position, const
 		position.y <= zone.maxY;
 }
 
-bool GameScene::IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position, const BossEncounterZoneData& zone) const
+// プレイヤーがボス前通路のカメラエリア内にいるか判定する。
+// 2.5DゲームなのでZ座標は判定に使用しない。
+bool GameScene::IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position, const BossApproachCameraZoneData& zone) const
 {
 	return position.x >= zone.minX &&
 		position.x <= zone.maxX &&
@@ -390,9 +530,15 @@ bool GameScene::IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position, con
 		position.y <= zone.maxY;
 }
 
-// プレイヤーがボス前通路のカメラエリア内にいるか判定する。
-// 2.5DゲームなのでZ座標は判定に使用しない。
-bool GameScene::IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position, const BossApproachCameraZoneData& zone) const
+bool GameScene::IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position, const CameraLimitZoneData& zone) const
+{
+	return position.x >= zone.minX &&
+		position.x <= zone.maxX &&
+		position.y >= zone.minY &&
+		position.y <= zone.maxY;
+}
+
+bool GameScene::IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position, const BossEncounterZoneData& zone) const
 {
 	return position.x >= zone.minX &&
 		position.x <= zone.maxX &&
@@ -419,6 +565,19 @@ const BossEncounterZoneData* GameScene::FindBossEncounterZone(const DirectX::XMF
 		stageData.bossEncounterZones)
 	{
 		if (IsInsideBossEncounterZone(position, zone))
+		{
+			return &zone;
+		}
+	}
+
+	return nullptr;
+}
+
+const CameraLimitZoneData* GameScene::FindCameraLimitZone(const DirectX::XMFLOAT3& position) const
+{
+	for (const CameraLimitZoneData& zone : stageData.cameraLimitZones)
+	{
+		if (IsInsideCameraLimitZone(position, zone))
 		{
 			return &zone;
 		}
@@ -486,10 +645,60 @@ void GameScene::TryStartBossEncounter()
 				"Failed to create boss from stage data.");
 		}
 
+		// Share the exact encounter bounds used by the fixed boss camera.
+		const auto boss = std::dynamic_pointer_cast<EnemyBoss>(spawnedBoss);
+		if (!boss)
+		{
+			throw std::runtime_error("Boss encounter spawned a non-boss enemy.");
+		}
+		boss->SetArenaBounds(zone.minX, zone.maxX);
+		encounterBoss = boss;
+		bossGaugeVisible = true;
+		bossGaugeIntroTime = 0.0f;
+		bossHealthTrail.Reset(0.0f);
+
 		EnemyManager::Instance().Register(spawnedBoss);
 
 		// 配置情報を空にして、次のフレーム以降に同じボスが生成されるのを防ぐ。
 		pendingBossSpawnData.reset();
 		return;
 	}
+}
+
+void GameScene::RenderHealthGauges()
+{
+    auto& graphics = Graphics::Instance();
+    auto* dc = graphics.GetDeviceContext();
+    auto* states = graphics.GetRenderState();
+    dc->OMSetBlendState(states->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+    dc->RSSetState(states->GetRasterizerState(RasterizerState::SolidCullNone));
+    auto* sampler = states->GetSamplerState(SamplerState::LinearClamp);
+    dc->PSSetSamplers(0, 1, &sampler);
+    dc->PSSetConstantBuffers(1, 1, gaugeConstants.GetAddressOf());
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f,
+        graphics.GetScreenHeight() / 720.0f);
+    const float height = 300.0f * scale;
+    const float margin = 24.0f * scale;
+    const auto draw = [&](const Sprite& sprite, float x, float width,
+        const DirectX::XMFLOAT4& mask, const DirectX::XMFLOAT4& color, const HealthGaugeTrail& health)
+    {
+        const DirectX::XMFLOAT4 data[] = { mask, color,
+            { health.current, health.trailing, 0, 0 } };
+        dc->UpdateSubresource(gaugeConstants.Get(), 0, nullptr, data, 0, 0);
+        sprite.Render(dc, x, margin, 0, width, height, 0, 1, 1, 1, 1);
+    };
+    draw(*playerGauge, margin, height * 807.0f / 1949.0f,
+        { 260.0f / 807, 80.0f / 1949, 535.0f / 807, 1270.0f / 1949 },
+        { 0.12f, 0.95f, 0.28f, 1 },
+        playerHealthTrail);
+    if (bossGaugeVisible)
+    {
+        const float width = height * 724.0f / 2171.0f;
+        draw(*bossGauge, graphics.GetScreenWidth() - margin - width, width,
+            { 310.0f / 724, 95.0f / 2171, 635.0f / 724, 1405.0f / 2171 },
+            { 0.72f, 0.20f, 1.0f, 1 }, bossHealthTrail);
+    }
+    ID3D11Buffer* noBuffer = nullptr;
+    dc->PSSetConstantBuffers(1, 1, &noBuffer);
 }

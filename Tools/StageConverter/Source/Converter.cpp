@@ -57,6 +57,7 @@ namespace stage_converter
         constexpr std::string_view kFallRespawnZonesLayerName = "FallRespawnZones";
         constexpr std::string_view kBossEncounterZoneLayerName = "BossEncounterZone";
         constexpr std::string_view kBossApproachCameraZoneLayerName = "BossApproachCameraZone";
+        constexpr std::string_view kCameraBoundsLayerName = "CameraBounds";
         constexpr std::string_view kDefaultEnemyDirection = "Right";
 
         // ゲーム側に実装済みの敵名だけを許可し、入力ミスを変換時に検出する。
@@ -1114,6 +1115,7 @@ namespace stage_converter
             std::vector<json>& outputFallRespawnZones,
             std::vector<json>& outputBossEncounterZones,
             std::vector<json>& outputBossApproachCameraZones,
+            std::vector<json>& outputCameraBounds,
             std::size_t& skippedObjectCount)
         {
             if (!layers.is_array())
@@ -1174,6 +1176,7 @@ namespace stage_converter
                         outputFallRespawnZones,
                         outputBossEncounterZones,
                         outputBossApproachCameraZones,
+                        outputCameraBounds,
                         skippedObjectCount);
                     continue;
                 }
@@ -1209,15 +1212,19 @@ namespace stage_converter
                 const bool isFallRespawnZoneLayer = layerName == kFallRespawnZonesLayerName;
                 const bool isBossEncounterZoneLayer = layerName == kBossEncounterZoneLayerName;
                 const bool isBossApproachCameraZoneLayer = layerName == kBossApproachCameraZoneLayerName;
+                const bool isCameraBoundsLayer = layerName == kCameraBoundsLayerName;
                 if (isFallRespawnZoneLayer ||
                     isBossEncounterZoneLayer ||
-                    isBossApproachCameraZoneLayer)
+                    isBossApproachCameraZoneLayer ||
+                    isCameraBoundsLayer)
                 {
                     std::vector<json>& outputZones = isFallRespawnZoneLayer
                         ? outputFallRespawnZones
                         : isBossEncounterZoneLayer
                             ? outputBossEncounterZones
-                            : outputBossApproachCameraZones;
+                            : isBossApproachCameraZoneLayer
+                                ? outputBossApproachCameraZones
+                                : outputCameraBounds;
 
                     for (const json& object : *objectsIterator)
                     {
@@ -1519,6 +1526,7 @@ namespace stage_converter
         std::vector<json> convertedFallRespawnZones;
         std::vector<json> convertedBossEncounterZones;
         std::vector<json> convertedBossApproachCameraZones;
+        std::vector<json> convertedCameraBounds;
         ConvertLayers(
             *layersIterator,
             0.0,
@@ -1531,12 +1539,14 @@ namespace stage_converter
             convertedFallRespawnZones,
             convertedBossEncounterZones,
             convertedBossApproachCameraZones,
+            convertedCameraBounds,
             result.skippedObjectCount);
         result.convertedObjectCount = convertedObjects.size();
         result.convertedEnemyCount = convertedEnemies.size();
         result.convertedFallRespawnZoneCount = convertedFallRespawnZones.size();
         result.convertedBossEncounterZoneCount = convertedBossEncounterZones.size();
         result.convertedBossApproachCameraZoneCount = convertedBossApproachCameraZones.size();
+        result.convertedCameraBoundsCount = convertedCameraBounds.size();
 
         const json outputRoot{
             { "formatVersion", kOutputFormatVersion },
@@ -1545,7 +1555,8 @@ namespace stage_converter
             { "enemies", convertedEnemies },
             { "fallRespawnZones", convertedFallRespawnZones },
             { "bossEncounterZones", convertedBossEncounterZones },
-            { "bossApproachCameraZones", convertedBossApproachCameraZones }
+            { "bossApproachCameraZones", convertedBossApproachCameraZones },
+            { "cameraBounds", convertedCameraBounds }
         };
 
         WriteJsonFile(options.outputPath, outputRoot);

@@ -1,0 +1,449 @@
+{
+  "sections": [
+    {
+      "name": "01 / THREE-STOREY SWITCHBACK",
+      "minX": -6,
+      "maxX": 35,
+      "low": -3,
+      "high": 29
+    },
+    {
+      "name": "02 / UPPER SHORTCUT + LOWER ROUTE",
+      "minX": 35,
+      "maxX": 106,
+      "low": 10,
+      "high": 36
+    },
+    {
+      "name": "03 / ALTERNATING DESCENT",
+      "minX": 104,
+      "maxX": 145,
+      "low": 3,
+      "high": 37
+    },
+    {
+      "name": "04 / REACTOR CLIMB",
+      "minX": 143,
+      "maxX": 177,
+      "low": 3,
+      "high": 39
+    },
+    {
+      "name": "05 / FINAL BRIDGES + BOSS",
+      "minX": 176,
+      "maxX": 242,
+      "low": 20,
+      "high": 46
+    }
+  ],
+  "decks": [
+    {
+      "id": "entry",
+      "a": -4,
+      "b": 33,
+      "h": 0
+    },
+    {
+      "id": "return",
+      "a": -1,
+      "b": 29,
+      "h": 12
+    },
+    {
+      "id": "upper exit",
+      "a": 4,
+      "b": 50,
+      "h": 24
+    },
+    {
+      "id": "lower A",
+      "a": 55,
+      "b": 62,
+      "h": 22
+    },
+    {
+      "id": "lower B",
+      "a": 67,
+      "b": 76,
+      "h": 24
+    },
+    {
+      "id": "lower C",
+      "a": 81,
+      "b": 89,
+      "h": 22
+    },
+    {
+      "id": "lower D",
+      "a": 94,
+      "b": 99,
+      "h": 24
+    },
+    {
+      "id": "recovery",
+      "a": 35,
+      "b": 104,
+      "h": 14
+    },
+    {
+      "id": "shortcut A",
+      "a": 49,
+      "b": 56,
+      "h": 30
+    },
+    {
+      "id": "shortcut B",
+      "a": 63,
+      "b": 69,
+      "h": 30
+    },
+    {
+      "id": "shortcut C",
+      "a": 76,
+      "b": 84,
+      "h": 30
+    },
+    {
+      "id": "shortcut D",
+      "a": 91,
+      "b": 100,
+      "h": 30
+    },
+    {
+      "id": "drop entry",
+      "a": 105,
+      "b": 128,
+      "h": 30
+    },
+    {
+      "id": "drop middle",
+      "a": 117,
+      "b": 140,
+      "h": 22
+    },
+    {
+      "id": "drop lower",
+      "a": 106,
+      "b": 128,
+      "h": 14
+    },
+    {
+      "id": "reactor base",
+      "a": 106,
+      "b": 175,
+      "h": 6
+    },
+    {
+      "id": "reactor landing",
+      "a": 151,
+      "b": 170,
+      "h": 18
+    },
+    {
+      "id": "reactor summit",
+      "a": 176,
+      "b": 184,
+      "h": 34
+    },
+    {
+      "id": "final bridge",
+      "a": 191,
+      "b": 199,
+      "h": 34
+    },
+    {
+      "id": "antechamber",
+      "a": 206,
+      "b": 225,
+      "h": 34
+    },
+    {
+      "id": "final recovery",
+      "a": 177,
+      "b": 205,
+      "h": 24
+    },
+    {
+      "id": "boss",
+      "a": 225,
+      "b": 240,
+      "h": 34
+    }
+  ],
+  "shafts": [
+    {
+      "id": "east lift",
+      "left": 29.5,
+      "right": 33.5,
+      "bottom": -0.5,
+      "top": 11.5,
+      "exit": "left"
+    },
+    {
+      "id": "west lift",
+      "left": -0.5,
+      "right": 3.5,
+      "bottom": 11.5,
+      "top": 23.5,
+      "exit": "right"
+    },
+    {
+      "id": "shortcut access",
+      "left": 44.5,
+      "right": 48.5,
+      "bottom": 23.5,
+      "top": 29.5,
+      "exit": "right"
+    },
+    {
+      "id": "recovery lift",
+      "left": 100.5,
+      "right": 104.5,
+      "bottom": 13.5,
+      "top": 29.5,
+      "exit": "right"
+    },
+    {
+      "id": "reactor west",
+      "left": 146.5,
+      "right": 150.5,
+      "bottom": 5.5,
+      "top": 17.5,
+      "exit": "right"
+    },
+    {
+      "id": "reactor east",
+      "left": 171.5,
+      "right": 175.5,
+      "bottom": 17.5,
+      "top": 33.5,
+      "exit": "right"
+    },
+    {
+      "id": "final recovery lift",
+      "left": 201.5,
+      "right": 205.5,
+      "bottom": 23.5,
+      "top": 33.5,
+      "exit": "right"
+    }
+  ],
+  "jumps": [
+    {
+      "from": "upper exit",
+      "to": "lower A",
+      "kind": "main"
+    },
+    {
+      "from": "lower A",
+      "to": "lower B",
+      "kind": "main"
+    },
+    {
+      "from": "lower B",
+      "to": "lower C",
+      "kind": "main"
+    },
+    {
+      "from": "lower C",
+      "to": "lower D",
+      "kind": "main"
+    },
+    {
+      "from": "shortcut A",
+      "to": "shortcut B",
+      "kind": "shortcut"
+    },
+    {
+      "from": "shortcut B",
+      "to": "shortcut C",
+      "kind": "shortcut"
+    },
+    {
+      "from": "shortcut C",
+      "to": "shortcut D",
+      "kind": "shortcut"
+    },
+    {
+      "from": "shortcut D",
+      "to": "drop entry",
+      "kind": "shortcut"
+    },
+    {
+      "from": "reactor summit",
+      "to": "final bridge",
+      "kind": "main"
+    },
+    {
+      "from": "final bridge",
+      "to": "antechamber",
+      "kind": "main"
+    }
+  ],
+  "mainPath": [
+    [
+      0,
+      1
+    ],
+    [
+      31,
+      1
+    ],
+    [
+      32,
+      10
+    ],
+    [
+      27,
+      13
+    ],
+    [
+      2,
+      13
+    ],
+    [
+      2,
+      23
+    ],
+    [
+      8,
+      25
+    ],
+    [
+      47,
+      25
+    ],
+    [
+      58,
+      23
+    ],
+    [
+      71,
+      25
+    ],
+    [
+      85,
+      23
+    ],
+    [
+      97,
+      25
+    ],
+    [
+      92,
+      25
+    ],
+    [
+      92,
+      15
+    ],
+    [
+      103,
+      15
+    ],
+    [
+      103,
+      31
+    ],
+    [
+      125,
+      31
+    ],
+    [
+      136,
+      23
+    ],
+    [
+      112,
+      23
+    ],
+    [
+      112,
+      15
+    ],
+    [
+      135,
+      15
+    ],
+    [
+      136,
+      7
+    ],
+    [
+      148,
+      7
+    ],
+    [
+      148,
+      17
+    ],
+    [
+      156,
+      19
+    ],
+    [
+      173,
+      19
+    ],
+    [
+      173,
+      33
+    ],
+    [
+      181,
+      35
+    ],
+    [
+      194,
+      35
+    ],
+    [
+      208,
+      35
+    ],
+    [
+      225,
+      35
+    ],
+    [
+      234,
+      35
+    ]
+  ],
+  "shortcutPath": [
+    [
+      47,
+      25
+    ],
+    [
+      47,
+      31
+    ],
+    [
+      54,
+      31
+    ],
+    [
+      65,
+      31
+    ],
+    [
+      81,
+      31
+    ],
+    [
+      98,
+      31
+    ],
+    [
+      107,
+      31
+    ]
+  ],
+  "expectedSeconds": [
+    100,
+    165
+  ],
+  "timingNote": "Design budget including six optional enemy encounters, not a measured clear time.",
+  "reference": "https://static.capcom.com/megaman/manuals/PSP_MMMHX_Manual.pdf"
+}

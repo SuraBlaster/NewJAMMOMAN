@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 
 using GamePadButton = unsigned int;
 
@@ -24,8 +25,10 @@ public:
 	static const GamePadButton BTN_RIGHT_TRIGGER	= (1 << 15);
 
 private:
+	std::chrono::steady_clock::time_point vibration_end{};
+	bool vibrating = false;
 	GamePad() {}
-	~GamePad() {}
+	~GamePad() { StopVibration(); }
 
 public:
 	static GamePad& Instance()
@@ -36,6 +39,8 @@ public:
 
 	// 更新
 	void Update();
+	void Vibrate(float left, float right, float duration);
+	void StopVibration();
 
 	// スロット設定
 	void SetSlot(int slot) { this->slot = slot; }

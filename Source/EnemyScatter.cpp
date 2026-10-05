@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyScatter.h"
 
 #include <cmath>
@@ -11,7 +12,7 @@ EnemyScatter::EnemyScatter(
 	const DirectX::XMFLOAT3& spawnPosition)
 	: player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/Swarm08.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
 	position = spawnPosition;
 	scale = { 0.002f, 0.002f, 0.002f };
 	radius = 0.18f;

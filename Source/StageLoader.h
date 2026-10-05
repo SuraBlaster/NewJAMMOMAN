@@ -15,6 +15,4 @@ public:
         const std::string& jsonPath,
         const TileTypeManager& tileTypeManager,
         StageData& outputStageData);
-
-
 };

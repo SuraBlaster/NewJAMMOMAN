@@ -60,7 +60,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\Source;.\External\imgui-docking;.\External\ImGuizmo;.\External\cereal\include;.\External\tinygltf;.\External\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\Effekseer170e\include\Effekseer;.\External\Effekseer170e\include\EffekseerRendererDX11;.\Source;.\External\imgui-docking;.\External\ImGuizmo;.\External\cereal\include;.\External\tinygltf;.\External\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -68,8 +68,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;xinput.lib;xaudio2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Effekseer.lib;EffekseerRendererDX11.lib;d3d11.lib;dxgi.lib;xinput.lib;xaudio2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\Effekseer170e\lib\vs2022\MT\x64\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -89,7 +89,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\Source;.\External\imgui-docking;.\External\ImGuizmo;.\External\cereal\include;.\External\tinygltf;.\External\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\External\Effekseer170e\include\Effekseer;.\External\Effekseer170e\include\EffekseerRendererDX11;.\Source;.\External\imgui-docking;.\External\ImGuizmo;.\External\cereal\include;.\External\tinygltf;.\External\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -99,8 +99,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;xinput.lib;xaudio2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Effekseer.lib;EffekseerRendererDX11.lib;d3d11.lib;dxgi.lib;xinput.lib;xaudio2.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\Effekseer170e\lib\vs2022\MT\x64\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
@@ -125,6 +125,9 @@
     <ClInclude Include="External\ImGuizmo\ImSequencer.h" />
     <ClInclude Include="External\SphereCast\Include\SphereCast.h" />
     <ClInclude Include="Source\Animator.h" />
+    <ClInclude Include="Source\Audio\Audio.h" />
+    <ClInclude Include="Source\Audio\AudioResource.h" />
+    <ClInclude Include="Source\Audio\AudioSource.h" />
     <ClInclude Include="Source\BasicShader.h" />
     <ClInclude Include="Source\Camera.h" />
     <ClInclude Include="Source\CameraController.h" />
@@ -132,6 +135,8 @@
     <ClInclude Include="Source\Collision.h" />
     <ClInclude Include="Source\CollisionManager.h" />
     <ClInclude Include="Source\Dialog.h" />
+    <ClInclude Include="Source\Effect\Effect.h" />
+    <ClInclude Include="Source\Effect\EffectManager.h" />
     <ClInclude Include="Source\Enemy.h" />
     <ClInclude Include="Source\EnemyBoss.h" />
     <ClInclude Include="Source\EnemyEgg.h" />
@@ -141,13 +146,18 @@
     <ClInclude Include="Source\EnemyMage.h" />
     <ClInclude Include="Source\EnemyManager.h" />
     <ClInclude Include="Source\EnemyProjectile.h" />
+    <ClInclude Include="Source\BossSideProjectile.h" />
     <ClInclude Include="Source\EnemyScatter.h" />
     <ClInclude Include="Source\EnemyWave.h" />
-    <ClInclude Include="Source\FileTypeManager.h" />
+    <ClInclude Include="Source\HitStopManager.h" />
+    <ClInclude Include="Source\TileTypeManager.h" />
     <ClInclude Include="Source\Framework.h" />
     <ClInclude Include="Source\FreeCameraController.h" />
     <ClInclude Include="Source\GamePad.h" />
     <ClInclude Include="Source\GameScene.h" />
+    <ClInclude Include="Source\BackgroundFog.h" />
+    <ClInclude Include="Source\BackgroundCity.h" />
+    <ClInclude Include="Source\HealthGaugeTrail.h" />
     <ClInclude Include="Source\GLTFImporter.h" />
     <ClInclude Include="Source\GpuResourceUtils.h" />
     <ClInclude Include="Source\Graphics.h" />
@@ -168,6 +178,8 @@
     <ClInclude Include="Source\SceneUI.h" />
     <ClInclude Include="Source\SceneClear.h" />
     <ClInclude Include="Source\SceneLoading.h" />
+    <ClInclude Include="Source\LoadingProfile.h" />
+    <ClInclude Include="Source\ModelManager.h" />
     <ClInclude Include="Source\SceneManager.h" />
     <ClInclude Include="Source\SceneTitle.h" />
     <ClInclude Include="Source\TitleAnimation.h" />
@@ -177,10 +189,16 @@
     <ClInclude Include="Source\SphereCast.h" />
     <ClInclude Include="Source\Sprite.h" />
     <ClInclude Include="Source\Stage.h" />
+    <ClInclude Include="Source\BackgroundEditor.h" />
+    <ClInclude Include="Source\Command\ICommand.h" />
+    <ClInclude Include="Source\Command\CommandManager.h" />
     <ClInclude Include="Source\StageData.h" />
     <ClInclude Include="Source\StageLoader.h" />
     <ClInclude Include="Source\StageObject.h" />
     <ClInclude Include="Source\TitlePlayer.h" />
+    <ClInclude Include="Source\LoadingBoss.h" />
+    <ClInclude Include="Source\LoadingPlayer.h" />
+    <ClInclude Include="Source\ClearPlayer.h" />
     <ClInclude Include="Source\TransformUtils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -194,8 +212,10 @@
     <ClCompile Include="External\ImGuizmo\ImGradient.cpp" />
     <ClCompile Include="External\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="External\ImGuizmo\ImSequencer.cpp" />
-    <ClCompile Include="FileTypeManager.cpp" />
     <ClCompile Include="Source\Animator.cpp" />
+    <ClCompile Include="Source\Audio\Audio.cpp" />
+    <ClCompile Include="Source\Audio\AudioResource.cpp" />
+    <ClCompile Include="Source\Audio\AudioSource.cpp" />
     <ClCompile Include="Source\BasicShader.cpp" />
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\CameraController.cpp" />
@@ -203,6 +223,8 @@
     <ClCompile Include="Source\Collision.cpp" />
     <ClCompile Include="Source\CollisionManager.cpp" />
     <ClCompile Include="Source\Dialog.cpp" />
+    <ClCompile Include="Source\Effect\Effect.cpp" />
+    <ClCompile Include="Source\Effect\EffectManager.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
     <ClCompile Include="Source\EnemyBoss.cpp" />
     <ClCompile Include="Source\EnemyEgg.cpp" />
@@ -212,8 +234,10 @@
     <ClCompile Include="Source\EnemyMage.cpp" />
     <ClCompile Include="Source\EnemyManager.cpp" />
     <ClCompile Include="Source\EnemyProjectile.cpp" />
+    <ClCompile Include="Source\BossSideProjectile.cpp" />
     <ClCompile Include="Source\EnemyScatter.cpp" />
     <ClCompile Include="Source\EnemyWave.cpp" />
+    <ClCompile Include="Source\TileTypeManager.cpp" />
     <ClCompile Include="Source\Framework.cpp" />
     <ClCompile Include="Source\FreeCameraController.cpp" />
     <ClCompile Include="Source\GamePad.cpp" />
@@ -226,6 +250,7 @@
     <ClCompile Include="Source\ModelShader.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Model.cpp" />
+    <ClCompile Include="Source\ModelManager.cpp" />
     <ClCompile Include="Source\ModelRenderer.cpp" />
     <ClCompile Include="Source\ModelViewerScene.cpp" />
     <ClCompile Include="Source\Player.cpp" />
@@ -241,9 +266,14 @@
     <ClCompile Include="Source\SphereCast.cpp" />
     <ClCompile Include="Source\Sprite.cpp" />
     <ClCompile Include="Source\Stage.cpp" />
+    <ClCompile Include="Source\BackgroundEditor.cpp" />
+    <ClCompile Include="Source\Command\CommandManager.cpp" />
     <ClCompile Include="Source\StageLoader.cpp" />
     <ClCompile Include="Source\StageObject.cpp" />
     <ClCompile Include="Source\TitlePlayer.cpp" />
+    <ClCompile Include="Source\LoadingBoss.cpp" />
+    <ClCompile Include="Source\LoadingPlayer.cpp" />
+    <ClCompile Include="Source\ClearPlayer.cpp" />
     <ClCompile Include="Source\TransformUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -288,6 +318,13 @@
     <FxCompile Include="Shader\PrimitiveRendererVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\CityPS.hlsl"><ShaderType>Pixel</ShaderType></FxCompile>
+    <FxCompile Include="Shader\FogVS.hlsl"><ShaderType>Vertex</ShaderType></FxCompile>
+    <FxCompile Include="Shader\FogPS.hlsl"><ShaderType>Pixel</ShaderType></FxCompile>
+    <FxCompile Include="Shader\FogCompositePS.hlsl"><ShaderType>Pixel</ShaderType></FxCompile>
+    <FxCompile Include="Shader\HealthGaugePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shader\SpritePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

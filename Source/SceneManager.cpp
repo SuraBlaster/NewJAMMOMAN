@@ -1,3 +1,4 @@
+#include "LoadingProfile.h"
 #include "SceneManager.h"
 #include <utility>
 
@@ -5,12 +6,16 @@ void SceneManager::Update(float elapsedTime)
 {
     if (nextScene)
     {
+        LoadingProfile::Scope profile("SceneTransition");
         auto factory = std::move(nextScene);
         nextScene = nullptr;
         if (currentScene) currentScene->Finalize();
         currentScene.reset();
+        profile.Step("old_scene_cleanup");
         currentScene = factory();
+        profile.Step("construct");
         if (currentScene) currentScene->Initialize();
+        profile.Step("initialize");
     }
     if (currentScene) currentScene->Update(elapsedTime);
 }

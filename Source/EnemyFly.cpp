@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyFly.h"
 
 #include <cmath>
@@ -10,7 +11,7 @@ EnemyFly::EnemyFly(ID3D11Device* device, Player* player)
 	: device(device)
 	, player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/Swarm08.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
 	scale = { 0.01f, 0.01f, 0.01f };
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.45f;

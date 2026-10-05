@@ -45,8 +45,14 @@ void ImGuiRenderer::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceCont
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device, dc);
 
-    // Change this path and size to choose the game's font.
-    if (!TextRenderer::Initialize("Data/Font/ArialUni.ttf", 18.0f))
+    // Keep Japanese editor/UI text independent of the game's display font.
+    io.FontDefault = io.Fonts->AddFontFromFileTTF(
+        "Data/Font/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+    if (!io.FontDefault)
+        throw std::runtime_error("Failed to initialize Japanese ImGui font.");
+
+    // TextRenderer uses its own ImFont explicitly; changing it does not affect UI.
+    if (!TextRenderer::Initialize("Data/Font/Oxanium-ExtraBold.ttf", 18.0f))
         throw std::runtime_error("Failed to initialize TextRenderer.");
 }
 

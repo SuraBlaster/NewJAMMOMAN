@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyMage.h"
 
 #include <algorithm>
@@ -8,7 +9,7 @@
 EnemyMage::EnemyMage(ID3D11Device* device, Player* player)
 	: player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/Wizard.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Wizard.gltf");
 	scale = { 0.01f, 0.01f, 0.01f };
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.45f;

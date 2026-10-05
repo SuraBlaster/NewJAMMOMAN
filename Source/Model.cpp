@@ -1,3 +1,4 @@
+#include "LoadingProfile.h"
 #include <filesystem>
 #include <fstream>
 #include <cereal/cereal.hpp>
@@ -225,7 +226,8 @@ Model::Model(const Model& other)
 // コンストラクタ
 Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filename(filename)
 {
-	std::filesystem::path filepath(filename);
+	LoadingProfile::Scope profile(std::string("Model:") + filename);
+    std::filesystem::path filepath(filename);
 	std::filesystem::path dirpath(filepath.parent_path());
 
 	std::filesystem::path extension = filepath.extension();
@@ -242,6 +244,7 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filen
 	}
 
 	// 別プロジェクトで作られた互換性のないキャッシュは元モデルから読み直す。
+	profile.Step(loaded ? "cache_hit" : "cache_miss_or_incompatible");
 	if (!loaded && (extension == ".gltf" || extension == ".glb"))
 	{
 		nodes.clear();
@@ -251,6 +254,7 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filen
 
 		// 汎用モデルファイルの読み込み
 		GLTFImporter importer(filename);
+        profile.Step("source_file_parse");
 
 		// マテリアルデータ読み取り
 		importer.LoadMaterials(materials, device);
@@ -263,6 +267,7 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filen
 
 		// アニメーションデータ読み取り
 		importer.LoadAnimations(animations, nodes, sampleRate);
+        profile.Step("materials_meshes_animations");
 
 		// 独自形式のモデルファイルを保存
 		//Serialize(filepath.string().c_str());
@@ -274,6 +279,7 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filen
 	}
 
 	// マテリアル構築
+	profile.Step("importer_cleanup");
 	for (Material& material : materials)
 	{
 		if (material.baseMap == nullptr)
@@ -440,12 +446,14 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate):filen
 	DirectX::XMFLOAT4X4 worldTransform;
 	DirectX::XMStoreFloat4x4(&worldTransform, DirectX::XMMatrixIdentity());
 	UpdateTransform(worldTransform);
+    profile.Step("gpu_resources_and_transforms");
 }
 
 // アニメーション追加読み込み
 void Model::AppendAnimations(const char* filename)
 {
-	std::filesystem::path filepath(filename);
+	LoadingProfile::Scope profile(std::string("Model:") + filename);
+    std::filesystem::path filepath(filename);
 	std::filesystem::path dirpath(filepath.parent_path());
 
 	if (filepath.extension() == ".gltf" ||
@@ -453,6 +461,7 @@ void Model::AppendAnimations(const char* filename)
 	{
 		// 汎用モデルファイルの読み込み
 		GLTFImporter importer(filename);
+        profile.Step("source_file_parse");
 
 		// アニメーションデータ読み取り
 		importer.LoadAnimations(animations, nodes);

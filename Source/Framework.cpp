@@ -1,9 +1,13 @@
+#include "ModelManager.h"
+#include "LoadingProfile.h"
 #include <memory>
 #include <sstream>
 #include <imgui.h>
 
 #include "Framework.h"
 #include "Graphics.h"
+#include "Effect/EffectManager.h"
+#include "Camera.h"
 #include "GamePad.h"
 #include "ImGuiRenderer.h"
 #include "ModelViewerScene.h"
@@ -22,12 +26,13 @@ Framework::Framework(HWND hWnd)
 {
 	// グラフィックス初期化
 	Graphics::Instance().Initialize(hWnd);
+	audio = std::make_unique<Audio>();
+	EffectManager::Instance().Initialize();
 
 	// IMGUI初期化
 	ImGuiRenderer::Initialize(hWnd, Graphics::Instance().GetDevice(), Graphics::Instance().GetDeviceContext());
 
 	// シーン初期化
-	
 	SceneManager::Instance().ChangeScene([]() { return std::make_shared<SceneTitle>(); });
 }
 
@@ -36,6 +41,9 @@ Framework::~Framework()
 {
 	// IMGUI終了化
 	SceneManager::Instance().Clear();
+	ModelManager::Instance().Clear();
+	EffectManager::Instance().Finalize();
+	audio.reset();
 	ImGuiRenderer::Finalize();
 }
 
@@ -49,6 +57,8 @@ void Framework::Update(float elapsedTime)
 
 	// シーン更新処理
 	SceneManager::Instance().Update(elapsedTime);
+	if (!SceneManager::Instance().IsBackgroundEditing())
+        EffectManager::Instance().Update(elapsedTime);
 }
 
 // 描画処理
@@ -64,6 +74,8 @@ void Framework::Render(float elapsedTime)
 
 	// シーン描画処理
 	SceneManager::Instance().Render(elapsedTime);
+	if (!SceneManager::Instance().IsBackgroundEditing())
+        EffectManager::Instance().Render(Camera::Instance().GetView(), Camera::Instance().GetProjection());
 
 	// シーンGUI描画処理
 	SceneManager::Instance().DrawGUI();
@@ -79,6 +91,13 @@ void Framework::Render(float elapsedTime)
 
 	// 画面表示
 	Graphics::Instance().Present(syncInterval);
+    if (LoadingProfile::Enabled() && LoadingProfile::gameReady && !LoadingProfile::firstGameFrame)
+    {
+        LoadingProfile::firstGameFrame = true;
+        LoadingProfile::Record("Loading.to_first_game_present", LoadingProfile::Milliseconds(LoadingProfile::loadingStart));
+        if (LoadingProfile::Automatic()) PostQuitMessage(0);
+    }
+    LoadingProfile::Flush();
 }
 
 template<class T>

@@ -2,6 +2,7 @@
 
 #include <DirectXMath.h>
 #include <imgui.h> 
+#include "StageData.h"
 
 // カメラコントローラー
 class CameraController
@@ -18,7 +19,8 @@ public:
 	void Update(
 		float elapsedTime,
 		const DirectX::XMFLOAT3& playerPos,
-		const DirectX::XMFLOAT3& playerVelocity);
+		const DirectX::XMFLOAT3& playerVelocity,
+		const CameraLimitZoneData* cameraLimitZoneData = nullptr);
 
 	// メニューバーの描画
 	void DrawMenuBar();
@@ -55,9 +57,20 @@ private:
 	float					look_ahead_distance = 2.0f;
 	float					look_ahead_lerp_speed = 3.0f;
 	float					look_ahead_velocity_threshold = 0.1f;
+	float					direction_change_confirm_time = 0.2f;
 	float					last_move_direction_x = 0.0f;
+	float					pending_move_direction_x = 0.0f;
+	float					direction_change_timer = 0.0f;
 	float					current_look_ahead_x = 0.0f;
+
+	// Follow2D vertical tracking settings.
+	float					vertical_follow_lerp_speed = 3.0f;
+	float					vertical_eye_offset = 1.0f;
 
 	// 固定2Dカメラの注視点からの距離。
 	float fixed_2d_distance = 10.0f;
+
+	// 補正値
+	DirectX::XMFLOAT2 correction_value{};
+	float fixed_minX, fixed_maxX, fixed_minY, fixed_maxY;
 };

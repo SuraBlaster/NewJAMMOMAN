@@ -1,134 +1,47 @@
 #include "ClearPlayer.h"
-#include <imgui.h>
-#include "Input/Input.h"
-#include "Camera.h"
-#include "Graphics/Graphics.h"
+#include "ModelManager.h"
+#include "Graphics.h"
+#include "ModelRenderer.h"
+#include <algorithm>
 
-static ClearPlayer * instance = nullptr;
-
-ClearPlayer& ClearPlayer::Instance()
-{
-    return *instance;
-}
-
-void ClearPlayer::UpdateWaveState(float elapsedTime)
-{
-}
-
-//コンストラクタ
 ClearPlayer::ClearPlayer()
 {
-    ID3D11Device* device = Graphics::Instance().GetDevice();
-
-    model = std::make_shared<Model>(device, "Data/Model/Jammo/Jammo.gltf");
-
-    instance = this;
-
-    scale.x = scale.y = scale.z = 0.01f;
-
-    angle.y = DirectX::XMConvertToRadians(-90);
-
-    position.x = 11.0f;
-    position.y = 9.0f;
-    position.z = -7.0f;
-
-    health = maxHealth = 20;
-
-    model->GetNodePoses(nodePoses);
-
-    //待機ステートへ遷移
-    TransitionIdleState();
+    model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
+        "Data/Model/Jammo/Jammo_Player.gltf");
+    position = {16.0f, -6.5f, 0};
+    rotation = {0, DirectX::XMConvertToRadians(-90), 0};
+    scale = {0.018f, 0.018f, 0.018f};
+    InitializeAnimator(model->GetAnimationIndex("Idle_Seq_0"));
+    Update(0);
 }
 
-ClearPlayer::~ClearPlayer()
+void ClearPlayer::BeginEntrance()
 {
+    if (state != State::Waiting) return;
+    state = State::Move;
+    PlayAnimation(model->GetAnimationIndex("Run_Fast_Loop_Seq_0"), true, 0.2f);
+    if (animator) animator->SetLayerSpeed(0, 1.5f);
 }
 
-//更新処理
 void ClearPlayer::Update(float elapsedTime)
 {
-    GamePad& gamePad = Input::Instance().GetGamePad();
-
-    switch (state)
+    const float dt = (std::max)(0.0f, elapsedTime);
+    if (state == State::Move)
     {
-    case State::Idle:
-        UpdateIdleState(elapsedTime);
-        break;
-    case State::Move:
-        UpdateMoveState(elapsedTime);
-        break;
-    case State::Wave:
-        UpdateWaveState(elapsedTime);
-        break;
-
+        position.x = (std::max)(0.0f, position.x - MoveSpeed * dt);
+        if (position.x <= 0)
+        {
+            state = State::Wave;
+            rotation.y = DirectX::XMConvertToRadians(180);
+            PlayAnimation(model->GetAnimationIndex("Wave"), true, 0.3f);
+            if (animator) animator->SetLayerSpeed(0, 1.0f);
+        }
     }
-
+    if (animator) animator->Update(dt);
     UpdateTransform();
-
-    //走力速度更新
-    UpdateVelocity(elapsedTime);
-
-    model->UpdateAnimation(elapsedTime, nodePoses);
-
-    model->SetNodePoses(nodePoses);
-
-    model->UpdateTransform(transform);
-
-    
-    timer -= elapsedTime;
-    
-    if (position.y < 5.5f)
-    {
-        position.y = 5.5f;
-    }
 }
 
-void ClearPlayer::TransitionIdleState()
+void ClearPlayer::Render(ModelRenderer* renderer)
 {
-    state = State::Idle;
-
-    //待機アニメーション再生
-    model->PlayAnimation(Anim_Idle, true, 1.0f);
-}
-
-void ClearPlayer::UpdateIdleState(float elapsedTime)
-{
-    if (timer < 0.0f)
-    {
-        TransitionMoveState();
-    }
-}
-
-void ClearPlayer::TransitionMoveState()
-{
-    state = State::Move;
-
-    //待機アニメーション再生
-    model->PlayAnimation(Anim_Run, true, 0.2f,1.5f);
-}
-
-void ClearPlayer::UpdateMoveState(float elapsedTime)
-{
-
-    position.x -= moveSpeed * elapsedTime;
-
-    if (position.x < 0)
-    {
-        angle.y = DirectX::XMConvertToRadians(180);
-        TransitionWaveState();
-    }
-}
-
-void ClearPlayer::TransitionWaveState()
-{
-    state = State::Wave;
-
-    //待機アニメーション再生
-    model->PlayAnimation(Anim_Wave, true, 1.0f);
-}
-
-//描画処理
-void ClearPlayer::Render(ModelRenderer* modelRenderer)
-{
-    modelRenderer->Draw(ShaderId::Toon, model);
+    if (state != State::Waiting) renderer->Draw(ShaderId::Model, model);
 }

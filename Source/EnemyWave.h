@@ -22,7 +22,6 @@ public:
 	void Update(float elapsedTime) override;
 
 	void SetDirection(Direction value);
-	void SetRiseSpeed(float value) { rise_speed = value; }
 	void SetWave(float speed, float amplitude)
 	{
 		wave_speed = speed;
@@ -30,13 +29,6 @@ public:
 	}
 
 private:
-	enum class State
-	{
-		Rising,
-		Attacking
-	};
-
-	void UpdateRising(float elapsedTime);
 	void UpdateAttacking(float elapsedTime);
 	void CollideWithPlayer();
 	bool IsOutOfRange() const;
@@ -44,7 +36,6 @@ private:
 
 	Player* player = nullptr; // Non-owning; GameScene owns Player.
 	Direction direction = Direction::Right;
-	State state = State::Rising;
 	float target_y = 0.0f;
 	bool target_y_initialized = false;
 	float rise_speed = 3.0f;

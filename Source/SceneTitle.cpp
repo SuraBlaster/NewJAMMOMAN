@@ -1,4 +1,6 @@
-ï»¿#include "SceneTitle.h"
+#include "LoadingProfile.h"
+#include "SceneTitle.h"
+#include "Audio/Audio.h"
 #include "SceneLoading.h"
 #include "SceneManager.h"
 #include "GameScene.h"
@@ -6,6 +8,7 @@
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
+#include "TextRenderer.h"
 #include <imgui.h>
 
 void SceneTitle::Initialize()
@@ -13,6 +16,7 @@ void SceneTitle::Initialize()
     isTransitioning = false;
     introTimer = transitionTimer = blinkTimer = 0.0f;
     firstUpdate = true;
+    titleBgmStarted = false;
 #ifdef _DEBUG
     introPaused = false;
 #endif
@@ -30,6 +34,8 @@ void SceneTitle::Initialize()
 
 void SceneTitle::Finalize()
 {
+    Audio::Instance().Stop("BGM_TITLE");
+    titleBgmStarted = false;
     triangle.reset();
     logo.reset();
     xMark.reset();
@@ -64,6 +70,7 @@ void SceneTitle::Update(float elapsedTime)
 #endif
         introTimer = (std::min)(introTimer + dt, TitleAnimation::IntroEnd);
     blinkTimer = std::fmod(blinkTimer + dt, 1.0f);
+    if (LoadingProfile::Automatic() && acceptInput && !isTransitioning) StartGame();
     if (acceptInput) UpdateInput();
     UpdateTransition(dt);
     if (introTimer >= TitleAnimation::XEnd)
@@ -107,12 +114,25 @@ void SceneTitle::RenderDecorations()
 
 void SceneTitle::UpdateInput()
 {
-    const auto buttons = GamePad::Instance().GetButtonDown();
-    const bool padPressed = (buttons & (GamePad::BTN_START | GamePad::BTN_A |
-        GamePad::BTN_B | GamePad::BTN_X | GamePad::BTN_Y)) != 0;
-    const bool enterPressed = !ImGui::GetIO().WantTextInput &&
-        ImGui::IsKeyPressed(ImGuiKey_Enter, false);
-    if (padPressed || enterPressed) StartGame();
+    const auto& io = ImGui::GetIO();
+    bool keyPressed = false;
+    if (!io.WantCaptureKeyboard)
+    {
+        for (int key = 0; key < IM_ARRAYSIZE(io.KeysDown); ++key)
+            keyPressed |= ImGui::IsKeyPressed(key, false);
+    }
+    // GamePad::Update runs once per frame in Framework. Use press edges so
+    // holding a button after skipping the intro does not also start the game.
+    constexpr GamePadButton startButtons =
+        GamePad::BTN_A | GamePad::BTN_B | GamePad::BTN_X | GamePad::BTN_Y |
+        GamePad::BTN_START | GamePad::BTN_BACK |
+        GamePad::BTN_UP | GamePad::BTN_RIGHT | GamePad::BTN_DOWN | GamePad::BTN_LEFT |
+        GamePad::BTN_LEFT_THUMB | GamePad::BTN_RIGHT_THUMB |
+        GamePad::BTN_LEFT_SHOULDER | GamePad::BTN_RIGHT_SHOULDER |
+        GamePad::BTN_LEFT_TRIGGER | GamePad::BTN_RIGHT_TRIGGER;
+    const bool padPressed = (GamePad::Instance().GetButtonDown() & startButtons) != 0;
+    if (padPressed || keyPressed)
+        StartGame();
 }
 
 void SceneTitle::UpdateTransition(float elapsedTime)
@@ -215,14 +235,22 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
             0, 1, 1, 1, animation.triangleAlpha);
 
     if (animation.logoProgress > 0)
+    {
         logo->Render(dc,
             screenOffsetX + 190 * scale,
             screenOffsetY + (190 + (1 - animation.logoProgress) * 24) * scale, 0,
             750 * scale, (750 * 276.0f / 1782) * scale,
             0, 1, 1, 1, animation.logoProgress);
+    }
 
     if (animation.xAlpha > 0)
     {
+        // BGMÝ’è: X‚Ì•¶Žš‚Ì”z’uƒAƒjƒ[ƒVƒ‡ƒ“‚ªŠ®—¹‚µ‚½‚çˆê“x‚¾‚¯ƒ‹[ƒvÄ¶‚·‚éB
+        if (!titleBgmStarted && introTimer >= Anim::XEnd)
+        {
+            Audio::Instance().Play("BGM_TITLE", true);
+            titleBgmStarted = true;
+        }
         const float height = 240 * animation.xScale;
         const float width = height * 760.0f / 1056;
         // Crop the transparent margins using Sprite::Render's source rectangle.
@@ -237,27 +265,9 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
 
 void SceneTitle::DrawGUI()
 {
-    auto* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x * 0.5f,
-        viewport->Pos.y + viewport->Size.y * 0.84f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-    if (ImGui::Begin("Title controls", nullptr, ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking))
-    {
-        if (introTimer < TitleAnimation::IntroEnd)
-        {
-            if (ImGui::Button("Skip Intro", ImVec2(240, 42))) StartGame();
-        }
-        else if (isTransitioning) ImGui::TextUnformatted("Starting...");
-        else
-        {
-            if (blinkTimer < 0.5f) ImGui::TextUnformatted("PRESS ENTER / START");
-            else ImGui::NewLine();
-            if (ImGui::Button("Start Game", ImVec2(240, 42))) StartGame();
-        }
-    }
-    ImGui::End();
+    if (introTimer >= TitleAnimation::IntroEnd && !isTransitioning && blinkTimer < 0.5f)
+        TextRenderer::DrawCentered(screenOffsetX + 640 * screenScale,
+            screenOffsetY + 600 * screenScale, "Press Any Button", 32 * screenScale);
 #ifdef _DEBUG
     DrawDebugGUI();
 #endif

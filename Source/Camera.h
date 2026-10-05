@@ -23,6 +23,15 @@ public:
 	// パースペクティブ設定
 	void SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ);
 
+	// カメラシェイク開始
+	void StartShake(float magnitude, float duration);
+
+	// シェイクのオフセットを加算するSetLookAt
+	void SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up);
+
+	// シェイク更新
+	void ShakeUpdate(float elapsedTime);
+
 	// ビュー行列取得
 	const DirectX::XMFLOAT4X4& GetView() const { return view; }
 
@@ -58,4 +67,8 @@ private:
 private:
 	float orthoWeight;
 	float perspectiveWeight;
+
+	float shakeTimer = 0.0f;
+	float shakeMagnitude = 0.0f;
+	DirectX::XMFLOAT3 shakeOffset = { 0.0f, 0.0f, 0.0f };
 };

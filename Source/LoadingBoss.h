@@ -1,61 +1,15 @@
 #pragma once
+#include "Character.h"
+class ModelRenderer;
 
-#include "Graphics/Model.h"
-#include "Enemy.h"
-#include "Projectile/ProjectileManager.h"
-
-//ボスエネミー
-class LoadingBoss : public Enemy
+// Loading-screen presentation only; no combat or collision dependencies.
+class LoadingBoss : public Character
 {
 public:
     LoadingBoss();
-    ~LoadingBoss() override;
-
-    // 更新処理
-    void Update(float elapsedTime)override;
-
-    // 描画処理
-    void Render(ModelRenderer* modelRenderer)override;
-
+    void Update(float elapsedTime) override;
+    void Render(ModelRenderer* renderer);
 private:
-
-    // ステート遷移
-    void TransitionIdleState();
-    void TransitionAttackState();
-
-    // ステート更新処理
-    void UpdateIdleState(float elapsedTime);
-    void UpdateAttackState(float elapsedTime);
-private:
-    // ステート
-    enum class State
-    {
-        Idle,       // 待機
-        Attack,     // 攻撃モーション
-    };
-
-    //アニメーション
-    enum Animation
-    {
-        Anim_Idle,
-        Anim_Attack,
-        Anim_JumpStart,
-        Anim_JumpApex,
-        Anim_JumpEnd,
-        Anim_Jump,
-        Anim_Demo,
-    };
-private:
-    State state = State::Idle;
-    std::vector<Model::NodePose> nodePoses;
-
-    // タイマー
     float attackTimer = 1.0f;
-
-    Effekseer::Handle bossDemoHandle = -1;
-
-   std::shared_ptr<Effect> bossDemoEffect;
-
-   PointLight pl{};
-   int lightIndex;
+    bool attacking = false;
 };

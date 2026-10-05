@@ -7,7 +7,7 @@
 #include <utility>
 #include <array>
 #include <string_view>
-#include "FileTypeManager.h"
+#include "TileTypeManager.h"
 
 using json = nlohmann::json;
 
@@ -560,6 +560,96 @@ namespace
         return true;
     }
 
+    bool CameraLimitZone(
+        const json& item,
+        std::size_t zoneIndex,
+        CameraLimitZoneData& outputZone)
+    {
+        // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う。
+        CameraLimitZoneData loadedZoneData;
+
+        // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある。
+        if (!item.is_object())
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]がJSONオブジェクトではありません。"
+                << std::endl;
+
+            return false;
+        }
+
+        // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する。
+        constexpr std::array requiredFieldNames
+        {
+            std::string_view("minX"),
+            std::string_view("maxX"),
+            std::string_view("minY"),
+            std::string_view("maxY")
+        };
+
+        // 4つの境界について、存在・数値型・有限値を順番に確認する。
+        for (const std::string_view fieldName : requiredFieldNames)
+        {
+            if (item.count(std::string(fieldName)) == 0)
+            {
+                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が存在しません。"
+                    << std::endl;
+
+                return false;
+            }
+
+            // 存在確認後なので、atで安全に対象の値を参照できる。
+            const json& fieldValue = item.at(std::string(fieldName));
+
+            if (!fieldValue.is_number())
+            {
+                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が数値ではありません。"
+                    << std::endl;
+
+                return false;
+            }
+
+            // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する。
+            const float fieldNumber = fieldValue.get<float>();
+
+            if (!std::isfinite(fieldNumber))
+            {
+                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が有限値ではありません。"
+                    << std::endl;
+                return false;
+            }
+
+        }
+
+        // すべての値を検証してから、一時データへ境界を格納する。
+        loadedZoneData.minX = item.at("minX").get<float>();
+        loadedZoneData.maxX = item.at("maxX").get<float>();
+        loadedZoneData.minY = item.at("minY").get<float>();
+        loadedZoneData.maxY = item.at("maxY").get<float>();
+
+        // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない。
+        if (loadedZoneData.minX >= loadedZoneData.maxX)
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
+                << std::endl;
+
+            return false;
+        }
+
+        // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する。
+        if (loadedZoneData.minY >= loadedZoneData.maxY)
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
+                << std::endl;
+
+            return false;
+        }
+
+        // すべての検証を通過したデータだけを呼び出し元へ反映する。
+        outputZone = loadedZoneData;
+
+        return true;
+    }
+
     bool ParseBossApproachCameraZone(
         const json& item,
         std::size_t zoneIndex,
@@ -749,6 +839,12 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
         }
 
         // コピーせずに各配置を読み取るため、objects配列への定数参照を取得する
+        if (root.count("cameraBounds") > 0 && !root.at("cameraBounds").is_array())
+        {
+            std::cerr << "cameraBounds must be a JSON array." << std::endl;
+            return false;
+        }
+
         const json& objects = root.at("objects");
 
         // 現在このローダーが対応しているステージ形式はバージョン1のみ
@@ -890,6 +986,33 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
                 }
 
                 loadedStageData.bossApproachCameraZones.push_back(
+                    loadedZoneData);
+            }
+        }
+
+        if (root.count("cameraBounds") > 0)
+        {
+            const json& cameraLimitZones =
+                root.at("cameraBounds");
+
+            loadedStageData.cameraLimitZones.reserve(
+                cameraLimitZones.size());
+
+            for (std::size_t zoneIndex = 0;
+                zoneIndex < cameraLimitZones.size();
+                zoneIndex++)
+            {
+                CameraLimitZoneData loadedZoneData;
+
+                if (!CameraLimitZone(
+                    cameraLimitZones[zoneIndex],
+                    zoneIndex,
+                    loadedZoneData))
+                {
+                    return false;
+                }
+
+                loadedStageData.cameraLimitZones.push_back(
                     loadedZoneData);
             }
         }

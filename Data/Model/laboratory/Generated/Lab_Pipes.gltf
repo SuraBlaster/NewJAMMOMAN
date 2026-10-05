@@ -1,0 +1,128 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Laboratory grid adapter"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "Lab_Pipes",
+      "mesh": 0
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TANGENT": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Pipes",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.015077660791575909,
+          0.015077660791575909,
+          0.015077660791575909,
+          1
+        ],
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "Lab_Pipes.bin",
+      "byteLength": 22352
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 5424,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 5424,
+      "byteLength": 5424,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 10848,
+      "byteLength": 7232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 18080,
+      "byteLength": 4272,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 452,
+      "type": "VEC3",
+      "min": [
+        -1.5,
+        -0.1582443839757785,
+        -0.05454814366760634
+      ],
+      "max": [
+        1.5,
+        0.158244383975779,
+        0.05454814366760634
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 452,
+      "type": "VEC3",
+      "min": [
+        -1,
+        -0.999999999999997,
+        -0.9999999999992712
+      ],
+      "max": [
+        1,
+        0.9999999999999858,
+        0.9999999999999858
+      ]
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 452,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 1068,
+      "type": "SCALAR"
+    }
+  ]
+}
