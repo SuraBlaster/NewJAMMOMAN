@@ -188146,13 +188146,13 @@
   ],
   "images": [
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\Jammo-Character\\Textures\\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+      "uri": "Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\Jammo-Character\\Textures\\mixbot_low_mixamo_edit1_Normal.png"
+      "uri": "Textures/mixbot_low_mixamo_edit1_Normal.png"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\Jammo-Character\\Textures\\jammo_eyes.png"
+      "uri": "Textures/jammo_eyes.png"
     }
   ],
   "materials": [

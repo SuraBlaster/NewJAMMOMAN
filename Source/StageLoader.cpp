@@ -7,7 +7,7 @@
 #include <utility>
 #include <array>
 #include <string_view>
-#include "FileTypeManager.h"
+#include "TileTypeManager.h"
 
 using json = nlohmann::json;
 

@@ -3,7 +3,7 @@
 #include <Model.h>
 #include <CollisionManager.h>
 #include <StageData.h>
-#include <FileTypeManager.h>
+#include <TileTypeManager.h>
 
 class StageObject
 {

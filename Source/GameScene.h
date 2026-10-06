@@ -7,7 +7,7 @@
 #include "Player.h"
 #include "Stage.h"
 #include "CameraController.h"
-#include "FileTypeManager.h"
+#include "TileTypeManager.h"
 #include "StageData.h"
 
 class GameScene : public Scene

@@ -165,7 +165,7 @@
     <ClInclude Include="Source\SetStage.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\FileTypeManager.h">
+    <ClInclude Include="Source\TileTypeManager.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="Source\StageData.h">
@@ -362,7 +362,7 @@
     <ClCompile Include="Source\StageLoader.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="FileTypeManager.cpp">
+    <ClCompile Include="Source\TileTypeManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\StageObject.cpp">
