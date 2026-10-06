@@ -51,7 +51,7 @@ void ModelShader::Update(const RenderContext& rc, const Model::Mesh& mesh)
 
 	// メッシュ用定数バッファ更新
 	CbMesh cbMesh{};
-	//cbMesh.materialColor = mesh.material->baseColor;
+	cbMesh.materialColor = mesh.material->baseColor;
 	cbMesh.emissive = mesh.material->emissiveColor;
 	cbMesh.metalness = mesh.material->metalness;
 	cbMesh.smoothness = 1.0f - mesh.material->roughness;

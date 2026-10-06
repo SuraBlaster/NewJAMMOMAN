@@ -16,6 +16,7 @@ public:
     void Update(float elapsedTime);
     void Render(float elapsedTime);
     void DrawGUI();
+    bool IsBackgroundEditing() const { return currentScene && currentScene->IsBackgroundEditing(); }
     void Clear();
     void ChangeScene(SceneFactory factory);
     void ChangeScene(std::shared_ptr<Scene> scene);

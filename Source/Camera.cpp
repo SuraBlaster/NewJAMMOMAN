@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <cstdlib>
 
 // コンストラクタ
 Camera::Camera()
@@ -20,9 +21,21 @@ Camera::Camera()
 // 指定方向を向く
 void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
 {
+	DirectX::XMFLOAT3 finalEye = {
+		eye.x + shakeOffset.x,
+		eye.y + shakeOffset.y,
+		eye.z + shakeOffset.z
+	};
+
+	DirectX::XMFLOAT3 finalFocus = {
+		focus.x + shakeOffset.x,
+		focus.y + shakeOffset.y,
+		focus.z + shakeOffset.z
+	};
+
 	// 視点、注視点、上方向からビュー行列を作成
-	DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&eye);
-	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
+	DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&finalEye);
+	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&finalFocus);
 	DirectX::XMVECTOR Up = DirectX::XMLoadFloat3(&up);
 	DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, Focus, Up);
 	DirectX::XMStoreFloat4x4(&view, View);
@@ -64,4 +77,37 @@ void Camera::SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ
 	DirectX::XMMATRIX S = DirectX::XMMatrixSet(orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight);
 	DirectX::XMMATRIX A = DirectX::XMMatrixSet(perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight);
 	DirectX::XMStoreFloat4x4(&projection, Projection * A + Ortho * S);
+}
+
+void Camera::StartShake(float magnitude, float duration)
+{
+	this->shakeMagnitude = magnitude;
+	this->shakeTimer = duration;
+}
+
+void Camera::SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
+{
+	// SetLookAt applies the shake once and preserves the unshaken position.
+	SetLookAt(eye, focus, up);
+}
+
+void Camera::ShakeUpdate(float elapsedTime)
+{
+	if (shakeTimer > 0.0f)
+	{
+		shakeTimer -= elapsedTime;
+
+		// -1.0f ～ 1.0f のランダム値 * 強度
+		float rX = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+		float rY = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+		float rZ = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+
+		shakeOffset = { rX, rY, rZ };
+
+		if (shakeTimer <= 0.0f)
+		{
+			shakeTimer = 0.0f;
+			shakeOffset = { 0.0f, 0.0f, 0.0f };
+		}
+	}
 }

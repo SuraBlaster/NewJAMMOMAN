@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "TitlePlayer.h"
 #include "Graphics.h"
 #include "ModelRenderer.h"
@@ -5,7 +6,7 @@
 
 TitlePlayer::TitlePlayer()
 {
-    model = std::make_shared<Model>(Graphics::Instance().GetDevice(),
+    model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
         "Data/Model/Jammo/Jammo_Player.gltf");
     InitializeAnimator(model->GetAnimationIndex("Idle_Seq_0"));
     Reset();
@@ -15,7 +16,7 @@ void TitlePlayer::Reset()
 {
     position = {8.0f, GroundY, -3.0f};
     rotation = {0, DirectX::XMConvertToRadians(180), 0};
-    scale = {0.016f, 0.016f, 0.016f};
+    scale = {0.018f, 0.018f, 0.018f};
     velocity = {0, 0, 0};
     state = State::Idle;
     timer = 0;

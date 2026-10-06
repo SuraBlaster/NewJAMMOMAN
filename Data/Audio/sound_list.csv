@@ -1,0 +1,40 @@
+// Scene (BGM & System)
+BGM_TITLE,Data/Audio/Scene/TitleBGM.wav,0.3
+BGM_STAGE,Data/Audio/Scene/StageBGM.wav,0.3
+BGM_BOSS,Data/Audio/Scene/BossBGM.wav,0.3
+BGM_ENDING,Data/Audio/Scene/Ending.wav,0.3
+SE_CLEAR,Data/Audio/Scene/Clear.wav,0.3
+SE_LOADING,Data/Audio/Scene/Loading.wav,0.25
+
+// Character (Common)
+SE_DEATH_GENERIC,Data/Audio/Character/Death.wav,0.8
+
+// Player
+SE_PLAYER_APPEAR,Data/Audio/Character/Player/AppearNoise.wav
+SE_PLAYER_APPEAR_LANDING,Data/Audio/Character/Player/PlayerAppearLanding.wav
+SE_PLAYER_AFTER_APPEAR,Data/Audio/Character/Player/PlayerAfterAppear.wav
+SE_PLAYER_RUN,Data/Audio/Character/Player/Run.wav,1.0
+SE_PLAYER_SLIDE,Data/Audio/Character/Player/Sliding.wav,0.8
+SE_PLAYER_CHARGE,Data/Audio/Character/Player/Charge.wav,1.8
+SE_PLAYER_JUMP,Data/Audio/Character/Player/PlayerJump.wav,1.2
+SE_PLAYER_LAND,Data/Audio/Character/Player/PlayerLand.wav,0.8
+SE_PLAYER_SHOT,Data/Audio/Character/Player/PlayerShot.wav
+SE_PLAYER_CHARGE_SHOT,Data/Audio/Character/Player/ChargeShot.wav
+SE_PLAYER_DAMAGE,Data/Audio/Character/Player/PlayerDamage.wav,0.3
+SE_PLAYER_DAMAGE_SPARK,Data/Audio/Character/Player/PlayerDamageSpark.wav,0.4
+SE_PLAYER_GEAR_ACTIVATE,Data/Audio/Character/Player/SpeedGear.wav
+SE_PLAYER_GEAR_CANCEL,Data/Audio/Character/Player/CancelSpeedGear.wav
+SE_PLAYER_RETURN,Data/Audio/Character/Player/PlayerReturn.wav
+
+
+// Enemy & Boss
+SE_ENEMY04_SHOT,Data/Audio/Character/Enemy/Enemy04Shot.wav,0.8f
+SE_ENEMY_DAMAGE,Data/Audio/Character/Enemy/EnemyDamage.wav
+SE_ENEMY_DEATH,Data/Audio/Character/Enemy/EnemyDeath.wav
+SE_BOSS_JUMP,Data/Audio/Character/Enemy/BossJump.wav
+SE_BOSS_LANDING,Data/Audio/Character/Enemy/BossLanding.wav
+SE_BOSS_MOVE,Data/Audio/Character/Enemy/BossMove.wav
+SE_BOSS_ATTACK,Data/Audio/Character/Enemy/BossAttack.wav
+SE_BOSS_STORM,Data/Audio/Character/Enemy/BossStorm.wav,1.2
+SE_BOSS_DEATH,Data/Audio/Character/Enemy/BossDeathNoise.wav,0.3
+SE_BOSS_GAUGE,Data/Audio/Character/Enemy/EnemyGauge.wav,0.8

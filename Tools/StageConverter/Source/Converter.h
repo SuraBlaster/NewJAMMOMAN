@@ -30,6 +30,7 @@ namespace stage_converter
         std::size_t convertedFallRespawnZoneCount = 0; // 出力した落下復帰エリア数
         std::size_t convertedBossEncounterZoneCount = 0; // 出力したボス戦開始エリア数
         std::size_t convertedBossApproachCameraZoneCount = 0; // 出力したボス前通路カメラエリア数
+        std::size_t convertedCameraBoundsCount = 0; // 出力したカメラ表示範囲数
         std::size_t skippedObjectCount = 0;   // 編集用マーカーなど、変換対象外だった配置数
     };
 

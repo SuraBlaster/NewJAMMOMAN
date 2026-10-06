@@ -4,7 +4,7 @@
 
 struct DirectionalLight
 {
-	DirectX::XMFLOAT3	direction = { 0, -1, 0 };
+	DirectX::XMFLOAT3	direction = { 0.267261f, -0.534522f, 0.801784f };
 	DirectX::XMFLOAT3	color = { 1, 1, 1 };
 };
 

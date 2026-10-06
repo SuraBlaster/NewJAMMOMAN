@@ -1,64 +1,42 @@
+#include "ModelManager.h"
 #include "LoadingPlayer.h"
-#include <imgui.h>
-#include "Input/Input.h"
-#include "Camera.h"
-#include "Graphics/Graphics.h"
+#include "Graphics.h"
+#include "ModelRenderer.h"
+#include "GpuResourceUtils.h"
+#include <algorithm>
+#include <stdexcept>
 
-//コンストラクタ
 LoadingPlayer::LoadingPlayer()
 {
-    ID3D11Device* device = Graphics::Instance().GetDevice();
+    auto* device = Graphics::Instance().GetDevice();
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Jammo/Jammo_Player.gltf");
+    position = {6.1f, -6.75f, 0};
+    rotation = {0, DirectX::XMConvertToRadians(-90), 0};
+    scale = {0.012f, 0.012f, 0.012f};
 
-    model = std::make_shared<Model>(device, "Data/Model/Jammo/Jammo.gltf");
-
-    scale.x = scale.y = scale.z = 0.01f;
-
-    angle.y = DirectX::XMConvertToRadians(-90);
-
-    position.x = 4.0f;
-    position.y = 5.5f;
-    position.z = -7.0f;
-
-    auto resource = model->GetResource();
-    const auto& meshes = resource->GetMeshes();
-
-    for (auto& mesh : meshes)
+    // This instance owns its materials. An unlit white map makes a solid
+    // silhouette without changing the title or in-game player's appearance.
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> white;
+    if (FAILED(GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF, white.GetAddressOf())))
+        throw std::runtime_error("Failed to create loading player texture");
+    for (const auto& mesh : model->GetMeshes())
     {
-        mesh.material->baseColor = DirectX::XMFLOAT4(100.0f, 100.0f, 100.0f, 1.0f); // <-- 白
+        mesh.material->baseMap = white;
+        mesh.material->baseColor = {1, 1, 1, 1};
+        mesh.material->alphaMode = Model::AlphaMode::Opaque;
     }
-
-    model->GetNodePoses(nodePoses);
-
-    model->PlayAnimation(Anim_Run, true, 0.2f, 1.5f);
+    InitializeAnimator(model->GetAnimationIndex("Run_Fast_Loop_Seq_0"));
+    if (animator) animator->SetLayerSpeed(0, 1.5f);
+    Update(0);
 }
 
-LoadingPlayer::~LoadingPlayer()
-{
-}
-
-//更新処理
 void LoadingPlayer::Update(float elapsedTime)
 {
-    GamePad& gamePad = Input::Instance().GetGamePad();
-
+    if (animator) animator->Update((std::max)(0.0f, elapsedTime));
     UpdateTransform();
-
-    UpdateVelocity(elapsedTime);
-
-    model->UpdateAnimation(elapsedTime, nodePoses);
-
-    model->SetNodePoses(nodePoses);
-
-    model->UpdateTransform(transform);
-
-    if (position.y < 5.5f)
-    {
-        position.y = 5.5f;
-    }
 }
 
-//描画処理
-void LoadingPlayer::Render(ModelRenderer* modelRenderer)
+void LoadingPlayer::Render(ModelRenderer* renderer)
 {
-    modelRenderer->Draw(ShaderId::Toon, model);
+    renderer->Draw(ShaderId::Basic, model);
 }

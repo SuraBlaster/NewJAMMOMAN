@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyHover.h"
 
 #include <algorithm>
@@ -8,7 +9,7 @@
 EnemyHover::EnemyHover(ID3D11Device* device, Player* player)
 	: player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/FlyEnemy.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/FlyEnemy.gltf");
 	scale = { 0.01f, 0.01f, 0.01f };
 	rotation.y = DirectX::XMConvertToRadians(20.0f);
 	radius = 0.5f;

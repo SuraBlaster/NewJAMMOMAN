@@ -35,6 +35,98 @@ bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XM
     return hit;
 }
 
+void CollisionManager::RegisterTerrainAABB(const AABB& box)
+{
+	terrainBoxes.push_back(box);
+}
+
+void CollisionManager::ClearTerrainAABBs()
+{
+	terrainBoxes.clear();
+}
+
+SweepStatus CollisionManager::SweepTerrain(const AABB& movingBox, const DirectX::XMFLOAT3& displacement, TerrainSweepHit& hit) const
+{
+	hit = TerrainSweepHit{};
+
+	std::vector<SweepHit> candidates;
+	float earliestTime = 1.0f;
+
+	// 1. すべて同じ開始位置・移動量で調べる。
+	for (const AABB& obstacle : terrainBoxes)
+	{
+		SweepHit candidate;
+
+		const SweepStatus status = Collision::SweepAABB(
+			movingBox,
+			displacement,
+			obstacle,
+			candidate);
+
+		// 初期めり込みは、通常の移動衝突とは別に扱う。
+		if (status == SweepStatus::InitialOverlap)
+		{
+			return SweepStatus::InitialOverlap;
+		}
+
+		if (status != SweepStatus::Hit)
+		{
+			continue;
+		}
+
+		earliestTime =
+			(std::min)(earliestTime, candidate.time);
+
+		candidates.push_back(candidate);
+	}
+
+	if (candidates.empty())
+	{
+		return SweepStatus::NoHit;
+	}
+
+	// 2. 最初の接触時刻を確定する。
+	hit.time = earliestTime;
+
+	constexpr float timeTolerance = 0.000001f;
+
+	// 3. 最初の時刻とほぼ同時に当たる面を集める。
+	for (const SweepHit& candidate : candidates)
+	{
+		if (std::abs(candidate.time - earliestTime)
+			> timeTolerance)
+		{
+			continue;
+		}
+
+		for (int i = 0; i < candidate.normalCount; ++i)
+		{
+			const DirectX::XMFLOAT3& normal =
+				candidate.normals[i];
+
+			bool alreadyAdded = false;
+
+			for (const DirectX::XMFLOAT3& existing : hit.normals)
+			{
+				if (existing.x == normal.x &&
+					existing.y == normal.y &&
+					existing.z == normal.z)
+				{
+					alreadyAdded = true;
+					break;
+				}
+			}
+
+			if (!alreadyAdded)
+			{
+				hit.normals.push_back(normal);
+			}
+		}
+	}
+
+	return SweepStatus::Hit;
+}
+
 bool CollisionManager::RayCast(const CollisionMesh* collision_mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result)
 {
 	DirectX::XMVECTOR RayStart = DirectX::XMLoadFloat3(&start);

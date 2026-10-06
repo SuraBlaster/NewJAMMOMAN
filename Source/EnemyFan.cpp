@@ -1,3 +1,4 @@
+#include "ModelManager.h"
 #include "EnemyFan.h"
 
 #include <cmath>
@@ -7,7 +8,7 @@
 EnemyFan::EnemyFan(ID3D11Device* device, Player* player)
 	: player(player)
 {
-	model = std::make_shared<Model>(device, "Data/Model/Enemy/Fan.gltf");
+	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Fan.gltf");
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.55f;
 	height = 1.0f;

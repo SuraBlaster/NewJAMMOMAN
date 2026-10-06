@@ -46,6 +46,7 @@ private:
     float blinkTimer = 0.0f;
     float introTimer = 0.0f;
     bool firstUpdate = true;
+    bool titleBgmStarted = false;
 #ifdef _DEBUG
     bool introPaused = false;
 #endif

@@ -9,13 +9,16 @@
 void CameraController::Update(
 	float elapsed_time,
 	const DirectX::XMFLOAT3& playerPos,
-	const DirectX::XMFLOAT3& playerVelocity)
+	const DirectX::XMFLOAT3& playerVelocity,
+	const CameraLimitZoneData* cameraLimitZoneData)
 {
 	Camera& camera = Camera::Instance();
 
 	if (mode == CameraMode::Free)
 	{
 		current_look_ahead_x = 0.0f;
+		pending_move_direction_x = 0.0f;
+		direction_change_timer = 0.0f;
 
 		GamePad& game_pad = GamePad::Instance();
 		float ax = game_pad.GetAxisRX();
@@ -75,30 +78,119 @@ void CameraController::Update(
 	}
 	else if (mode == CameraMode::Follow2D)
 	{
-		// Preserve the last horizontal movement direction while stopped. This keeps
-		// the useful side of the screen visible instead of returning to the center.
+		const float safeElapsedTime = elapsed_time > 0.0f ? elapsed_time : 0.0f;
+
+		// A brief opposite impulse, such as the start of a wall kick, must continue
+		// for a short time before it changes the camera's look-ahead direction.
 		if (std::abs(playerVelocity.x) > look_ahead_velocity_threshold)
 		{
-			last_move_direction_x = playerVelocity.x > 0.0f ? 1.0f : -1.0f;
+			const float movementDirection =
+				playerVelocity.x > 0.0f ? 1.0f : -1.0f;
+
+			if (last_move_direction_x == 0.0f)
+			{
+				last_move_direction_x = movementDirection;
+				pending_move_direction_x = 0.0f;
+				direction_change_timer = 0.0f;
+			}
+			else if (movementDirection == last_move_direction_x)
+			{
+				pending_move_direction_x = 0.0f;
+				direction_change_timer = 0.0f;
+			}
+			else
+			{
+				if (pending_move_direction_x != movementDirection)
+				{
+					pending_move_direction_x = movementDirection;
+					direction_change_timer = 0.0f;
+				}
+
+				direction_change_timer += safeElapsedTime;
+				if (direction_change_timer >= direction_change_confirm_time)
+				{
+					last_move_direction_x = pending_move_direction_x;
+					pending_move_direction_x = 0.0f;
+					direction_change_timer = 0.0f;
+				}
+			}
 		}
+		else
+		{
+			// The opposite direction must be continuous to be confirmed.
+			pending_move_direction_x = 0.0f;
+			direction_change_timer = 0.0f;
+		}
+
 		const float desiredLookAheadX =
 			last_move_direction_x * look_ahead_distance;
-		const float safeElapsedTime = elapsed_time > 0.0f ? elapsed_time : 0.0f;
 		const float blend = 1.0f - std::exp(
 			-look_ahead_lerp_speed * safeElapsedTime);
 		current_look_ahead_x +=
 			(desiredLookAheadX - current_look_ahead_x) * blend;
 
-		// Y座標の設定
-		float t = 0.4f;
-		float interpolatedY = 1.0f + playerPos.y * t;
+		// Smoothly move the whole camera vertically with the player. Using the
+		// current focus also makes transitions from a fixed camera zone seamless.
+		const float verticalBlend = 1.0f - std::exp(
+			-vertical_follow_lerp_speed * safeElapsedTime);
+		const float currentFocusY = camera.GetFocus().y;
+		const float cameraY = currentFocusY +
+			(playerPos.y - currentFocusY) * verticalBlend;
 
 		const float cameraX = playerPos.x + current_look_ahead_x;
-		DirectX::XMFLOAT3 focus = { cameraX, playerPos.y, playerPos.z };
-		DirectX::XMFLOAT3 eye = { cameraX, interpolatedY, playerPos.z - 10.0f };
+		DirectX::XMFLOAT3 focus = { cameraX, cameraY, playerPos.z };
+		DirectX::XMFLOAT3 eye =
+		{
+			cameraX,
+			cameraY + vertical_eye_offset,
+			playerPos.z - 10.0f
+		};
 
-		// カメラの視点と注視点を設定
-		camera.SetLookAt(eye, focus, DirectX::XMFLOAT3(0, 1, 0));
+		if (cameraLimitZoneData == nullptr)
+		{
+			// カメラの視点と注視点を設定
+			camera.SetLookAt(eye, focus, DirectX::XMFLOAT3(0, 1, 0));
+		}
+		else
+		{
+			correction_value = {};
+
+			fixed_minX = cameraLimitZoneData->minX + 8.176f;
+			fixed_maxX = cameraLimitZoneData->maxX - 8.176f;
+			fixed_minY = cameraLimitZoneData->minY + 4.622f;
+			fixed_maxY = cameraLimitZoneData->maxY - 4.338f;
+
+			// 範囲内に補正
+			if (focus.x < fixed_minX)
+			{
+				correction_value.x = fixed_minX - focus.x;
+				focus.x = fixed_minX;
+			}
+
+			if (focus.x > fixed_maxX)
+			{
+				correction_value.x = fixed_maxX - focus.x;
+				focus.x = fixed_maxX;
+			}
+
+			if (focus.y < fixed_minY)
+			{
+				correction_value.y = fixed_minY - focus.y;
+				focus.y = fixed_minY;
+			}
+
+			if (focus.y > fixed_maxY)
+			{
+				correction_value.y = fixed_maxY - focus.y;
+				focus.y = fixed_maxY;
+			}
+
+			eye = { eye.x + correction_value.x ,eye.y + correction_value.y,eye.z };
+
+			// カメラの視点と注視点を設定
+			camera.SetLookAt(eye, focus, DirectX::XMFLOAT3(0, 1, 0));
+
+		}
 	}
 }
 

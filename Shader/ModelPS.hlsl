@@ -3,6 +3,7 @@
 
 cbuffer CbMesh : register(b0)
 {
+    float4 cb_materialColor;
     float3 cb_emissive;
     float  cb_metalness;
     float  cb_smoothness;
@@ -24,7 +25,7 @@ SamplerState LinearSampler	: register(s0);
 
 float4 main(VS_OUT pin) : SV_TARGET
 {
-    float4 albedo = AlbedoMap.Sample(LinearSampler, pin.texcoord);
+    float4 albedo = AlbedoMap.Sample(LinearSampler, pin.texcoord) * cb_materialColor;
 
     float finalAlpha = albedo.a * cb_transparency_color.a * cb_transparency_alpha;
     clip(albedo.a - 0.01f);

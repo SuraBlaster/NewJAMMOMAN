@@ -1936,9 +1936,21 @@
       "visible": true,
       "x": 0,
       "y": 0
+    },
+    {
+      "id": 13,
+      "name": "CameraBounds",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "x": 0,
+      "y": 0,
+      "draworder": "topdown",
+      "color": "#55dd88",
+      "objects": []
     }
   ],
-  "nextlayerid": 13,
+  "nextlayerid": 14,
   "nextobjectid": 9,
   "orientation": "orthogonal",
   "properties": [

@@ -4,10 +4,57 @@
 #include <utility>
 #include <vector>
 
+struct AABB
+{
+
+public:
+	DirectX::XMFLOAT3 min;
+	DirectX::XMFLOAT3 max;
+
+	DirectX::XMFLOAT3 GetCenter() const
+	{
+		return {
+			(min.x + max.x) * 0.5f,
+			(min.y + max.y) * 0.5f,
+			(min.z + max.z) * 0.5f
+		};
+	}
+
+	DirectX::XMFLOAT3 GetHalfSize() const
+	{
+		return {
+			(max.x - min.x) * 0.5f,
+			(max.y - min.y) * 0.5f,
+			(max.z - min.z) * 0.5f
+		};
+	}
+};
+
+enum class SweepStatus
+{
+	NoHit,          // ˆÚ“®Œo˜H‚ÉÕ“Ë‚È‚µ
+	Hit,            // ˆÚ“®’†‚ÉÚG‚·‚é
+	InitialOverlap  // ˆÚ“®‘O‚©‚çd‚È‚Á‚Ä‚¢‚é
+};
+
+struct SweepHit
+{
+	float time = 1.0f;
+
+	// Šp‚Å“¯‚É•¡”‚Ì–Ê‚ÖÚG‚·‚éê‡‚à•Û‚·‚éB
+	DirectX::XMFLOAT3 normals[3] = {};
+	int normalCount = 0;
+};
+
 // Primitive collision helpers that do not depend on rendering resources.
 class Collision
 {
 public:
+	static SweepStatus SweepAABB(const AABB& movingBox,
+		const DirectX::XMFLOAT3& displacement,
+		const AABB& obstacle,
+		SweepHit& hit);
+
 	static bool IntersectSphereVsSphere(
 		const DirectX::XMFLOAT3& positionA, float radiusA,
 		const DirectX::XMFLOAT3& positionB, float radiusB,

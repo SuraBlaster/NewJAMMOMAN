@@ -1,0 +1,65 @@
+{
+  "columns": 4,
+  "image": "EnemyPlacements.png",
+  "imageheight": 128,
+  "imagewidth": 384,
+  "margin": 0,
+  "name": "EnemyPlacements",
+  "objectalignment": "bottom",
+  "spacing": 0,
+  "tilecount": 8,
+  "tileheight": 64,
+  "tiles": [
+    {
+      "id": 0,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Wave" }
+      ]
+    },
+    {
+      "id": 1,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Scatter" }
+      ]
+    },
+    {
+      "id": 2,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Mage" }
+      ]
+    },
+    {
+      "id": 3,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Fan" }
+      ]
+    },
+    {
+      "id": 4,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Hover" }
+      ]
+    },
+    {
+      "id": 5,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Fly" }
+      ]
+    },
+    {
+      "id": 6,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Egg" }
+      ]
+    },
+    {
+      "id": 7,
+      "properties": [
+        { "name": "enemyType", "type": "string", "value": "Boss" }
+      ]
+    }
+  ],
+  "tilewidth": 96,
+  "type": "tileset",
+  "version": "1.10"
+}

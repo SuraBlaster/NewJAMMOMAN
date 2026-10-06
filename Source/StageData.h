@@ -62,13 +62,21 @@ struct BossApproachCameraZoneData
     float maxY = 0.0f; // 上端
 };
 
+struct CameraLimitZoneData
+{
+    float minX = 0.0f; // 左端
+    float maxX = 0.0f; // 右端
+    float minY = 0.0f; // 下端
+    float maxY = 0.0f; // 上端
+};
+
 // ステージJSONのobjects配列に含まれる、配置1件分の読み込みデータ
 // DirectXやModelには依存せず、ファイルから得た値だけを保持する
 struct StageObjectData
 {
     int typeId = 0;                    // TileTypes.jsonの定義と対応付けるID
-    float positionX = 0.0f;                                          // ゲーム座標系でのX位置            // ゲーム座標系でのX位置
-    float positionY = 0.0f;                                          // ゲーム座標系でのY位置            // ゲーム座標系でのY位置。Zは実行時にゲーム側で固定する
+    float positionX = 0.0f;            // ゲーム座標系でのX位置
+    float positionY = 0.0f;            // ゲーム座標系でのY位置。Zは実行時にゲーム側で固定する
     float rotationDegrees = 0.0f;      // 画面平面上の回転角度（度数法）
     float scaleX = 1.0f;               // タイル定義のdefaultScaleへ掛けるX倍率
     float scaleY = 1.0f;               // タイル定義のdefaultScaleへ掛けるY倍率
@@ -84,5 +92,6 @@ struct StageData
     std::vector<FallRespawnZoneData> fallRespawnZones; // Tiledで指定した落下復帰エリア一覧
     std::vector<BossEncounterZoneData> bossEncounterZones;
     std::vector<BossApproachCameraZoneData> bossApproachCameraZones;
+    std::vector<CameraLimitZoneData> cameraLimitZones;
 };
     

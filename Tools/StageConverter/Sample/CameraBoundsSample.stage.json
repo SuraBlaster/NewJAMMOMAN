@@ -1,0 +1,17 @@
+{
+  "bossApproachCameraZones": [],
+  "bossEncounterZones": [],
+  "cameraBounds": [
+    {
+      "maxX": 32.0,
+      "maxY": -1.0,
+      "minX": 2.0,
+      "minY": -16.0
+    }
+  ],
+  "enemies": [],
+  "fallRespawnZones": [],
+  "formatVersion": 1,
+  "objects": [],
+  "stageName": "CameraBoundsSample"
+}

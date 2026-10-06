@@ -430,6 +430,7 @@ namespace stage_converter
                     << u8"変換した落下復帰エリア数: " << result.convertedFallRespawnZoneCount << '\n'
                     << u8"変換したボス戦開始エリア数: " << result.convertedBossEncounterZoneCount << '\n'
                     << u8"変換したボス前通路カメラエリア数: " << result.convertedBossApproachCameraZoneCount << '\n'
+                    << u8"変換したカメラ表示範囲数: " << result.convertedCameraBoundsCount << '\n'
                     << u8"スキップした配置数: " << result.skippedObjectCount;
                 state.statusMessage = message.str();
                 state.statusIsError = false;

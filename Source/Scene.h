@@ -18,4 +18,5 @@ public:
 
 	// GUI•`‰æˆ—
 	virtual void DrawGUI() {}
+    virtual bool IsBackgroundEditing() const { return false; }
 };

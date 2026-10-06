@@ -1,10 +1,11 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <imgui.h>
 #include <DirectXTex.h>
 #include "Graphics.h"
 #include "ImGuiRenderer.h"
 #include "SceneLoading.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 
@@ -28,12 +29,39 @@ int main()
     int transitions = 0;
     SceneLoading title([&transitions]() { ++transitions; return std::make_shared<Scene>(); }, true);
     title.Initialize();
+    // Simulate a long model load, followed by a slow first displayed frame.
+    title.Update(10.0f);
+    ImGuiRenderer::NewFrame();
+    // The UI keeps Japanese glyphs while game text uses a separate font.
+    assert(ImGui::GetIO().Fonts->Fonts.Size == 2);
+    assert(ImGui::GetFont() == ImGui::GetIO().FontDefault);
+    assert(ImGui::GetFont() != ImGui::GetIO().Fonts->Fonts[1]);
+    assert(ImGui::GetFont()->FindGlyphNoFallback(0x65e5));
+    assert(ImGui::GetFont()->FindGlyphNoFallback(0x672c));
+    assert(ImGui::GetFont()->FindGlyphNoFallback(0x8a9e));
+    title.DrawGUI();
+    ImGuiRenderer::Render(graphics.GetDeviceContext());
+    title.Update(10.0f);
+    SceneManager::Instance().Update(0);
+    assert(transitions == 0);
+    const auto advance = [&](float duration)
+    {
+        while (duration > 0.00001f)
+        {
+            const float step = (std::min)(duration, 1.0f / 60);
+            ImGuiRenderer::NewFrame();
+            title.Update(step);
+            title.DrawGUI();
+            ImGuiRenderer::Render(graphics.GetDeviceContext());
+            duration -= step;
+        }
+    };
     const float times[] = {0.0f, 0.66f, 1.2f, 1.8f, 2.4f, 3.0f, 3.4f, 4.0f, 4.5f};
     float previous = 0;
     for (int index = 0; index < 9; ++index)
     {
+        advance(times[index] - previous);
         ImGuiRenderer::NewFrame();
-        title.Update(times[index] - previous);
         previous = times[index];
         graphics.Clear(0,0,0,1);
         graphics.SetRenderTargets();
@@ -56,10 +84,10 @@ int main()
     }
     SceneManager::Instance().Update(0);
     assert(transitions == 0);
-    title.Update(1.0f);
+    advance(1.0f);
     SceneManager::Instance().Update(0);
     assert(transitions == 1);
-    title.Update(1.0f);
+    advance(1.0f);
     SceneManager::Instance().Update(0);
     assert(transitions == 1);
     SceneManager::Instance().Clear();
