@@ -31,8 +31,8 @@ FBXHeaderExtension:  {
 			Comment: ""
 		}
 		Properties70:  {
-			P: "DocumentUrl", "KString", "Url", "", "C:\Users\2230190\Desktop\gp5.animation_layer_mask.2026.07.03\gp5.animation_layer_mask.2026.07.03\Data\Model\unitychan\pdw8hym1_unitychan.fbx"
-			P: "SrcDocumentUrl", "KString", "Url", "", "C:\Users\2230190\Desktop\gp5.animation_layer_mask.2026.07.03\gp5.animation_layer_mask.2026.07.03\Data\Model\unitychan\pdw8hym1_unitychan.fbx"
+			P: "DocumentUrl", "KString", "Url", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/unitychan.fbx"
+			P: "SrcDocumentUrl", "KString", "Url", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/unitychan.fbx"
 			P: "Original", "Compound", "", ""
 			P: "Original|ApplicationVendor", "KString", "", "", ""
 			P: "Original|ApplicationName", "KString", "", "", "Unity FBX Exporter"
@@ -23483,90 +23483,90 @@ Objects:  {
 	Video: 2190806497952, "Video::DiffuseColor_Texture", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
 	}
 	Video: 2190806503712, "Video::DiffuseColor_Texture_1", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
 	}
 	Video: 2190806506112, "Video::DiffuseColor_Texture_2", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
 	}
 	Video: 2190806507552, "Video::DiffuseColor_Texture_3", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
 	}
 	Video: 2190806495072, "Video::DiffuseColor_Texture_4", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
 	}
 	Video: 2190806503232, "Video::DiffuseColor_Texture_5", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
 	}
 	Video: 2190806498432, "Video::DiffuseColor_Texture_6", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
 	}
 	Video: 2190806495552, "Video::DiffuseColor_Texture_7", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
 	}
 	Texture: 2190806504192, "Texture::DiffuseColor_Texture", "" {
 		Type: "TextureVideoClip"
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture"
 		Media: "Video::DiffuseColor_Texture"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eyeline_00.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23577,8 +23577,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_1"
 		Media: "Video::DiffuseColor_Texture_1"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\face_00.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23589,8 +23589,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_2"
 		Media: "Video::DiffuseColor_Texture_2"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_L_00.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23601,8 +23601,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_3"
 		Media: "Video::DiffuseColor_Texture_3"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\eye_iris_R_00.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23613,8 +23613,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_4"
 		Media: "Video::DiffuseColor_Texture_4"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\body_01.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23625,8 +23625,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_5"
 		Media: "Video::DiffuseColor_Texture_5"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\cheek_00.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23637,8 +23637,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_6"
 		Media: "Video::DiffuseColor_Texture_6"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\hair_01.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -23649,8 +23649,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_7"
 		Media: "Video::DiffuseColor_Texture_7"
-		FileName: "C:\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\unity-chan!\Unity-chan! Model\Art\UnityChanShader\Texture\skin_01.tga"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"

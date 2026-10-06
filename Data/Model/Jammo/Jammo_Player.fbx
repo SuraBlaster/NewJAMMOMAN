@@ -31,8 +31,8 @@ FBXHeaderExtension:  {
 			Comment: ""
 		}
 		Properties70:  {
-			P: "DocumentUrl", "KString", "Url", "", "C:\Users\2230190\Desktop\gp5.animation_layer_mask.2026.07.03\gp5.animation_layer_mask.2026.07.03\Data\Model\Jammo\diu8ai7g_Jammo_Player.fbx"
-			P: "SrcDocumentUrl", "KString", "Url", "", "C:\Users\2230190\Desktop\gp5.animation_layer_mask.2026.07.03\gp5.animation_layer_mask.2026.07.03\Data\Model\Jammo\diu8ai7g_Jammo_Player.fbx"
+			P: "DocumentUrl", "KString", "Url", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Jammo_Player.fbx"
+			P: "SrcDocumentUrl", "KString", "Url", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Jammo_Player.fbx"
 			P: "Original", "Compound", "", ""
 			P: "Original|ApplicationVendor", "KString", "", "", ""
 			P: "Original|ApplicationName", "KString", "", "", "Unity FBX Exporter"
@@ -37431,40 +37431,40 @@ Objects:  {
 	Video: 1672932065936, "Video::DiffuseColor_Texture", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
 	}
 	Video: 1672932052976, "Video::NormalMap_Texture", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
 	}
 	Video: 1672932066416, "Video::DiffuseColor_Texture_1", "Clip" {
 		Type: "Clip"
 		Properties70:  {
-			P: "Path", "KString", "XRefUrl", "", "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
+			P: "Path", "KString", "XRefUrl", "", "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
 			P: "RelPath", "KString", "XRefUrl", "", "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
 		}
 		UseMipMap: 0
-		Filename: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
+		Filename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
 	}
 	Texture: 1672932064976, "Texture::DiffuseColor_Texture", "" {
 		Type: "TextureVideoClip"
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture"
 		Media: "Video::DiffuseColor_Texture"
-		FileName: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -37475,8 +37475,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::NormalMap_Texture"
 		Media: "Video::NormalMap_Texture"
-		FileName: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\mixbot_low_mixamo_edit1_Normal.png"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"
@@ -37487,8 +37487,8 @@ Objects:  {
 		Version: 202
 		TextureName: "Texture::DiffuseColor_Texture_1"
 		Media: "Video::DiffuseColor_Texture_1"
-		FileName: "C:\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
-		RelativeFilename: "..\..\..\..\..\..\..\..\New Unity Project\My project\Assets\Jammo-Character\Textures\jammo_eyes.png"
+		FileName: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
+		RelativeFilename: "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
 		ModelUVTranslation: 0,0
 		ModelUVScaling: 1,1
 		Texture_Alpha_Source: "None"

@@ -94142,33 +94142,33 @@
   "buffers": [
     {
       "byteLength": 2594112,
-      "uri": "Boss.bin"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Boss.bin"
     }
   ],
   "images": [
     {
-      "uri": "textures\\MI_ZMike_default_BaseColor.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_default_BaseColor.png"
     },
     {
-      "uri": "textures\\MI_ZMike_default_MetallicRoughness.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_default_MetallicRoughness.png"
     },
     {
-      "uri": "textures\\MI_ZMike_default_Normal.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_default_Normal.png"
     },
     {
-      "uri": "textures\\MI_ZMike_default_Emissive.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_default_Emissive.png"
     },
     {
-      "uri": "textures\\MI_ZMike_Lens_Blue_EditorSphere_BaseColor.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_Lens_Blue_EditorSphere_BaseColor.png"
     },
     {
-      "uri": "textures\\MI_ZMike_Lens_Blue_EditorSphere_MetallicRoughness.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_Lens_Blue_EditorSphere_MetallicRoughness.png"
     },
     {
-      "uri": "textures\\MI_ZMike_Lens_Blue_EditorSphere_Normal.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_Lens_Blue_EditorSphere_Normal.png"
     },
     {
-      "uri": "textures\\MI_ZMike_Lens_Blue_EditorSphere_Emissive.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/MI_ZMike_Lens_Blue_EditorSphere_Emissive.png"
     }
   ],
   "materials": [
