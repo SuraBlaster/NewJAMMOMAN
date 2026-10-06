@@ -234323,36 +234323,36 @@
   "buffers": [
     {
       "byteLength": 2693892,
-      "uri": "unitychan.bin"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/unitychan.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\eyeline_00.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\face_00.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\eye_iris_L_00.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\eye_iris_R_00.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
     },
     {
-      "uri": "..\\Sword\\Textures\\MagicSword_Albedo.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Sword/Textures/MagicSword_Albedo.png"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\body_01.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\cheek_00.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\hair_01.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
     },
     {
-      "uri": "C:\\New Unity Project\\My project\\Assets\\unity-chan!\\Unity-chan! Model\\Art\\UnityChanShader\\Texture\\skin_01.tga"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
     }
   ],
   "materials": [

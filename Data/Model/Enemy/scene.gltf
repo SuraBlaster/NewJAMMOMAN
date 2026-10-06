@@ -316,18 +316,18 @@
   "buffers": [
     {
       "byteLength": 507160,
-      "uri": "scene.bin"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/scene.bin"
     }
   ],
   "images": [
     {
-      "uri": "textures/DeskFan_Mat_baseColor.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/DeskFan_Mat_baseColor.png"
     },
     {
-      "uri": "textures/DeskFan_Mat_metallicRoughness.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/DeskFan_Mat_metallicRoughness.png"
     },
     {
-      "uri": "textures/DeskFan_Mat_normal.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/DeskFan_Mat_normal.png"
     }
   ],
   "materials": [

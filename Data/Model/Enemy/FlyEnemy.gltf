@@ -7717,15 +7717,15 @@
   "buffers": [
     {
       "byteLength": 1903724,
-      "uri": "FlyEnemy.bin"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/FlyEnemy.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:\\Users\\2230190\\Downloads\\waspy 1.fbm/Drone.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Textures/Drone.png"
     },
     {
-      "uri": "C:\\Users\\2230190\\Downloads\\waspy 1.fbm/eyes_normal.png"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Textures/eyes_normal.png"
     }
   ],
   "materials": [

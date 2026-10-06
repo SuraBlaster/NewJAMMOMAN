@@ -220,15 +220,15 @@
   "buffers": [
     {
       "byteLength": 984072,
-      "uri": "Earth.bin"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/earth/Earth.bin"
     }
   ],
   "images": [
     {
-      "uri": "textures/Object001_mtl_baseColor.jpeg"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/earth/textures/Object001_mtl_baseColor.jpeg"
     },
     {
-      "uri": "textures/Object002_mtl_baseColor.jpeg"
+      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/earth/textures/Object002_mtl_baseColor.jpeg"
     }
   ],
   "materials": [
