@@ -234323,36 +234323,36 @@
   "buffers": [
     {
       "byteLength": 2693892,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/unitychan.bin"
+      "uri": "unitychan.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eyeline_00.tga"
+      "uri": "Textures/eyeline_00.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/face_00.tga"
+      "uri": "Textures/face_00.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_L_00.tga"
+      "uri": "Textures/eye_iris_L_00.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/eye_iris_R_00.tga"
+      "uri": "Textures/eye_iris_R_00.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Sword/Textures/MagicSword_Albedo.png"
+      "uri": "../Sword/Textures/MagicSword_Albedo.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/body_01.tga"
+      "uri": "Textures/body_01.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/cheek_00.tga"
+      "uri": "Textures/cheek_00.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/hair_01.tga"
+      "uri": "Textures/hair_01.tga"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/unitychan/Textures/skin_01.tga"
+      "uri": "Textures/skin_01.tga"
     }
   ],
   "materials": [

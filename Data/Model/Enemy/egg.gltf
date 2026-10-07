@@ -114,18 +114,18 @@
   "buffers": [
     {
       "byteLength": 45600,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/egg.bin"
+      "uri": "egg.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/lambert1_baseColor.png"
+      "uri": "textures/lambert1_baseColor.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/lambert1_metallicRoughness.png"
+      "uri": "textures/lambert1_metallicRoughness.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/lambert1_normal.png"
+      "uri": "textures/lambert1_normal.png"
     }
   ],
   "materials": [

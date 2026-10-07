@@ -346145,12 +346145,12 @@
   "buffers": [
     {
       "byteLength": 2035068,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/d.bin"
+      "uri": "d.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/textures/polyArtTex.png"
+      "uri": "textures/polyArtTex.png"
     }
   ],
   "materials": [

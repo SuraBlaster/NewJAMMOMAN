@@ -142834,33 +142834,33 @@
   "buffers": [
     {
       "byteLength": 3833072,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/SwordMannequin.bin"
+      "uri": "SwordMannequin.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/M_UE4Man_Body_BaseColor.png"
+      "uri": "Textures/M_UE4Man_Body_BaseColor.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/M_UE4Man_Body_MetallicRoughness.png"
+      "uri": "Textures/M_UE4Man_Body_MetallicRoughness.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/M_UE4Man_Body_Normal.png"
+      "uri": "Textures/M_UE4Man_Body_Normal.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/M_UE4Man_ChestLogo_BaseColor.png"
+      "uri": "Textures/M_UE4Man_ChestLogo_BaseColor.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/M_UE4Man_ChestLogo_Normal.png"
+      "uri": "Textures/M_UE4Man_ChestLogo_Normal.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/WorldGridMaterial_BaseColor.png"
+      "uri": "Textures/WorldGridMaterial_BaseColor.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/WorldGridMaterial_MetallicRoughness.png"
+      "uri": "Textures/WorldGridMaterial_MetallicRoughness.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/SwordMannequin/Textures/WorldGridMaterial_Normal.png"
+      "uri": "Textures/WorldGridMaterial_Normal.png"
     }
   ],
   "materials": [

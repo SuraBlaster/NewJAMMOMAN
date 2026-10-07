@@ -214299,18 +214299,18 @@
   "buffers": [
     {
       "byteLength": 2213272,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Jammo_Player.bin"
+      "uri": "Jammo_Player.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
+      "uri": "Textures/mixbot_low_mixamo_edit1_AlbedoTransparency.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/mixbot_low_mixamo_edit1_Normal.png"
+      "uri": "Textures/mixbot_low_mixamo_edit1_Normal.png"
     },
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Jammo/Textures/jammo_eyes.png"
+      "uri": "Textures/jammo_eyes.png"
     }
   ],
   "materials": [

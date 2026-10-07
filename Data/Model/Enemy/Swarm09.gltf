@@ -17339,12 +17339,12 @@
   "buffers": [
     {
       "byteLength": 167392,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Swarm09.bin"
+      "uri": "Swarm09.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Monster Minion Survivor PBR Polyart/Texture/DefaultPBR/Albedo.png"
+      "uri": "Monster Minion Survivor PBR Polyart/Texture/DefaultPBR/Albedo.png"
     }
   ],
   "materials": [
