@@ -5,8 +5,9 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <mutex>
 
-// Opt-in, main-thread instrumentation. Nested totals include their children.
+// Opt-in, synchronized instrumentation. Nested totals include their children.
 namespace LoadingProfile
 {
     using Clock = std::chrono::steady_clock;
@@ -14,11 +15,12 @@ namespace LoadingProfile
     inline bool Automatic() { return wcsstr(GetCommandLineW(), L"--profile-loading-auto") != nullptr; }
     struct Entry { std::string name; double ms; };
     inline std::vector<Entry> entries;
+    inline std::mutex entriesMutex;
     inline bool gameReady = false;
     inline bool firstGameFrame = false;
     inline Clock::time_point loadingStart, waitStart;
     inline double Milliseconds(Clock::time_point start) { return std::chrono::duration<double, std::milli>(Clock::now() - start).count(); }
-    inline void Record(const std::string& name, double ms) { if (Enabled()) entries.push_back({name, ms}); }
+    inline void Record(const std::string& name, double ms) { if (Enabled()) { std::lock_guard<std::mutex> lock(entriesMutex); entries.push_back({name, ms}); } }
     class Scope
     {
         std::string name;
@@ -30,7 +32,9 @@ namespace LoadingProfile
     };
     inline void Flush()
     {
-        if (!Enabled() || entries.empty()) return;
+        if (!Enabled()) return;
+        std::lock_guard<std::mutex> lock(entriesMutex);
+        if (entries.empty()) return;
         static bool first = true;
         std::ofstream out("loading-profile.log", std::ios::app);
         if (!out) return;

@@ -22203,12 +22203,12 @@
   "buffers": [
     {
       "byteLength": 183328,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Swarm08.bin"
+      "uri": "Swarm08.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Enemy/Monster Minion Survivor PBR Polyart/Texture/DefaultPBR/Albedo.png"
+      "uri": "Monster Minion Survivor PBR Polyart/Texture/DefaultPBR/Albedo.png"
     }
   ],
   "materials": [

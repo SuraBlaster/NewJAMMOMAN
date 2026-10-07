@@ -106,8 +106,6 @@ namespace
 GameScene::GameScene()
 {
     LoadingProfile::Scope profile("GameScene");
-    DirectionalLight stageLight;
-    LightManager::Instance().SetDirectionalLight(stageLight);
 	ID3D11Device* device = Graphics::Instance().GetDevice();
 	backgroundEditor = std::make_unique<BackgroundEditor>(device);
     backgroundFog = std::make_unique<BackgroundFog>(device);
@@ -120,8 +118,6 @@ GameScene::GameScene()
 	gaugeBuffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	if (FAILED(device->CreateBuffer(&gaugeBuffer, nullptr, gaugeConstants.GetAddressOf())))
 		throw std::runtime_error("Failed to create health gauge constants.");
-	float screenWidth = Graphics::Instance().GetScreenWidth();
-	float screenHeight = Graphics::Instance().GetScreenHeight();
 
 	// JSON読み込み
 	if (!tileTypeManager.LoadDefinitions("Data/Stage/TileTypes.json"))
@@ -144,18 +140,6 @@ GameScene::GameScene()
 	}
 
 	// カメラ設定
-	Camera& camera = Camera::Instance();
-	camera.SetPerspectiveFov(
-		DirectX::XMConvertToRadians(45),	// 画角
-		screenWidth / screenHeight,			// 画面アスペクト比
-		0.1f,								// ニアクリップ
-		1000.0f								// ファークリップ
-	);
-	camera.SetLookAtWithShake(
-		{ 8, 3, 0 },		// 視点
-		{ 0, 2, 0 },		// 注視点
-		{ 0, 1, 0 }			// 上ベクトル
-	);
 
 	// 3Dオブジェクト
 	EnemyBoss::SetDefeat(false);
@@ -216,6 +200,28 @@ GameScene::GameScene()
 		collisionManager.RegisterTerrainAABB(box);
 	}
     profile.Step("collision_registration");
+
+}
+
+void GameScene::Initialize()
+{
+    DirectionalLight stageLight;
+    LightManager::Instance().SetDirectionalLight(stageLight);
+    const float screenWidth = Graphics::Instance().GetScreenWidth();
+    const float screenHeight = Graphics::Instance().GetScreenHeight();
+	Camera& camera = Camera::Instance();
+	camera.SetPerspectiveFov(
+		DirectX::XMConvertToRadians(45),	// 画角
+		screenWidth / screenHeight,			// 画面アスペクト比
+		0.1f,								// ニアクリップ
+		1000.0f								// ファークリップ
+	);
+	camera.SetLookAtWithShake(
+		{ 8, 3, 0 },		// 視点
+		{ 0, 2, 0 },		// 注視点
+		{ 0, 1, 0 }			// 上ベクトル
+	);
+
     LoadingProfile::gameReady = true;
 }
 

@@ -138,12 +138,12 @@
   "buffers": [
     {
       "byteLength": 1680,
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Cube/Cube.bin"
+      "uri": "Cube.bin"
     }
   ],
   "images": [
     {
-      "uri": "C:/Users/2230190/Desktop/New JAMMOMAN/Data/Model/Cube/Textures/InteractableDefault_18906_Diffuse.png"
+      "uri": "Textures/InteractableDefault_18906_Diffuse.png"
     }
   ],
   "materials": [

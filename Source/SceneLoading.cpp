@@ -6,9 +6,46 @@
 #include "Light.h"
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
+#include <objbase.h>
+
+SceneLoading::~SceneLoading()
+{
+    JoinLoading();
+}
+
+void SceneLoading::JoinLoading()
+{
+    if (loadingThread.joinable()) loadingThread.join();
+}
+
+void SceneLoading::StartLoading()
+{
+    if (!factory || loadingThread.joinable() || loadComplete.load()) return;
+    loadingThread = std::thread([this]
+    {
+        const HRESULT com = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        try
+        {
+            if (FAILED(com)) throw std::runtime_error("Failed to initialize loading thread COM.");
+            loadedScene = factory();
+            if (!loadedScene) throw std::runtime_error("Scene loading returned null.");
+        }
+        catch (...)
+        {
+            loadError = std::current_exception();
+        }
+        if (SUCCEEDED(com)) CoUninitialize();
+        loadComplete.store(true, std::memory_order_release);
+    });
+}
 
 void SceneLoading::Initialize()
 {
+    JoinLoading();
+    loadedScene.reset();
+    loadError = nullptr;
+    loadComplete.store(false);
     LoadingProfile::gameReady = false;
     LoadingProfile::firstGameFrame = false;
     LoadingProfile::loadingStart = LoadingProfile::Clock::now();
@@ -33,6 +70,8 @@ void SceneLoading::Initialize()
 
 void SceneLoading::Finalize()
 {
+    JoinLoading();
+    loadedScene.reset();
     background.reset();
     boss.reset();
     player.reset();
@@ -43,17 +82,24 @@ void SceneLoading::Update(float elapsedTime)
     // Loading stalls are not visible animation time. Advance only after a
     // rendered frame, and limit catch-up so one slow frame cannot skip the intro.
     const float dt = presented ? (std::clamp)(elapsedTime, 0.0f, 0.05f) : 0.0f;
+    if (presented) StartLoading();
+    if (loadComplete.load(std::memory_order_acquire) && loadError)
+    {
+        JoinLoading();
+        std::rethrow_exception(loadError);
+    }
     presented = false;
     timer += dt;
     if (boss) boss->Update(dt);
     player->Update(dt);
     if (!showTitleIntro)
     {
-        if (factory && !requested && timer >= MinimalDisplayTime)
+        if (loadComplete.load(std::memory_order_acquire) && !requested && timer >= MinimalDisplayTime)
         {
             requested = true;
-        LoadingProfile::Record("Loading.presentation_wait", LoadingProfile::Milliseconds(LoadingProfile::waitStart));
-            SceneManager::Instance().ChangeScene(std::move(factory));
+            LoadingProfile::Record("Loading.presentation_wait", LoadingProfile::Milliseconds(LoadingProfile::waitStart));
+            JoinLoading();
+            SceneManager::Instance().ChangeScene(std::move(loadedScene));
         }
         return;
     }
@@ -64,13 +110,14 @@ void SceneLoading::Update(float elapsedTime)
     const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(description.size())));
     displayedDescription = description.substr(0, count);
 
-    // Leave time to read the complete sentence before constructing the next scene.
+    // Wait for both loading and time to read the complete sentence.
     const float readTime = IntroReadTime;
-    if (factory && descriptionPresented && !requested && readTimer >= readTime)
+    if (loadComplete.load(std::memory_order_acquire) && descriptionPresented && !requested && readTimer >= readTime)
     {
         requested = true;
         LoadingProfile::Record("Loading.presentation_wait", LoadingProfile::Milliseconds(LoadingProfile::waitStart));
-        SceneManager::Instance().ChangeScene(std::move(factory));
+        JoinLoading();
+        SceneManager::Instance().ChangeScene(std::move(loadedScene));
     }
 }
 

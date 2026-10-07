@@ -14,7 +14,7 @@ EnemyHover::EnemyHover(ID3D11Device* device, Player* player)
 	rotation.y = DirectX::XMConvertToRadians(20.0f);
 	radius = 0.5f;
 	height = 0.8f;
-	SetHealth(4);
+	health = 3;
 	use_gravity = false;
 	color = { 0.35f, 0.8f, 1.0f, 1.0f };
 	InitializeAnimator();

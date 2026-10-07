@@ -16,7 +16,7 @@ EnemyEgg::EnemyEgg(
 	scale = { 0.1f, 0.1f, 0.1f };
 	radius = 0.25f;
 	height = 0.4f;
-	SetHealth(1);
+	health = 1;
 	use_gravity = true;
 	UpdateTransform();
 }

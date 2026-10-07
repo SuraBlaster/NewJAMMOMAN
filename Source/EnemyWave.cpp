@@ -28,7 +28,7 @@ EnemyWave::EnemyWave(ID3D11Device* device, Player* player)
 	color = { 1.0f, 0.25f, 0.25f, 1.0f };
 	radius = 0.45f;
 	height = 1.0f;
-	SetHealth(1);
+	health = 1;
 	UpdateTransform();
 }
 

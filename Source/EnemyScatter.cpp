@@ -17,7 +17,7 @@ EnemyScatter::EnemyScatter(
 	scale = { 0.002f, 0.002f, 0.002f };
 	radius = 0.18f;
 	height = 0.25f;
-	SetHealth(1);
+	health = 1;
 	use_gravity = false;
 	color = { 1.0f, 0.45f, 0.25f, 1.0f };
 
