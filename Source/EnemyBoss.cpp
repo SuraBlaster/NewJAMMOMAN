@@ -19,7 +19,7 @@ EnemyBoss::EnemyBoss(ID3D11Device* device, Player* player)
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.65f;
 	height = 2.0f;
-	SetHealth(20);
+	health = 20;
 	use_gravity = true;
 	gravity_acceleration = boss_gravity_acceleration;
 	color = { 1.0f, 0.35f, 0.2f, 1.0f };

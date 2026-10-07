@@ -12,7 +12,7 @@ EnemyFan::EnemyFan(ID3D11Device* device, Player* player)
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.55f;
 	height = 1.0f;
-	SetHealth(3);
+	health = 3;
 	use_gravity = true;
 	InitializeAnimator();
 	UpdateTransform();

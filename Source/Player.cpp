@@ -70,12 +70,13 @@ Player::Player(ID3D11Device* device)
 	// 上半身マスクの生成
 	upper_body_mask.BuildLayerMaskFromRoot(model.get(), "mixamorig:Spine1");
 
-	spawnEffect = std::make_unique<Effect>("Data/Effect/SpawnEffect.efkefc");
 
 	position.z = 0.0f;
 	rotation.y = DirectX::XMConvertToRadians(90);
 
 	scale.x = scale.y = scale.z = 0.0f;
+
+	health = 20;
 
 	// ステートの生成
 	states[static_cast<size_t>(StateId::Idle)] = std::make_unique<IdleState>(this);
@@ -93,8 +94,6 @@ Player::Player(ID3D11Device* device)
 
 	
 	SetState(StateId::Spawn);
-
-	
 }
 
 Player::~Player()
@@ -132,6 +131,7 @@ void Player::DrawGUI()
 		ImGui::Text(debugstatename[static_cast<int>(current_state)].c_str());
 		ImGui::InputFloat3("position", &position.x);
 		ImGui::InputFloat3("velocity", &velocity.x);
+		ImGui::InputInt("health", & health);
 		ImGui::Checkbox("Show sword collision", &show_sword_collision);
 		ImGui::Checkbox("Show body AABB", &show_body_aabb);
 		ImGui::SliderFloat("Body half width", &body_half_width, 0.05f, 2.0f);
@@ -152,8 +152,8 @@ void Player::DrawGUI()
 		if (ImGui::BeginMenu("How To Use"))
 		{
 			ImGui::Text("X:Attack");
-			ImGui::Text("A:Jump or WallKick");
-			ImGui::Text("B or LT:Dash");
+			ImGui::Text("Space:Jump or WallKick");
+			ImGui::Text("Shift:Dash");
 
 			ImGui::EndMenu();
 		}
@@ -383,7 +383,7 @@ void Player::UpdateVelocity(float elapsed_time)
 			if (is_dash_jump) current_acceleration *= 1.5f;
 
 			// 逆入力判定
-			bool is_reversing = (!is_ground && (velocity.x * vec_x < 0.0f));
+			bool is_reversing = (velocity.x * vec_x < 0.0f);
 
 			if (is_reversing)
 			{
@@ -660,37 +660,19 @@ bool Player::InputMove()
 // ジャンプ入力処理
 bool Player::InputJump()
 {
-	GamePad& game_pad = GamePad::Instance();
+	const GamePad& game_pad = GamePad::Instance();
+	if (!(game_pad.GetButtonDown() & GamePad::BTN_SPACE)) return false;
+	if (!IsGround() && current_state != StateId::WallSlide) return false;
 
-	if ((game_pad.GetButtonDown() & GamePad::BTN_A) && (game_pad.GetButton() & GamePad::BTN_B) && current_state == StateId::WallSlide
-		|| (game_pad.GetButtonDown() & GamePad::BTN_A) && (game_pad.GetButton() & GamePad::BTN_LEFT_TRIGGER) && current_state == StateId::WallSlide)
-	{
-		velocity.y = jump_speed * 1.2f;
-		is_dash_jump = true;
-		return true;
-	}
-
-	if ((game_pad.GetButtonDown() & GamePad::BTN_A) && (game_pad.GetButton() & GamePad::BTN_B)
-		|| (game_pad.GetButtonDown() & GamePad::BTN_A) && (game_pad.GetButton() & GamePad::BTN_LEFT_TRIGGER))
-	{
-		velocity.y = jump_speed * 1.2f;
-		is_dash_jump = true;
-		return true;
-	}
-
-	if ((game_pad.GetButtonDown() & GamePad::BTN_A) && IsGround())
-	{
-		velocity.y = jump_speed;
-		return true;
-	}
-
-	return false;
+	is_dash_jump = (game_pad.GetButton() & GamePad::BTN_SHIFT) != 0;
+	velocity.y = jump_speed * (is_dash_jump ? 1.2f : 1.0f);
+	return true;
 }
 
 bool Player::InputShot()
 {
 	GamePad& game_pad = GamePad::Instance();
-	if (game_pad.GetButtonDown() & GamePad::BTN_X)
+	if (game_pad.GetButtonDown() & GamePad::BTN_MOUSE_LEFT)
 	{
 		SetState(StateId::Attack);
 		return true;
@@ -700,13 +682,7 @@ bool Player::InputShot()
 
 bool Player::InputDash()
 {
-	GamePad& game_pad = GamePad::Instance();
-	if (game_pad.GetButtonDown() & GamePad::BTN_B || game_pad.GetButtonDown() & GamePad::BTN_LEFT_TRIGGER)
-	{
-		return true;
-	}
-
-	return false;
+	return (GamePad::Instance().GetButtonDown() & GamePad::BTN_SHIFT) != 0;
 }
 
 // スティックの入力方向とwallNormalの内積が負のとき壁へ向いていると判定する
@@ -735,7 +711,7 @@ void Player::HoldJump()
 {
 	GamePad& game_pad = GamePad::Instance();
 
-	bool is_holding_jump = (game_pad.GetButton() & GamePad::BTN_A);
+	const bool is_holding_jump = (game_pad.GetButton() & GamePad::BTN_SPACE) != 0;
 
 	// ボタンを離しており、かつ現在の上昇速度が規定値を上回っている場合
 	if (!is_holding_jump && velocity.y > cut_jump_velocity)
@@ -1172,23 +1148,13 @@ void Player::DashState::OnUpdate(float elapsed_time)
 
 	GamePad& game_pad = GamePad::Instance();
 
-	if (game_pad.GetButtonUp() & GamePad::BTN_B || game_pad.GetButtonUp() & GamePad::BTN_LEFT_TRIGGER)
+	if ((game_pad.GetButtonUp() & GamePad::BTN_SHIFT) || owner->dash_timer <= 0.0f)
 	{
 		owner->trails.clear();
 		owner->velocity.x = 0.0f;
 		owner->velocity.z = 0.0f;
 		owner->SetState(StateId::Idle);
 		return;
-	}
-
-	if (owner->dash_timer <= 0.0f)
-	{
-		owner->velocity.x = 0.0f;
-		owner->velocity.z = 0.0f;
-
-		owner->trails.clear();
-
-		owner->SetState(StateId::Idle);
 	}
 
 	if (owner->InputJump())
@@ -1235,21 +1201,9 @@ void Player::WallSlideState::OnUpdate(float elapsed_time)
 		return;
 	}
 
-	GamePad& game_pad = GamePad::Instance();
-	if (game_pad.GetButtonDown() & GamePad::BTN_A)
+	if (owner->InputJump())
 	{
 		owner->wall_climb = false;
-
-		if (game_pad.GetButton() & GamePad::BTN_B || game_pad.GetButton() & GamePad::BTN_LEFT_TRIGGER)
-		{
-			owner->velocity.y = owner->jump_speed * 1.2f;
-			owner->is_dash_jump = true;
-		}
-		else
-		{
-			owner->velocity.y = owner->jump_speed;
-			owner->is_dash_jump = false;
-		}
 
 		owner->velocity.x = owner->wallNormal.x * kick_power;
 		owner->wall_kick_lock_timer = owner->wall_kick_lock_duration;
@@ -1511,6 +1465,7 @@ void Player::OnDamaged()
 	input_move_z = 0.0f;
 	SetBladeActive(false);
 	SetTrailActive(false);
+
 }
 
 void Player::OnDead()
@@ -1583,6 +1538,9 @@ void Player::DeathState::OnExit()
 
 void Player::SpawnState::OnEnter()
 {
+    // Effekseer uses the immediate context; load on the main update thread.
+    if (!owner->spawnEffect)
+        owner->spawnEffect = std::make_unique<Effect>("Data/Effect/SpawnEffect.efkefc");
 	owner->animator->Play(0, "Spawn", false);
 	owner->spawnHandle = owner->spawnEffect->Play(owner->position);
 }

@@ -8,6 +8,17 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
+#include <atomic>
+#include <future>
+#include <stdexcept>
+#include <thread>
+
+struct LoadedTestScene : Scene
+{
+    explicit LoadedTestScene(int& transitions) : transitions(transitions) {}
+    void Initialize() override { ++transitions; }
+    int& transitions;
+};
 
 int main()
 {
@@ -27,7 +38,12 @@ int main()
     ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
     ImGui::GetIO().IniFilename = nullptr;
     int transitions = 0;
-    SceneLoading title([&transitions]() { ++transitions; return std::make_shared<Scene>(); }, true);
+    const auto mainThread = std::this_thread::get_id();
+    SceneLoading title([&transitions, mainThread]()
+    {
+        assert(std::this_thread::get_id() != mainThread);
+        return std::make_shared<LoadedTestScene>(transitions);
+    }, true);
     title.Initialize();
     // Simulate a long model load, followed by a slow first displayed frame.
     title.Update(10.0f);
@@ -92,6 +108,59 @@ int main()
     assert(transitions == 1);
     SceneManager::Instance().Clear();
     title.Finalize();
+
+    // A blocked worker must not stall loading updates or activate its scene.
+    std::promise<void> release;
+    auto gate = release.get_future();
+    std::promise<void> started;
+    auto workerStarted = started.get_future();
+    std::atomic<bool> finished{false};
+    SceneLoading blocked([&]()
+    {
+        started.set_value();
+        gate.wait();
+        finished.store(true);
+        return std::make_shared<LoadedTestScene>(transitions);
+    });
+    blocked.Initialize();
+    ImGuiRenderer::NewFrame();
+    blocked.DrawGUI();
+    ImGuiRenderer::Render(graphics.GetDeviceContext());
+    blocked.Update(0.05f);
+    workerStarted.wait();
+    for (int i = 0; i < 20; ++i)
+    {
+        ImGuiRenderer::NewFrame();
+        blocked.Render(0);
+        blocked.DrawGUI();
+        ImGuiRenderer::Render(graphics.GetDeviceContext());
+        blocked.Update(0.05f);
+    }
+    assert(!finished.load());
+    assert(transitions == 1);
+    release.set_value();
+    blocked.Finalize();
+    assert(finished.load());
+
+    // Worker exceptions reach the main thread instead of terminating the process.
+    std::promise<void> failRelease;
+    auto failGate = failRelease.get_future();
+    SceneLoading failed([&]() -> std::shared_ptr<Scene>
+    {
+        failGate.wait();
+        throw std::runtime_error("expected loading failure");
+    });
+    failed.Initialize();
+    ImGuiRenderer::NewFrame();
+    failed.DrawGUI();
+    ImGuiRenderer::Render(graphics.GetDeviceContext());
+    failed.Update(0);
+    failRelease.set_value();
+    failed.Finalize();
+    bool caught = false;
+    try { failed.Update(0); }
+    catch (const std::runtime_error&) { caught = true; }
+    assert(caught);
     ImGuiRenderer::Finalize();
     DestroyWindow(window);
     CoUninitialize();

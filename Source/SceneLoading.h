@@ -1,24 +1,34 @@
 #pragma once
 #include "SceneManager.h"
 #include <utility>
+#include <atomic>
+#include <exception>
+#include <thread>
 #include "Sprite.h"
 #include <string>
 #include "LoadingBoss.h"
 #include "LoadingPlayer.h"
 
-// GameScene creates GPU resources and touches shared managers in its constructor.
-// Defer construction until this screen has been presented; do not use a worker.
+// Construct on a worker; initialize and activate on the main thread.
+// Factories must avoid the immediate device context and shared rendering state.
 class SceneLoading : public Scene
 {
 public:
     explicit SceneLoading(SceneManager::SceneFactory factory, bool fromTitle = false)
         : factory(std::move(factory)), showTitleIntro(fromTitle) {}
+    ~SceneLoading() override;
     void Initialize() override;
     void Finalize() override;
     void Update(float elapsedTime) override;
     void Render(float elapsedTime) override;
     void DrawGUI() override;
 private:
+    void StartLoading();
+    void JoinLoading();
+    std::thread loadingThread;
+    std::atomic<bool> loadComplete{false};
+    std::shared_ptr<Scene> loadedScene;
+    std::exception_ptr loadError;
     void RenderCharacters();
     std::unique_ptr<LoadingBoss> boss;
     std::unique_ptr<LoadingPlayer> player;

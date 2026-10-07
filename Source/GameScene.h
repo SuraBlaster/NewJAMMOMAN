@@ -21,6 +21,7 @@ class GameScene : public Scene
 public:
 	GameScene();
 	~GameScene() override;
+    void Initialize() override;
 
 	// XVˆ—
 	void Update(float elapsedTime) override;

@@ -129,7 +129,8 @@ void SceneTitle::UpdateInput()
         GamePad::BTN_UP | GamePad::BTN_RIGHT | GamePad::BTN_DOWN | GamePad::BTN_LEFT |
         GamePad::BTN_LEFT_THUMB | GamePad::BTN_RIGHT_THUMB |
         GamePad::BTN_LEFT_SHOULDER | GamePad::BTN_RIGHT_SHOULDER |
-        GamePad::BTN_LEFT_TRIGGER | GamePad::BTN_RIGHT_TRIGGER;
+        GamePad::BTN_LEFT_TRIGGER | GamePad::BTN_RIGHT_TRIGGER |
+        GamePad::BTN_MOUSE_LEFT | GamePad::BTN_MOUSE_RIGHT;
     const bool padPressed = (GamePad::Instance().GetButtonDown() & startButtons) != 0;
     if (padPressed || keyPressed)
         StartGame();
@@ -189,7 +190,7 @@ void SceneTitle::RenderTriangleLines(ID3D11DeviceContext* dc, const TitleAnimati
             renderer->AddVertex({
                 2 * (screenOffsetX + point.x * screenScale) / graphics.GetScreenWidth() - 1,
                 1 - 2 * (screenOffsetY + point.y * screenScale) / graphics.GetScreenHeight(), 0},
-                {0.9f, 0.015f, 0.04f, fill * animation.lineAlpha});
+                {1.0f, 0.0f, 0.0f, fill * animation.lineAlpha});
         DirectX::XMFLOAT4X4 identity;
         DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
         renderer->Render(dc, identity, identity, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -201,7 +202,7 @@ void SceneTitle::RenderTriangleLines(ID3D11DeviceContext* dc, const TitleAnimati
         if (!line.visible) continue;
 
         const float alpha = animation.lineAlpha;
-        RenderLine(dc, line.from, line.to, 2, {0.1f + 0.9f * fill, 1.0f, 0.05f, alpha});
+        RenderLine(dc, line.from, line.to, 2, {1.0f, 0.0f, 0.0f, alpha});
     }
 }
 
@@ -245,7 +246,7 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
 
     if (animation.xAlpha > 0)
     {
-        // BGMÝ’è: X‚Ì•¶Žš‚Ì”z’uƒAƒjƒ[ƒVƒ‡ƒ“‚ªŠ®—¹‚µ‚½‚çˆê“x‚¾‚¯ƒ‹[ƒvÄ¶‚·‚éB
+        // BGMï¿½Ý’ï¿½: Xï¿½Ì•ï¿½ï¿½ï¿½ï¿½Ì”zï¿½uï¿½Aï¿½jï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½vï¿½Äï¿½ï¿½ï¿½ï¿½ï¿½B
         if (!titleBgmStarted && introTimer >= Anim::XEnd)
         {
             Audio::Instance().Play("BGM_TITLE", true);
