@@ -1,65 +1,136 @@
 {
-  "columns": 4,
-  "image": "EnemyPlacements.png",
-  "imageheight": 128,
-  "imagewidth": 384,
+  "columns": 0,
+  "grid": {
+    "orientation": "orthogonal",
+    "width": 1,
+    "height": 1
+  },
   "margin": 0,
   "name": "EnemyPlacements",
   "objectalignment": "bottom",
   "spacing": 0,
-  "tilecount": 8,
+  "tilecount": 9,
   "tileheight": 64,
+  "tilewidth": 32,
   "tiles": [
     {
       "id": 0,
+      "image": "EnemyPlacementIcons/Wave.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Wave" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Wave"
+        }
       ]
     },
     {
       "id": 1,
+      "image": "EnemyPlacementIcons/Scatter.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Scatter" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Scatter"
+        }
       ]
     },
     {
       "id": 2,
+      "image": "EnemyPlacementIcons/Mage.png",
+      "imagewidth": 32,
+      "imageheight": 64,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Mage" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Mage"
+        }
       ]
     },
     {
       "id": 3,
+      "image": "EnemyPlacementIcons/Fan.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Fan" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Fan"
+        }
       ]
     },
     {
       "id": 4,
+      "image": "EnemyPlacementIcons/Hover.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Hover" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Hover"
+        }
       ]
     },
     {
       "id": 5,
+      "image": "EnemyPlacementIcons/Fly.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Fly" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Fly"
+        }
       ]
     },
     {
       "id": 6,
+      "image": "EnemyPlacementIcons/Egg.png",
+      "imagewidth": 32,
+      "imageheight": 32,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Egg" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Egg"
+        }
       ]
     },
     {
       "id": 7,
+      "image": "EnemyPlacementIcons/Boss.png",
+      "imagewidth": 32,
+      "imageheight": 64,
       "properties": [
-        { "name": "enemyType", "type": "string", "value": "Boss" }
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Boss"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "image": "EnemyPlacementIcons/Vacuum.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Vacuum"
+        }
       ]
     }
   ],
-  "tilewidth": 96,
   "type": "tileset",
   "version": "1.10"
 }

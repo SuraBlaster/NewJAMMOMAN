@@ -54,6 +54,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Input.h">
+      <Filter>Source\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Mouse.h">
+      <Filter>Source\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\InputManager.h">
+      <Filter>Source\Input</Filter>
+    </ClInclude>
     <ClInclude Include="External\imgui-docking\imconfig.h">
       <Filter>External\imgui-docking</Filter>
     </ClInclude>
@@ -142,6 +151,9 @@
       <Filter>Source\Character</Filter>
     </ClInclude>
     <ClInclude Include="Source\EnemyEgg.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyVacuum.h">
       <Filter>Source\Character</Filter>
     </ClInclude>
     <ClInclude Include="Source\EnemyFan.h">
@@ -313,6 +325,15 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Input.cpp">
+      <Filter>Source\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mouse.cpp">
+      <Filter>Source\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\InputManager.cpp">
+      <Filter>Source\Input</Filter>
+    </ClCompile>
     <ClCompile Include="External\imgui-docking\imgui.cpp">
       <Filter>External\imgui-docking</Filter>
     </ClCompile>
@@ -386,6 +407,9 @@
       <Filter>Source\Character</Filter>
     </ClCompile>
     <ClCompile Include="Source\EnemyEgg.cpp">
+      <Filter>Source\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyVacuum.cpp">
       <Filter>Source\Character</Filter>
     </ClCompile>
     <ClCompile Include="Source\EnemyFan.cpp">

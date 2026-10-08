@@ -20,6 +20,7 @@
 #include "EnemyMage.h"
 #include "EnemyScatter.h"
 #include "EnemyWave.h"
+#include "EnemyVacuum.h"
 #include <array>
 #include "Collision.h"
 #include "HitStopManager.h"
@@ -89,6 +90,13 @@ namespace
 			auto enemyBoss = std::make_shared<EnemyBoss>(device, player);
 			enemyBoss->SetPosition(spawnPosition);
 			return enemyBoss;
+		}
+		case EnemyType::Vacuum:
+		{
+			auto enemyVacuum = std::make_shared<EnemyVacuum>(device, player);
+			enemyVacuum->SetPosition(spawnPosition);
+			enemyVacuum->SetDirection(spawnData.enemySpawnDirection == EnemySpawnDirection::Right ? 1.0f : -1.0f);
+			return enemyVacuum;
 		}
 		case EnemyType::Unknown:
 		{

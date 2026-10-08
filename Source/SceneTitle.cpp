@@ -4,7 +4,7 @@
 #include "SceneLoading.h"
 #include "SceneManager.h"
 #include "GameScene.h"
-#include "GamePad.h"
+#include "InputManager.h"
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
@@ -121,17 +121,16 @@ void SceneTitle::UpdateInput()
         for (int key = 0; key < IM_ARRAYSIZE(io.KeysDown); ++key)
             keyPressed |= ImGui::IsKeyPressed(key, false);
     }
-    // GamePad::Update runs once per frame in Framework. Use press edges so
+    // InputManager::Update runs once per frame in Framework. Use press edges so
     // holding a button after skipping the intro does not also start the game.
-    constexpr GamePadButton startButtons =
-        GamePad::BTN_A | GamePad::BTN_B | GamePad::BTN_X | GamePad::BTN_Y |
-        GamePad::BTN_START | GamePad::BTN_BACK |
-        GamePad::BTN_UP | GamePad::BTN_RIGHT | GamePad::BTN_DOWN | GamePad::BTN_LEFT |
-        GamePad::BTN_LEFT_THUMB | GamePad::BTN_RIGHT_THUMB |
-        GamePad::BTN_LEFT_SHOULDER | GamePad::BTN_RIGHT_SHOULDER |
-        GamePad::BTN_LEFT_TRIGGER | GamePad::BTN_RIGHT_TRIGGER |
-        GamePad::BTN_MOUSE_LEFT | GamePad::BTN_MOUSE_RIGHT;
-    const bool padPressed = (GamePad::Instance().GetButtonDown() & startButtons) != 0;
+    constexpr InputButton startButtons =
+        InputManager::BTN_A | InputManager::BTN_B | InputManager::BTN_X | InputManager::BTN_Y |
+        InputManager::BTN_START | InputManager::BTN_BACK |
+        InputManager::BTN_UP | InputManager::BTN_RIGHT | InputManager::BTN_DOWN | InputManager::BTN_LEFT |
+        InputManager::BTN_LEFT_THUMB | InputManager::BTN_RIGHT_THUMB |
+        InputManager::BTN_LEFT_SHOULDER | InputManager::BTN_RIGHT_SHOULDER |
+        InputManager::BTN_LEFT_TRIGGER | InputManager::BTN_RIGHT_TRIGGER;
+    const bool padPressed = (InputManager::Instance().GetButtonDown() & startButtons) != 0;
     if (padPressed || keyPressed)
         StartGame();
 }

@@ -61,7 +61,7 @@ namespace stage_converter
         constexpr std::string_view kDefaultEnemyDirection = "Right";
 
         // ゲーム側に実装済みの敵名だけを許可し、入力ミスを変換時に検出する。
-        constexpr std::array<std::string_view, 8> kSupportedEnemyTypes{
+        constexpr std::array<std::string_view, 9> kSupportedEnemyTypes{
             "Wave",
             "Scatter",
             "Mage",
@@ -69,7 +69,8 @@ namespace stage_converter
             "Hover",
             "Fly",
             "Egg",
-            "Boss"
+            "Boss",
+            "Vacuum"
         };
 
         // タイルセット内の1タイルから、ゲームへ出力する情報だけを保持する。

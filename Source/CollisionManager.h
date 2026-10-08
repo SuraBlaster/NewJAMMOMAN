@@ -51,6 +51,7 @@ public:
 		const AABB& movingBox,
 		const DirectX::XMFLOAT3& displacement,
 		TerrainSweepHit& hit) const;
+	bool CheckWall(const AABB& body, float displacementX, TerrainSweepHit& hit) const;
 private:
 	bool RayCast(const CollisionMesh* mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result);
 private:

@@ -223,7 +223,7 @@ namespace
     // JSON上の敵名をEnemyTypeへ変換する。未対応名では出力を変更せずfalseを返す。
     bool TryParseEnemyType(std::string_view enemyTypeName,EnemyType& outputEnemyType)
     {
-        constexpr std::array<std::pair<std::string_view, EnemyType>,8> enemyTypeMappings =
+        constexpr std::array<std::pair<std::string_view, EnemyType>,9> enemyTypeMappings =
         { 
             {
                 { "Wave",    EnemyType::Wave },
@@ -233,7 +233,8 @@ namespace
                 { "Hover",   EnemyType::Hover },
                 { "Fly",     EnemyType::Fly },
                 { "Egg",     EnemyType::Egg },
-                { "Boss",    EnemyType::Boss }
+                { "Boss",    EnemyType::Boss },
+                { "Vacuum",  EnemyType::Vacuum }
             } 
         };
           

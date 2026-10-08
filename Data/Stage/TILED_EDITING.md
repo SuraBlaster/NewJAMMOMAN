@@ -19,3 +19,9 @@ StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** に�
 ボス前通路とボス部屋は、旧 `BioLaboratoryTrainingStage` の形状を X +92m / Y +11m だけ移動して復元しました。通路の上下の壁、部屋の天井・左右の壁、左側の3mの入口、ボスの向きと部屋内の相対位置を保持しています。
 
 開発用の `node Tools/build_switchback_course.cjs` はコースを生成し直し、TMJも上書きします。Tiledで編集した後は通常の変換コマンドだけを使ってください。
+
+## 敵の配置
+
+`Tiled/EnemyPlacements.tsj` のタイルをオブジェクトレイヤー `Enemies` に配置してください。`Vacuum` はEnemyVacuumに対応します。1マスは32×32pxで、Mage・Bossは32×64px（1×2）、その他は32×32px（1×1）です。配置座標は下端中央を基準にします。Vacuumの初期方向は文字列プロパティ `direction` に `Left` または `Right` を指定します（省略時はRight）。
+
+アイコン画像は `Tiled/EnemyPlacementIcons/` にあります。マップ・タイルセット・画像フォルダーをセットで保持してください。編集後は通常どおりConvertLaboratory.cmdで変換します。

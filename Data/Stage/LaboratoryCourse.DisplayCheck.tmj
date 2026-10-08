@@ -1155,7 +1155,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":640,
                  "y":16
                 }, 
@@ -1173,7 +1173,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":448,
                  "y":-368
                 }, 
@@ -1191,13 +1191,13 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":2304,
                  "y":-752
                 }, 
                 {
                  "gid":6,
-                 "height":64,
+                 "height":32,
                  "id":4,
                  "name":"Hover",
                  "properties":[
@@ -1209,7 +1209,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":2528,
                  "y":-1008
                 }, 
@@ -1227,7 +1227,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":3968,
                  "y":-688
                 }, 
@@ -1245,7 +1245,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":5152,
                  "y":-560
                 }, 
@@ -1263,7 +1263,7 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":96,
+                 "width":32,
                  "x":7584,
                  "y":-1072
                 }],

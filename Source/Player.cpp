@@ -6,7 +6,7 @@
 #include "SceneClear.h"
 #include "GameScene.h"
 #include "Camera.h"
-#include "GamePad.h"
+#include "InputManager.h"
 #include "Graphics.h"
 #include "CollisionManager.h"
 #include "Collision.h"
@@ -76,7 +76,7 @@ Player::Player(ID3D11Device* device)
 
 	scale.x = scale.y = scale.z = 0.0f;
 
-	health = 20;
+	health = max_health = 20;
 
 	// ステートの生成
 	states[static_cast<size_t>(StateId::Idle)] = std::make_unique<IdleState>(this);
@@ -641,7 +641,7 @@ void Player::CheckSwordCollision(
 // 移動入力処理
 bool Player::InputMove()
 {
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 	float axis_x = game_pad.GetAxisLX();
 
 	input_move_x = axis_x;
@@ -660,19 +660,19 @@ bool Player::InputMove()
 // ジャンプ入力処理
 bool Player::InputJump()
 {
-	const GamePad& game_pad = GamePad::Instance();
-	if (!(game_pad.GetButtonDown() & GamePad::BTN_SPACE)) return false;
+	const InputManager& game_pad = InputManager::Instance();
+	if (!(game_pad.GetButtonDown() & InputManager::BTN_A)) return false;
 	if (!IsGround() && current_state != StateId::WallSlide) return false;
 
-	is_dash_jump = (game_pad.GetButton() & GamePad::BTN_SHIFT) != 0;
+	is_dash_jump = (game_pad.GetButton() & InputManager::BTN_B) != 0;
 	velocity.y = jump_speed * (is_dash_jump ? 1.2f : 1.0f);
 	return true;
 }
 
 bool Player::InputShot()
 {
-	GamePad& game_pad = GamePad::Instance();
-	if (game_pad.GetButtonDown() & GamePad::BTN_MOUSE_LEFT)
+	InputManager& game_pad = InputManager::Instance();
+	if (game_pad.GetButtonDown() & InputManager::BTN_X)
 	{
 		SetState(StateId::Attack);
 		return true;
@@ -682,13 +682,13 @@ bool Player::InputShot()
 
 bool Player::InputDash()
 {
-	return (GamePad::Instance().GetButtonDown() & GamePad::BTN_SHIFT) != 0;
+	return (InputManager::Instance().GetButtonDown() & InputManager::BTN_B) != 0;
 }
 
 // スティックの入力方向とwallNormalの内積が負のとき壁へ向いていると判定する
 bool Player::InputTowardWall()
 {
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 	float axis_x = game_pad.GetAxisLX();
 
 	if (std::abs(axis_x) < 0.1f) return false;
@@ -699,7 +699,7 @@ bool Player::InputTowardWall()
 // 左スティックが壁と反対の方向へ傾けられているか判定
 bool Player::InputAwayFromWall()
 {
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 	float axis_x = game_pad.GetAxisLX();
 
 	if (std::abs(axis_x) < 0.1f) return false;
@@ -709,9 +709,9 @@ bool Player::InputAwayFromWall()
 
 void Player::HoldJump()
 {
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 
-	const bool is_holding_jump = (game_pad.GetButton() & GamePad::BTN_SPACE) != 0;
+	const bool is_holding_jump = (game_pad.GetButton() & InputManager::BTN_A) != 0;
 
 	// ボタンを離しており、かつ現在の上昇速度が規定値を上回っている場合
 	if (!is_holding_jump && velocity.y > cut_jump_velocity)
@@ -781,19 +781,9 @@ bool Player::WallJudgement(float elapsed_time)
 		{
 			TerrainSweepHit hit;
 
-			const SweepStatus status = manager.SweepTerrain(
-				body,
-				DirectX::XMFLOAT3{
-					direction * checkDistance, 0.0f, 0.0f
-				},
-				hit);
+			if (!manager.CheckWall(body, direction * checkDistance, hit)) return false;
 
-			if (status != SweepStatus::Hit)
-			{
-				return false;
-			}
-
-			for (const DirectX::XMFLOAT3& normal : hit.normals)
+            for (const DirectX::XMFLOAT3& normal : hit.normals)
 			{
 				// 調べた方向と向かい合う側面だけを採用する。
 				if (normal.x * direction < -0.5f)
@@ -820,7 +810,7 @@ bool Player::WallJudgement(float elapsed_time)
 	if (rightWall && leftWall)
 	{
 		// 両側が近い場合は、入力方向を優先する。
-		const float axisX = GamePad::Instance().GetAxisLX();
+		const float axisX = InputManager::Instance().GetAxisLX();
 
 		if (axisX > 0.1f)
 		{
@@ -1146,9 +1136,9 @@ void Player::DashState::OnUpdate(float elapsed_time)
 	owner->dash_timer -= elapsed_time;
 	owner->UpdateMotionTrail(elapsed_time);
 
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 
-	if ((game_pad.GetButtonUp() & GamePad::BTN_SHIFT) || owner->dash_timer <= 0.0f)
+	if ((game_pad.GetButtonUp() & InputManager::BTN_B) || owner->dash_timer <= 0.0f)
 	{
 		owner->trails.clear();
 		owner->velocity.x = 0.0f;
@@ -1287,7 +1277,7 @@ void Player::AttackState::OnEnter()
 
 void Player::AttackState::OnUpdate(float elapsed_time)
 {
-	GamePad& game_pad = GamePad::Instance();
+	InputManager& game_pad = InputManager::Instance();
 	bool is_grounded = owner->IsGround();
 
 	if (owner->is_air_attack && is_grounded)
@@ -1333,7 +1323,7 @@ void Player::AttackState::OnUpdate(float elapsed_time)
 	// 攻撃中（1～3段目）のみコンボの先行入力を受け付ける
 	if (owner->combo_step >= 1 && owner->combo_step <= 3)
 	{
-		if (game_pad.GetButtonDown() & GamePad::BTN_X)
+		if (game_pad.GetButtonDown() & InputManager::BTN_X)
 		{
 			owner->has_next_combo_input = true;
 		}
@@ -1465,7 +1455,7 @@ void Player::OnDamaged()
 	input_move_z = 0.0f;
 	SetBladeActive(false);
 	SetTrailActive(false);
-
+	trails.clear();
 }
 
 void Player::OnDead()
@@ -1496,7 +1486,7 @@ void Player::DeathState::OnEnter()
     death_handle = death_effect->Play(owner->position, effect_scale);
     Audio::Instance().StopAll();
     Audio::Instance().Play("SE_DEATH_GENERIC");
-    GamePad::Instance().Vibrate(vibration_power, vibration_power, vibration_duration);
+    InputManager::Instance().GetGamePad().Vibrate(vibration_power, vibration_power, vibration_duration);
 }
 
 void Player::DamageState::OnEnter()
@@ -1532,7 +1522,7 @@ void Player::DeathState::OnExit()
 {
     if (death_effect && death_handle >= 0) death_effect->Stop(death_handle);
     death_handle = -1;
-    if (active) GamePad::Instance().StopVibration();
+    if (active) InputManager::Instance().GetGamePad().StopVibration();
     active = false;
 }
 

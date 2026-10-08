@@ -1,4 +1,7 @@
 {
+  "bossApproachCameraZones": [],
+  "bossEncounterZones": [],
+  "cameraBounds": [],
   "enemies": [
     {
       "direction": "Left",
@@ -63,8 +66,17 @@
         "x": 30.0,
         "y": -5.0
       }
+    },
+    {
+      "direction": "Right",
+      "enemyType": "Vacuum",
+      "position": {
+        "x": 34.0,
+        "y": -5.0
+      }
     }
   ],
+  "fallRespawnZones": [],
   "formatVersion": 1,
   "objects": [],
   "stageName": "EnemyPlacementSample"
