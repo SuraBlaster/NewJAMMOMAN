@@ -111,6 +111,9 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Input.h" />
+    <ClInclude Include="Source\Mouse.h" />
+    <ClInclude Include="Source\InputManager.h" />
     <ClInclude Include="External\imgui-docking\imconfig.h" />
     <ClInclude Include="External\imgui-docking\imgui.h" />
     <ClInclude Include="External\imgui-docking\imgui_impl_dx11.h" />
@@ -141,6 +144,7 @@
     <ClInclude Include="Source\EnemyBoss.h" />
     <ClInclude Include="Source\EnemyEgg.h" />
     <ClInclude Include="Source\EnemyFan.h" />
+    <ClInclude Include="Source\EnemyVacuum.h" />
     <ClInclude Include="Source\EnemyFly.h" />
     <ClInclude Include="Source\EnemyHover.h" />
     <ClInclude Include="Source\EnemyMage.h" />
@@ -202,6 +206,9 @@
     <ClInclude Include="Source\TransformUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Input.cpp" />
+    <ClCompile Include="Source\Mouse.cpp" />
+    <ClCompile Include="Source\InputManager.cpp" />
     <ClCompile Include="External\imgui-docking\imgui.cpp" />
     <ClCompile Include="External\imgui-docking\imgui_demo.cpp" />
     <ClCompile Include="External\imgui-docking\imgui_draw.cpp" />
@@ -229,6 +236,7 @@
     <ClCompile Include="Source\EnemyBoss.cpp" />
     <ClCompile Include="Source\EnemyEgg.cpp" />
     <ClCompile Include="Source\EnemyFan.cpp" />
+    <ClCompile Include="Source\EnemyVacuum.cpp" />
     <ClCompile Include="Source\EnemyFly.cpp" />
     <ClCompile Include="Source\EnemyHover.cpp" />
     <ClCompile Include="Source\EnemyMage.cpp" />

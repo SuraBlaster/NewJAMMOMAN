@@ -6,6 +6,7 @@ function exportStage(input,output) {
  fs.mkdirSync(resources,{recursive:true});
  for(const file of ['CubeBlockTileset.tsj','BlockTileset.png','EnemyPlacements.tsj','EnemyPlacements.png'])
   fs.copyFileSync(path.join(__dirname,'StageConverter/Sample',file),path.join(resources,file));
+ fs.cpSync(path.join(__dirname,'StageConverter/Sample/EnemyPlacementIcons'),path.join(resources,'EnemyPlacementIcons'),{recursive:true});
  let layerId=1,objectId=1;
  const properties=(name,type,value)=>({name,type,value});
  const layers=[];
@@ -30,9 +31,9 @@ function exportStage(input,output) {
    chunks:cells,startx,starty});
  }
  const objectLayer=(name,objects,color)=>layers.push({id:layerId++,name,type:'objectgroup',visible:true,opacity:1,x:0,y:0,draworder:'topdown',color,objects});
- const enemyNames=['Wave','Scatter','Mage','Fan','Hover','Fly','Egg','Boss'];
+ const enemyNames=['Wave','Scatter','Mage','Fan','Hover','Fly','Egg','Boss','Vacuum'];
  objectLayer('Enemies',stage.enemies.map(e=>({id:objectId++,name:e.enemyType,gid:2+enemyNames.indexOf(e.enemyType),
-  x:e.position.x*32,y:-e.position.y*32,width:96,height:64,rotation:0,visible:true,
+  x:e.position.x*32,y:-e.position.y*32,width:32,height:['Mage','Boss'].includes(e.enemyType)?64:32,rotation:0,visible:true,
   properties:[properties('direction','string',e.direction)]})),'#ff6677');
  for(const [name,key,color] of [['FallRespawnZones','fallRespawnZones','#ff3333'],
   ['BossApproachCameraZone','bossApproachCameraZones','#ffcc00'],['BossEncounterZone','bossEncounterZones','#00a8ff'],['CameraBounds','cameraBounds','#55dd88']])

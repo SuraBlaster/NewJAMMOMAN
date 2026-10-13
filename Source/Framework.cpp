@@ -8,7 +8,7 @@
 #include "Graphics.h"
 #include "Effect/EffectManager.h"
 #include "Camera.h"
-#include "GamePad.h"
+#include "InputManager.h"
 #include "ImGuiRenderer.h"
 #include "ModelViewerScene.h"
 #include "GameScene.h"
@@ -26,6 +26,7 @@ Framework::Framework(HWND hWnd)
 {
 	// グラフィックス初期化
 	Graphics::Instance().Initialize(hWnd);
+	InputManager::Instance().Initialize(hWnd);
 	audio = std::make_unique<Audio>();
 	EffectManager::Instance().Initialize();
 
@@ -43,6 +44,7 @@ Framework::~Framework()
 	SceneManager::Instance().Clear();
 	ModelManager::Instance().Clear();
 	EffectManager::Instance().Finalize();
+	InputManager::Instance().GetGamePad().StopVibration();
 	audio.reset();
 	ImGuiRenderer::Finalize();
 }
@@ -50,7 +52,7 @@ Framework::~Framework()
 // 更新処理
 void Framework::Update(float elapsedTime)
 {
-	GamePad::Instance().Update();
+	InputManager::Instance().Update();
 
 	// IMGUIフレーム開始処理	
 	ImGuiRenderer::NewFrame();
@@ -186,6 +188,9 @@ int Framework::Run()
 // メッセージハンドラ
 LRESULT CALLBACK Framework::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (msg == WM_MOUSEWHEEL)
+		InputManager::Instance().SetWheel(GET_WHEEL_DELTA_WPARAM(wParam));
+
 	if (ImGuiRenderer::HandleMessage(hWnd, msg, wParam, lParam))
 		return true;
 

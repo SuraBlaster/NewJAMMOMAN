@@ -35,6 +35,17 @@ bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XM
     return hit;
 }
 
+bool CollisionManager::CheckWall(const AABB& body, float displacementX, TerrainSweepHit& hit) const
+{
+ hit = TerrainSweepHit{};
+ if (displacementX == 0.0f) return false;
+ if (SweepTerrain(body, { displacementX, 0.0f, 0.0f }, hit) != SweepStatus::Hit) return false;
+ const float direction = displacementX < 0.0f ? -1.0f : 1.0f;
+ for (const auto& normal : hit.normals)
+  if (normal.x * direction < -0.5f) return true;
+ return false;
+}
+
 void CollisionManager::RegisterTerrainAABB(const AABB& box)
 {
 	terrainBoxes.push_back(box);

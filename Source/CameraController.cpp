@@ -1,4 +1,4 @@
-﻿#include "GamePad.h"
+﻿#include "InputManager.h"
 #include "CameraController.h"
 #include "Camera.h"
 #include "Player.h"
@@ -20,7 +20,7 @@ void CameraController::Update(
 		pending_move_direction_x = 0.0f;
 		direction_change_timer = 0.0f;
 
-		GamePad& game_pad = GamePad::Instance();
+		InputManager& game_pad = InputManager::Instance();
 		float ax = game_pad.GetAxisRX();
 		float ay = game_pad.GetAxisRY();
 		// カメラの回転速度

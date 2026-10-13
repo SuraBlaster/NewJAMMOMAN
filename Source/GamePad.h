@@ -24,26 +24,16 @@ public:
 	static const GamePadButton BTN_LEFT_TRIGGER		= (1 << 14);
 	static const GamePadButton BTN_RIGHT_TRIGGER	= (1 << 15);
 
-	static const GamePadButton BTN_SPACE			= (1 << 16);
-	static const GamePadButton BTN_SHIFT			= (1 << 17);
-	static const GamePadButton BTN_SHIFT_LEFT		= (1 << 18);
-	static const GamePadButton BTN_SHIFT_RIGHT		= (1 << 19);
-	static const GamePadButton BTN_MOUSE_LEFT		= (1 << 20);
-	static const GamePadButton BTN_MOUSE_RIGHT		= (1 << 21);
-	
 
 private:
 	std::chrono::steady_clock::time_point vibration_end{};
 	bool vibrating = false;
-	GamePad() {}
-	~GamePad() { StopVibration(); }
 
 public:
-	static GamePad& Instance()
-	{
-		static GamePad instance;
-		return instance;
-	}
+	GamePad() = default;
+	~GamePad() { StopVibration(); }
+	GamePad(const GamePad&) = delete;
+	GamePad& operator=(const GamePad&) = delete;
 
 	// XV
 	void Update();

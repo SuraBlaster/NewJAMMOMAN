@@ -16,7 +16,8 @@ enum class EnemyType
     Hover,
     Fly,
     Egg,
-    Boss
+    Boss,
+    Vacuum
 };
 
 // Tiled上で指定した敵の初期方向。現在はEnemyWaveの移動方向に使用する。
