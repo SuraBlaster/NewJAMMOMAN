@@ -169,6 +169,8 @@
     <ClInclude Include="Source\ImGuiRenderer.h" />
     <ClInclude Include="Source\TextRenderer.h" />
     <ClInclude Include="Source\ModelShader.h" />
+    <ClInclude Include="Source\StylizedShading.h" />
+    <ClInclude Include="Source\OutlineShader.h" />
     <ClInclude Include="Source\Light.h" />
     <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Model.h" />
@@ -256,6 +258,8 @@
     <ClCompile Include="Source\ImGuiRenderer.cpp" />
     <ClCompile Include="Source\TextRenderer.cpp" />
     <ClCompile Include="Source\ModelShader.cpp" />
+    <ClCompile Include="Source\StylizedShading.cpp" />
+    <ClCompile Include="Source\OutlineShader.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Model.cpp" />
     <ClCompile Include="Source\ModelManager.cpp" />
@@ -288,6 +292,8 @@
     <None Include="Shader\Basic.hlsli" />
     <None Include="Shader\Model.hlsli" />
     <None Include="Shader\PBR.hlsli" />
+    <None Include="Shader\Stylized.hlsli" />
+    <None Include="Shader\Outline.hlsli" />
     <None Include="Shader\Scene.hlsli" />
     <None Include="Shader\ShapeRenderer.hlsli" />
     <None Include="Shader\PrimitiveRenderer.hlsli" />
@@ -310,6 +316,14 @@
     <FxCompile Include="Shader\ModelVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\OutlineVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shader\OutlinePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shader\ShapeRendererPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

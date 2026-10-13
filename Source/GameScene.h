@@ -72,6 +72,11 @@ private:
     std::unique_ptr<BackgroundCity> backgroundCity;
 	CameraController cameraController;
 	bool isPaused = false;
+#ifdef _DEBUG
+	bool showCollisionBoxes = true;
+#else
+	bool showCollisionBoxes = false;
+#endif
 	std::unique_ptr<Sprite> playerGauge;
 	std::unique_ptr<Sprite> bossGauge;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> gaugeConstants;

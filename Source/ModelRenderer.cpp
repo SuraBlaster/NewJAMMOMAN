@@ -4,6 +4,8 @@
 #include "ModelRenderer.h"
 #include "BasicShader.h"
 #include "ModelShader.h"
+#include "OutlineShader.h"
+#include "StylizedShading.h"
 
 // コンストラクタ
 ModelRenderer::ModelRenderer(ID3D11Device* device)
@@ -15,10 +17,16 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 		sceneConstantBuffer.GetAddressOf());
 
 	// スケルトン用定数バッファ
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbSkeleton),
-		skeletonConstantBuffer.GetAddressOf());
+	// 使うボーン数分だけ書き込めるようにMap可能にしておく
+	{
+		D3D11_BUFFER_DESC desc{};
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		desc.ByteWidth = sizeof(CbSkeleton);
+		HRESULT hr = device->CreateBuffer(&desc, nullptr, skeletonConstantBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+	}
 
 	GpuResourceUtils::CreateConstantBuffer(
 		device,
@@ -28,6 +36,7 @@ ModelRenderer::ModelRenderer(ID3D11Device* device)
 	// シェーダー生成
 	shaders[static_cast<int>(ShaderId::Basic)] = std::make_unique<BasicShader>(device);
 	shaders[static_cast<int>(ShaderId::Model)] = std::make_unique<ModelShader>(device);
+	outlineShader = std::make_unique<OutlineShader>(device);
 }
 
 // 箱描画
@@ -99,23 +108,28 @@ void ModelRenderer::Render(const RenderContext& rc)
 			dc->UpdateSubresource(transparencyConstantBuffer.Get(), 0, nullptr, &cbTransparency, 0, 0);
 
 			// スケルトン用定数バッファ更新
-			CbSkeleton cbSkeleton{};
+			// 毎回256本分送ると重いので、使う分だけ書き込む
+			D3D11_MAPPED_SUBRESOURCE mapped{};
+			HRESULT hr = dc->Map(skeletonConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+			_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+			CbSkeleton* cbSkeleton = static_cast<CbSkeleton*>(mapped.pData);
 			if (mesh.bones.size() > 0)
 			{
-				for (size_t i = 0; i < mesh.bones.size(); ++i)
+				const size_t boneCount = (std::min)(mesh.bones.size(), _countof(cbSkeleton->boneTransforms));
+				for (size_t i = 0; i < boneCount; ++i)
 				{
 					const Model::Bone& bone = mesh.bones.at(i);
 					DirectX::XMMATRIX WorldTransform = DirectX::XMLoadFloat4x4(&bone.node->worldTransform);
 					DirectX::XMMATRIX OffsetTransform = DirectX::XMLoadFloat4x4(&bone.offsetTransform);
 					DirectX::XMMATRIX BoneTransform = OffsetTransform * WorldTransform;
-					DirectX::XMStoreFloat4x4(&cbSkeleton.boneTransforms[i], BoneTransform);
+					DirectX::XMStoreFloat4x4(&cbSkeleton->boneTransforms[i], BoneTransform);
 				}
 			}
 			else
 			{
-				cbSkeleton.boneTransforms[0] = mesh.node->worldTransform;
+				cbSkeleton->boneTransforms[0] = mesh.node->worldTransform;
 			}
-			dc->UpdateSubresource(skeletonConstantBuffer.Get(), 0, 0, &cbSkeleton, 0, 0);
+			dc->Unmap(skeletonConstantBuffer.Get(), 0);
 
 			// 描画直前で定数バッファを確実にスロットへバインドする
 			ID3D11Buffer* vsConstantBuffers[] = { skeletonConstantBuffer.Get(), sceneConstantBuffer.Get(), nullptr, transparencyConstantBuffer.Get() };
@@ -125,6 +139,14 @@ void ModelRenderer::Render(const RenderContext& rc)
 
 			shader->Update(rc, mesh);
 			dc->DrawIndexed(static_cast<UINT>(mesh.indices.size()), 0, 0);
+		};
+
+	// 半透明として後から描くメッシュか
+	auto isTransparentMesh = [](const Model::Mesh& mesh, float alpha)
+		{
+			return (alpha < 1.0f) ||
+				(mesh.material->alphaMode == Model::AlphaMode::Blend) ||
+				(mesh.material->baseColor.w > 0.01f && mesh.material->baseColor.w < 0.99f);
 		};
 
 	DirectX::XMVECTOR CameraPosition = DirectX::XMLoadFloat3(&rc.camera->GetEye());
@@ -140,11 +162,7 @@ void ModelRenderer::Render(const RenderContext& rc)
 
 		for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
 		{
-			bool isTransparent = (drawInfo.alpha < 1.0f) ||
-				(mesh.material->alphaMode == Model::AlphaMode::Blend) ||
-				(mesh.material->baseColor.w > 0.01f && mesh.material->baseColor.w < 0.99f);
-
-			if (isTransparent)
+			if (isTransparentMesh(mesh, drawInfo.alpha))
 			{
 				TransparencyDrawInfo& info = transparencyDrawInfos.emplace_back();
 				info.shaderId = drawInfo.shaderId;
@@ -166,6 +184,21 @@ void ModelRenderer::Render(const RenderContext& rc)
 		}
 
 		shader->End(rc);
+
+		// 箱型のステージは角で線が割れるので、基本はキャラだけに描く
+		const StylizedShading::OutlineSettings& outlineSettings = StylizedShading::Instance().GetOutlineSettings();
+		if (drawInfo.shaderId == ShaderId::Model && outlineSettings.enabled && outlineSettings.width > 0.0f)
+		{
+			outlineShader->Begin(rc);
+			for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
+			{
+				if (isTransparentMesh(mesh, drawInfo.alpha)) continue;
+				if (mesh.bones.empty() && !outlineSettings.drawOnStatic) continue;
+
+				drawMesh(mesh, outlineShader.get(), drawInfo.color, drawInfo.alpha);
+			}
+			outlineShader->End(rc);
+		}
 	}
 	drawInfos.clear();
 

@@ -1,6 +1,7 @@
 #include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "ModelShader.h"
+#include "StylizedShading.h"
 
 ModelShader::ModelShader(ID3D11Device* device)
 {
@@ -24,6 +25,12 @@ ModelShader::ModelShader(ID3D11Device* device)
 		device,
 		sizeof(CbMesh),
 		meshConstantBuffer.GetAddressOf());
+
+	// スタイライズド用定数バッファ
+	GpuResourceUtils::CreateConstantBuffer(
+		device,
+		sizeof(StylizedShading::Settings),
+		stylizeConstantBuffer.GetAddressOf());
 }
 
 // 開始処理
@@ -36,10 +43,14 @@ void ModelShader::Begin(const RenderContext& rc)
 	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
 	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
 
+	// スタイライズド用定数バッファ更新
+	dc->UpdateSubresource(stylizeConstantBuffer.Get(), 0, 0, &StylizedShading::Instance().GetSettings(), 0, 0);
+
 	// 定数バッファ設定
 	ID3D11Buffer* cbs[] =
 	{
-		meshConstantBuffer.Get(), 
+		meshConstantBuffer.Get(),
+		stylizeConstantBuffer.Get(),
 	};
 	dc->PSSetConstantBuffers(0, _countof(cbs), cbs);
 }
@@ -55,6 +66,8 @@ void ModelShader::Update(const RenderContext& rc, const Model::Mesh& mesh)
 	cbMesh.emissive = mesh.material->emissiveColor;
 	cbMesh.metalness = mesh.material->metalness;
 	cbMesh.smoothness = 1.0f - mesh.material->roughness;
+	// 平らな面は面ごと光ってしまうので、ステージは別の倍率にする
+	cbMesh.rimWeight = mesh.bones.empty() ? StylizedShading::Instance().GetStaticRimScale() : 1.0f;
 	dc->UpdateSubresource(meshConstantBuffer.Get(), 0, 0, &cbMesh, 0, 0);
 
 	// シェーダーリソースビュー設定
@@ -79,8 +92,8 @@ void ModelShader::End(const RenderContext& rc)
 	dc->IASetInputLayout(nullptr);
 
 	// 定数バッファ設定解除
-	ID3D11Buffer* cbs[] = { nullptr };
-	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
+	ID3D11Buffer* cbs[] = { nullptr, nullptr };
+	dc->PSSetConstantBuffers(0, _countof(cbs), cbs);
 
 	// シェーダーリソースビュー設定解除
 	ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr, nullptr };

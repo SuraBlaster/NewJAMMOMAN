@@ -74,6 +74,7 @@ private:
 	};
 
 	std::unique_ptr<Shader>					shaders[static_cast<int>(ShaderId::EnumCount)];
+	std::unique_ptr<Shader>					outlineShader;
 	std::vector<DrawInfo>					drawInfos;
 	std::vector<TransparencyDrawInfo>		transparencyDrawInfos;
 

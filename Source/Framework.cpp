@@ -16,9 +16,11 @@
 #include "SceneTitle.h"
 #include "SceneClear.h"
 #include "SceneLoading.h"
+#include "StylizedShading.h"
 
 // 垂直同期間隔設定
-static const int syncInterval = 1;
+// 性能計測のためSceneウインドウから切り替えられるようにしている
+static int syncInterval = 1;
 
 // コンストラクタ
 Framework::Framework(HWND hWnd)
@@ -84,6 +86,9 @@ void Framework::Render(float elapsedTime)
 
 	// シーン切り替えGUI
 	SceneSelectGUI();
+
+	// スタイライズドシェーディング調整GUI
+	StylizedShading::Instance().DrawGUI();
 #if 0
 	// IMGUIデモウインドウ描画（IMGUI機能テスト用）
 	ImGui::ShowDemoWindow();
@@ -129,6 +134,12 @@ void Framework::SceneSelectGUI()
 		ChangeSceneButtonGUI<SceneClear>("Clear (preview)");
 		ChangeSceneButtonGUI<ModelViewerScene>(u8"モデルビューア");
 		ChangeSceneButtonGUI<GameScene>(u8"ゲーム");
+
+		bool vsync = syncInterval != 0;
+		if (ImGui::Checkbox(u8"垂直同期", &vsync))
+		{
+			syncInterval = vsync ? 1 : 0;
+		}
 	}
 	ImGui::End();
 }

@@ -13,6 +13,7 @@ VS_OUT main(
 
 	position = SkinningPosition(position, bone_weights, bone_indices);
 	vout.vertex = mul(position, cb_view_projection);
+	vout.position = position.xyz;	// ‹ü•ûŒü‚ÌŒvZ‚Ég‚¤
 	vout.texcoord = texcoord;
 	vout.normal = SkinningVector(normal, bone_weights, bone_indices);
 	vout.tangent.xyz = SkinningVector(tangent.xyz, bone_weights, bone_indices);

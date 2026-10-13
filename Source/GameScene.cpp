@@ -436,32 +436,35 @@ void GameScene::Render(float elapsedTime)
     backgroundFog->Render();
 
 	// 実際に衝突判定へ登録した箱を表示する。
-	for (const AABB& box : stage->GetTerrainAABBs())
+	if (showCollisionBoxes)
 	{
-        if (!terrainVisible(box)) continue;
-		shapeRenderer->DrawBox(
-			box.GetCenter(),
-			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
-			box.GetHalfSize(),
-			DirectX::XMFLOAT4{ 0.0f, 0.8f, 1.0f, 1.0f }
-		);
-	}
-
-	for (const auto& stageObject : stage->GetStageObjects())
-	{
-		AABB box;
-
-		if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
+		for (const AABB& box : stage->GetTerrainAABBs())
 		{
-			continue;
+	        if (!terrainVisible(box)) continue;
+			shapeRenderer->DrawBox(
+				box.GetCenter(),
+				DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+				box.GetHalfSize(),
+				DirectX::XMFLOAT4{ 0.0f, 0.8f, 1.0f, 1.0f }
+			);
 		}
 
-		shapeRenderer->DrawBox(
-			box.GetCenter(),
-			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
-			box.GetHalfSize(),
-			DirectX::XMFLOAT4{ 1.0f, 0.8f, 0.0f, 1.0f }
-		);
+		for (const auto& stageObject : stage->GetStageObjects())
+		{
+			AABB box;
+
+			if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
+			{
+				continue;
+			}
+
+			shapeRenderer->DrawBox(
+				box.GetCenter(),
+				DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+				box.GetHalfSize(),
+				DirectX::XMFLOAT4{ 1.0f, 0.8f, 0.0f, 1.0f }
+			);
+		}
 	}
 	// 実際の刀判定と同じ掃引カプセルをデバッグ表示する。
 	player->DrawDebugPrimitive(shapeRenderer);
@@ -515,6 +518,7 @@ void GameScene::DrawGUI()
 	if (ImGui::Begin("Debug"))
 	{
 		ImGui::Checkbox(u8"ゲーム時間を停止", &isPaused);
+		ImGui::Checkbox(u8"当たり判定の箱を表示", &showCollisionBoxes);
 		ImGui::Text("Enemy count: %zu", EnemyManager::Instance().GetEnemyCount());
 	}
 	ImGui::End();

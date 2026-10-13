@@ -1,5 +1,8 @@
+#include <dxgi1_5.h>
 #include "Misc.h"
 #include "Graphics.h"
+
+#pragma comment(lib, "dxgi.lib")
 
 // 初期化
 void Graphics::Initialize(HWND hWnd)
@@ -15,6 +18,17 @@ void Graphics::Initialize(HWND hWnd)
 	this->screenHeight = static_cast<float>(screenHeight);
 
 	HRESULT hr = S_OK;
+
+	// FLIP系のスワップチェーンはこれが無いと垂直同期を切っても画面の更新間隔で止まる
+	{
+		Microsoft::WRL::ComPtr<IDXGIFactory5> factory;
+		BOOL allowTearing = FALSE;
+		if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(factory.GetAddressOf()))) &&
+			SUCCEEDED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+		{
+			tearingSupported = allowTearing == TRUE;
+		}
+	}
 
 	// デバイス＆スワップチェーンの生成
 	{
@@ -49,7 +63,7 @@ void Graphics::Initialize(HWND hWnd)
 			swapchainDesc.OutputWindow = hWnd;
 			swapchainDesc.Windowed = TRUE;
 			swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapchainDesc.Flags = 0;
+			swapchainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 		}
 
 		D3D_FEATURE_LEVEL featureLevel;
@@ -150,5 +164,6 @@ void Graphics::SetRenderTargets()
 // 画面表示
 void Graphics::Present(UINT syncInterval)
 {
-	swapchain->Present(syncInterval, 0);
+	const UINT flags = (syncInterval == 0 && tearingSupported) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	swapchain->Present(syncInterval, flags);
 }

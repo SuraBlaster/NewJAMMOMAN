@@ -252,6 +252,12 @@
     <ClInclude Include="Source\ModelShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Source\StylizedShading.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\OutlineShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
     <ClInclude Include="Source\ModelViewerScene.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
@@ -496,6 +502,12 @@
     <ClCompile Include="Source\ModelShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\StylizedShading.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\OutlineShader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="Source\ModelViewerScene.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -582,6 +594,12 @@
     <None Include="Shader\PBR.hlsli">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\Stylized.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Outline.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\SpriteVS.hlsl">
@@ -615,6 +633,12 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Shader\ModelVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\OutlineVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\OutlinePS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Shader\CityPS.hlsl">

@@ -73,6 +73,7 @@ private:
 
 	float	screenWidth = 0;
 	float	screenHeight = 0;
+	bool	tearingSupported = false;
 
 	std::unique_ptr<RenderState>					renderState;
 	std::unique_ptr<PrimitiveRenderer>				primitiveRenderer;

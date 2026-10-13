@@ -1,5 +1,6 @@
 #include "PBR.hlsli"
 #include "Model.hlsli"
+#include "Stylized.hlsli"
 
 cbuffer CbMesh : register(b0)
 {
@@ -7,7 +8,8 @@ cbuffer CbMesh : register(b0)
     float3 cb_emissive;
     float  cb_metalness;
     float  cb_smoothness;
-    float3 cb_padding;
+    float  cb_rim_weight;
+    float2 cb_padding;
 };
 
 cbuffer CbTransparency : register(b9)
@@ -58,7 +60,10 @@ float4 main(VS_OUT pin) : SV_TARGET
     float hemisphere_light_factor = dot(normal, float3(0, 1, 0)) * 0.5f + 0.5f;
     float3 ambient = lerp(cb_ground_color.rgb, cb_sky_color.rgb, hemisphere_light_factor) * cb_hemisphere_weight;
     // ディレクショナルライト
-    float3 color = BRDF(albedo.rgb, metalness, smoothness, normal, view_direction, -cb_light_direction.xyz, cb_light_color.rgb, ambient);
+    float3 light_direction = -cb_light_direction.xyz;
+    float3 pbr_color = BRDF(albedo.rgb, metalness, smoothness, normal, view_direction, light_direction, cb_light_color.rgb, ambient);
+    float3 stylized_color = StylizedLighting(albedo.rgb, metalness, smoothness, normal, view_direction, light_direction, cb_light_color.rgb, ambient, cb_rim_weight);
+    float3 color = lerp(pbr_color, stylized_color, cb_stylize_blend);
 
     
     // エミッシブ

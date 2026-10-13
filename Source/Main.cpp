@@ -15,6 +15,13 @@ namespace
     };
 }
 
+// GPUが2つあるノートPCで高性能側を使わせる（該当しない環境では無視される）
+extern "C"
+{
+	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
 const LONG SCREEN_WIDTH = 1280;
 const LONG SCREEN_HEIGHT = 720;
 
