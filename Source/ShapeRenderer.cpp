@@ -59,10 +59,10 @@ void ShapeRenderer::DrawBox(
 	instance.mesh = &boxMesh;
 	instance.color = color;
 
-	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(size.x, size.y, size.z);
-	DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
-	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-	DirectX::XMStoreFloat4x4(&instance.worldTransform, S * R * T);
+	DirectX::XMMATRIX s = DirectX::XMMatrixScaling(size.x, size.y, size.z);
+	DirectX::XMMATRIX rMatrix = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+	DirectX::XMMATRIX t = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	DirectX::XMStoreFloat4x4(&instance.worldTransform, s * rMatrix * t);
 }
 
 // 球描画
@@ -75,9 +75,9 @@ void ShapeRenderer::DrawSphere(
 	instance.mesh = &sphereMesh;
 	instance.color = color;
 
-	DirectX::XMMATRIX S = DirectX::XMMatrixScaling(radius, radius, radius);
-	DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-	DirectX::XMStoreFloat4x4(&instance.worldTransform, S * T);
+	DirectX::XMMATRIX s = DirectX::XMMatrixScaling(radius, radius, radius);
+	DirectX::XMMATRIX t = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+	DirectX::XMStoreFloat4x4(&instance.worldTransform, s * t);
 }
 
 // カプセル描画
@@ -87,43 +87,43 @@ void ShapeRenderer::DrawCapsule(
 	float height,
 	const DirectX::XMFLOAT4& color)
 {
-	DirectX::XMMATRIX Transform = DirectX::XMLoadFloat4x4(&transform);
+	DirectX::XMMATRIX transformMatrix = DirectX::XMLoadFloat4x4(&transform);
 
 	// 上半球
 	{
 		Instance& instance = instances.emplace_back();
 		instance.mesh = &halfSphereMesh;
-		DirectX::XMVECTOR Position = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, height * 0.5f, 0, 0), Transform);
-		DirectX::XMMATRIX World = DirectX::XMMatrixScaling(radius, radius, radius);
-		World.r[3] = DirectX::XMVectorSetW(Position, 1.0f);
-		DirectX::XMStoreFloat4x4(&instance.worldTransform, World);
+		DirectX::XMVECTOR positionVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, height * 0.5f, 0, 0), transformMatrix);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(radius, radius, radius);
+		world.r[3] = DirectX::XMVectorSetW(positionVector, 1.0f);
+		DirectX::XMStoreFloat4x4(&instance.worldTransform, world);
 		instance.color = color;
 	}
 	// 円柱
 	{
 		Instance& instance = instances.emplace_back();
 		instance.mesh = &cylinderMesh;
-		DirectX::XMMATRIX World;
-		World.r[0] = DirectX::XMVectorScale(Transform.r[0], radius);
-		World.r[1] = DirectX::XMVectorScale(Transform.r[1], height);
-		World.r[2] = DirectX::XMVectorScale(Transform.r[2], radius);
-		World.r[3] = Transform.r[3];
-		DirectX::XMStoreFloat4x4(&instance.worldTransform, World);
+		DirectX::XMMATRIX world;
+		world.r[0] = DirectX::XMVectorScale(transformMatrix.r[0], radius);
+		world.r[1] = DirectX::XMVectorScale(transformMatrix.r[1], height);
+		world.r[2] = DirectX::XMVectorScale(transformMatrix.r[2], radius);
+		world.r[3] = transformMatrix.r[3];
+		DirectX::XMStoreFloat4x4(&instance.worldTransform, world);
 		instance.color = color;
 	}
 	// 下半球
 	{
 		Instance& instance = instances.emplace_back();
 		instance.mesh = &halfSphereMesh;
-		DirectX::XMMATRIX World = DirectX::XMMatrixRotationX(DirectX::XM_PI);
-		DirectX::XMVECTOR Position = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, -height * 0.5f, 0, 0), Transform);
-		Transform.r[3] = DirectX::XMVectorSet(0, 0, 0, 1);
-		World = DirectX::XMMatrixMultiply(World, Transform);
-		World.r[0] = DirectX::XMVectorScale(World.r[0], radius);
-		World.r[1] = DirectX::XMVectorScale(World.r[1], radius);
-		World.r[2] = DirectX::XMVectorScale(World.r[2], radius);
-		World.r[3] = DirectX::XMVectorSetW(Position, 1.0f);
-		DirectX::XMStoreFloat4x4(&instance.worldTransform, World);
+		DirectX::XMMATRIX world = DirectX::XMMatrixRotationX(DirectX::XM_PI);
+		DirectX::XMVECTOR positionVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, -height * 0.5f, 0, 0), transformMatrix);
+		transformMatrix.r[3] = DirectX::XMVectorSet(0, 0, 0, 1);
+		world = DirectX::XMMatrixMultiply(world, transformMatrix);
+		world.r[0] = DirectX::XMVectorScale(world.r[0], radius);
+		world.r[1] = DirectX::XMVectorScale(world.r[1], radius);
+		world.r[2] = DirectX::XMVectorScale(world.r[2], radius);
+		world.r[3] = DirectX::XMVectorSetW(positionVector, 1.0f);
+		DirectX::XMStoreFloat4x4(&instance.worldTransform, world);
 		instance.color = color;
 	}
 }
@@ -138,11 +138,11 @@ void ShapeRenderer::DrawBone(
 	instance.mesh = &boneMesh;
 	instance.color = color;
 
-	DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&transform);
-	W.r[0] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(W.r[0]), length);
-	W.r[1] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(W.r[1]), length);
-	W.r[2] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(W.r[2]), length);
-	DirectX::XMStoreFloat4x4(&instance.worldTransform, W);
+	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&transform);
+	w.r[0] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(w.r[0]), length);
+	w.r[1] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(w.r[1]), length);
+	w.r[2] = DirectX::XMVectorScale(DirectX::XMVector3Normalize(w.r[2]), length);
+	DirectX::XMStoreFloat4x4(&instance.worldTransform, w);
 }
 
 // メッシュ生成
@@ -274,14 +274,14 @@ void ShapeRenderer::CreateHalfSphereMesh(ID3D11Device* device, float radius, int
 {
 	std::vector<DirectX::XMFLOAT3> vertices;
 
-	float theta_step = DirectX::XM_2PI / subdivisions;
+	float thetaStep = DirectX::XM_2PI / subdivisions;
 
 	// XZ平面
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
 		{
-			float theta = theta_step * ((i + j) % subdivisions);
+			float theta = thetaStep * ((i + j) % subdivisions);
 
 			DirectX::XMFLOAT3& v = vertices.emplace_back();
 
@@ -295,7 +295,7 @@ void ShapeRenderer::CreateHalfSphereMesh(ID3D11Device* device, float radius, int
 	{
 		for (int j = 0; j < 2; ++j)
 		{
-			float theta = theta_step * ((i + j) % subdivisions) - DirectX::XM_PIDIV2;
+			float theta = thetaStep * ((i + j) % subdivisions) - DirectX::XM_PIDIV2;
 
 			DirectX::XMFLOAT3& v = vertices.emplace_back();
 
@@ -309,7 +309,7 @@ void ShapeRenderer::CreateHalfSphereMesh(ID3D11Device* device, float radius, int
 	{
 		for (int j = 0; j < 2; ++j)
 		{
-			float theta = theta_step * ((i + j) % subdivisions);
+			float theta = thetaStep * ((i + j) % subdivisions);
 
 			DirectX::XMFLOAT3& v = vertices.emplace_back();
 
@@ -328,14 +328,14 @@ void ShapeRenderer::CreateCylinderMesh(ID3D11Device* device, float radius1, floa
 {
 	std::vector<DirectX::XMFLOAT3> vertices;
 
-	float theta_step = DirectX::XM_2PI / subdivisions;
+	float thetaStep = DirectX::XM_2PI / subdivisions;
 
 	// XZ平面
 	for (int i = 0; i < subdivisions; ++i)
 	{
 		for (int j = 0; j < 2; ++j)
 		{
-			float theta = theta_step * ((i + j) % subdivisions);
+			float theta = thetaStep * ((i + j) % subdivisions);
 
 			DirectX::XMFLOAT3& v = vertices.emplace_back();
 
@@ -348,7 +348,7 @@ void ShapeRenderer::CreateCylinderMesh(ID3D11Device* device, float radius1, floa
 	{
 		for (int j = 0; j < 2; ++j)
 		{
-			float theta = theta_step * ((i + j) % subdivisions);
+			float theta = thetaStep * ((i + j) % subdivisions);
 
 			DirectX::XMFLOAT3& v = vertices.emplace_back();
 
@@ -440,9 +440,9 @@ void ShapeRenderer::Render(
 	dc->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	// ビュープロジェクション行列作成
-	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
-	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&projection);
-	DirectX::XMMATRIX VP = V * P;
+	DirectX::XMMATRIX vMatrix = DirectX::XMLoadFloat4x4(&view);
+	DirectX::XMMATRIX pMatrix = DirectX::XMLoadFloat4x4(&projection);
+	DirectX::XMMATRIX vp = vMatrix * pMatrix;
 
 	// プリミティブ設定
 	UINT stride = sizeof(DirectX::XMFLOAT3);
@@ -455,12 +455,12 @@ void ShapeRenderer::Render(
 		dc->IASetVertexBuffers(0, 1, instance.mesh->vertexBuffer.GetAddressOf(), &stride, &offset);
 
 		// ワールドビュープロジェクション行列作成
-		DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&instance.worldTransform);
-		DirectX::XMMATRIX WVP = W * VP;
+		DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&instance.worldTransform);
+		DirectX::XMMATRIX wvp = w * vp;
 
 		// 定数バッファ更新
 		CbMesh cbMesh;
-		DirectX::XMStoreFloat4x4(&cbMesh.worldViewProjection, WVP);
+		DirectX::XMStoreFloat4x4(&cbMesh.worldViewProjection, wvp);
 		cbMesh.color = instance.color;
 
 		dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbMesh, 0, 0);

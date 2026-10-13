@@ -11,7 +11,7 @@
 bool LoadImageData(tinygltf::Image*, const int, std::string*,
 	std::string*, int, int,
 	const unsigned char*, int,
-	void* user_pointer)
+	void* userPointer)
 {
 	return true;
 }
@@ -76,12 +76,12 @@ void GLTFImporter::LoadNodes(NodeList& nodes)
 		{
 			DirectX::XMFLOAT4X4 m = gltfMatrixToXMFLOAT4X4(gltfNode.matrix);
 
-			DirectX::XMVECTOR S, R, T;
-			DirectX::XMMatrixDecompose(&S, &R, &T, DirectX::XMLoadFloat4x4(&m));
+			DirectX::XMVECTOR s, R, t;
+			DirectX::XMMatrixDecompose(&s, &R, &t, DirectX::XMLoadFloat4x4(&m));
 
-			DirectX::XMStoreFloat3(&node.scale, S);
+			DirectX::XMStoreFloat3(&node.scale, s);
 			DirectX::XMStoreFloat4(&node.rotation, R);
-			DirectX::XMStoreFloat3(&node.position, T);
+			DirectX::XMStoreFloat3(&node.position, t);
 		}
 		else
 		{
@@ -516,7 +516,7 @@ void GLTFImporter::LoadMaterials(MaterialList& materials, ID3D11Device* device)
 // アニメーションデータを読み込み
 void GLTFImporter::LoadAnimations(AnimationList& animations, const NodeList& nodes, float sampleRate)
 {
-	DirectX::XMVECTOR Epsilon = DirectX::XMVectorReplicate(0.00001f);
+	DirectX::XMVECTOR epsilon = DirectX::XMVectorReplicate(0.00001f);
 
 	for (const tinygltf::Animation& gltfAnimation : gltfModel.animations)
 	{
@@ -553,11 +553,11 @@ void GLTFImporter::LoadAnimations(AnimationList& animations, const NodeList& nod
 				}
 				// キーフレームの値が全て同じなら最初のキーフレーム以外省く
 				bool result = true;
-				DirectX::XMVECTOR A = DirectX::XMLoadFloat3(&nodeAnim.scaleKeyframes.at(0).value);
+				DirectX::XMVECTOR a = DirectX::XMLoadFloat3(&nodeAnim.scaleKeyframes.at(0).value);
 				for (size_t i = 1; i < nodeAnim.scaleKeyframes.size(); ++i)
 				{
-					DirectX::XMVECTOR B = DirectX::XMLoadFloat3(&nodeAnim.scaleKeyframes.at(i).value);
-					if (!DirectX::XMVector3NearEqual(A, B, Epsilon))
+					DirectX::XMVECTOR b = DirectX::XMLoadFloat3(&nodeAnim.scaleKeyframes.at(i).value);
+					if (!DirectX::XMVector3NearEqual(a, b, epsilon))
 					{
 						result = false;
 						break;
@@ -586,11 +586,11 @@ void GLTFImporter::LoadAnimations(AnimationList& animations, const NodeList& nod
 
 				// キーフレームの値が全て同じなら最初のキーフレーム以外省く
 				bool result = true;
-				DirectX::XMVECTOR A = DirectX::XMLoadFloat4(&nodeAnim.rotationKeyframes.at(0).value);
+				DirectX::XMVECTOR a = DirectX::XMLoadFloat4(&nodeAnim.rotationKeyframes.at(0).value);
 				for (size_t i = 1; i < nodeAnim.rotationKeyframes.size(); ++i)
 				{
-					DirectX::XMVECTOR B = DirectX::XMLoadFloat4(&nodeAnim.rotationKeyframes.at(i).value);
-					if (!DirectX::XMVector4NearEqual(A, B, Epsilon))
+					DirectX::XMVECTOR b = DirectX::XMLoadFloat4(&nodeAnim.rotationKeyframes.at(i).value);
+					if (!DirectX::XMVector4NearEqual(a, b, epsilon))
 					{
 						result = false;
 						break;
@@ -614,11 +614,11 @@ void GLTFImporter::LoadAnimations(AnimationList& animations, const NodeList& nod
 
 				// キーフレームの値が全て同じなら最初のキーフレーム以外省く
 				bool result = true;
-				DirectX::XMVECTOR A = DirectX::XMLoadFloat3(&nodeAnim.positionKeyframes.at(0).value);
+				DirectX::XMVECTOR a = DirectX::XMLoadFloat3(&nodeAnim.positionKeyframes.at(0).value);
 				for (size_t i = 1; i < nodeAnim.positionKeyframes.size(); ++i)
 				{
-					DirectX::XMVECTOR B = DirectX::XMLoadFloat3(&nodeAnim.positionKeyframes.at(i).value);
-					if (!DirectX::XMVector3NearEqual(A, B, Epsilon))
+					DirectX::XMVECTOR b = DirectX::XMLoadFloat3(&nodeAnim.positionKeyframes.at(i).value);
+					if (!DirectX::XMVector3NearEqual(a, b, epsilon))
 					{
 						result = false;
 						break;
@@ -858,15 +858,15 @@ void GLTFImporter::ComputeTangents(std::vector<Model::Vertex>& vertices, const s
 	{
 		Model::Vertex& v = vertices[i];
 
-		DirectX::XMVECTOR N = DirectX::XMLoadFloat3(&v.normal);
-		DirectX::XMVECTOR T1 = DirectX::XMLoadFloat3(&tan1[i]);
+		DirectX::XMVECTOR n = DirectX::XMLoadFloat3(&v.normal);
+		DirectX::XMVECTOR t1Vector = DirectX::XMLoadFloat3(&tan1[i]);
 
 		// Gram-Schmidt orthogonalize        
-		DirectX::XMVECTOR T = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(T1, DirectX::XMVectorScale(N, DirectX::XMVectorGetX(DirectX::XMVector3Dot(N, T1)))));
+		DirectX::XMVECTOR t = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(t1Vector, DirectX::XMVectorScale(n, DirectX::XMVectorGetX(DirectX::XMVector3Dot(n, t1Vector)))));
 
 		// Calculate handedness        
-		DirectX::XMVECTOR T2 = DirectX::XMLoadFloat3(&tan2[i]);
-		float handedness = (DirectX::XMVectorGetX(DirectX::XMVector3Dot(DirectX::XMVector3Cross(N, T1), T2)) < 0.0f) ? -1.0f : 1.0f;
-		DirectX::XMStoreFloat4(&v.tangent, DirectX::XMVectorSetW(T, handedness));
+		DirectX::XMVECTOR t2Vector = DirectX::XMLoadFloat3(&tan2[i]);
+		float handedness = (DirectX::XMVectorGetX(DirectX::XMVector3Dot(DirectX::XMVector3Cross(n, t1Vector), t2Vector)) < 0.0f) ? -1.0f : 1.0f;
+		DirectX::XMStoreFloat4(&v.tangent, DirectX::XMVectorSetW(t, handedness));
 	}
 }

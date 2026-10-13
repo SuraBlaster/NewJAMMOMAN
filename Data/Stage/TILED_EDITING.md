@@ -25,3 +25,9 @@ StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** に�
 `Tiled/EnemyPlacements.tsj` のタイルをオブジェクトレイヤー `Enemies` に配置してください。`Vacuum` はEnemyVacuumに対応します。1マスは32×32pxで、Mage・Bossは32×64px（1×2）、その他は32×32px（1×1）です。配置座標は下端中央を基準にします。Vacuumの初期方向は文字列プロパティ `direction` に `Left` または `Right` を指定します（省略時はRight）。
 
 アイコン画像は `Tiled/EnemyPlacementIcons/` にあります。マップ・タイルセット・画像フォルダーをセットで保持してください。編集後は通常どおりConvertLaboratory.cmdで変換します。
+
+## ゲートの配置
+
+タイルレイヤー Gates を選び、タイルセット OneWayGates の右矢印／左矢印を描いてください。1マスは通常ブロックと同じ1mです。同じ向きのタイルを縦に並べると一緒に開閉し、プレイヤー全体が矢印方向に通過すると閉じて戻れなくなります。通路入口とボス部屋入口には幅1マス・高さ3マスの右向きゲートを配置済みです。保存後は通常の ConvertLaboratory.cmd で変換します。詳しい仕様は ../../BOSS_GATE.md を参照してください。
+
+ゲームが読み込むマップはこのフォルダーの LaboratoryCourse.tmj を変換した ConvertedStage.stage.json です。Tools/StageConverter/Sample/LaboratoryCourse.tmj は別のサンプルファイルです。普段の編集は Data/Stage/LaboratoryCourse.tmj に統一してください。GUI変換でも、このData側マップを選ぶとゲーム用の ConvertedStage.stage.json が出力先候補になります。

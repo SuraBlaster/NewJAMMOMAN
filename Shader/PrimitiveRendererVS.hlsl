@@ -1,8 +1,8 @@
 #include "PrimitiveRenderer.hlsli"
 
-VS_OUT main(VS_IN vin)
+VsOutput main(VsInput vin)
 {
-	VS_OUT vout;
+	VsOutput vout;
 	vout.position = mul(vin.position, viewProjection);
 	vout.color = vin.color;
 	vout.texcoord = vin.texcoord;

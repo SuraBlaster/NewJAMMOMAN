@@ -14,7 +14,7 @@ TitlePlayer::TitlePlayer()
 
 void TitlePlayer::Reset()
 {
-    position = {8.0f, GroundY, -3.0f};
+    position = {8.0f, GROUND_Y, -3.0f};
     rotation = {0, DirectX::XMConvertToRadians(180), 0};
     scale = {0.018f, 0.018f, 0.018f};
     velocity = {0, 0, 0};
@@ -43,7 +43,7 @@ void TitlePlayer::Update(float elapsedTime)
         {
             jumpTime = -timer;
             state = State::Jump;
-            velocity.y = JumpSpeed;
+            velocity.y = JUMP_SPEED;
             PlayAnimation(model->GetAnimationIndex("Jump_Start_0_Seq_0"), false, 0.1f);
         }
     }
@@ -51,7 +51,7 @@ void TitlePlayer::Update(float elapsedTime)
     {
         position.y += velocity.y * jumpTime - 0.5f * 30.0f * jumpTime * jumpTime;
         velocity.y -= 30.0f * jumpTime;
-        if (position.y <= GroundY) Reset();
+        if (position.y <= GROUND_Y) Reset();
     }
     if (animator) animator->Update(dt);
     UpdateTransform();

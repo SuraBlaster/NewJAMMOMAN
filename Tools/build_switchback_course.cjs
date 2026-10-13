@@ -69,7 +69,9 @@ const mainPath=[[0,1],[31,1],[32,10],[27,13],[2,13],[2,23],[8,25],[47,25],
  [112,23],[112,15],[135,15],[136,7],[148,7],[148,17],[156,19],[173,19],[173,33],
  [181,35],[194,35],[208,35],[225,35],[234,35]];
 const shortcutPath=[[47,25],[47,31],[54,31],[65,31],[81,31],[98,31],[107,31]];
-const stage={formatVersion:1,stageName:'Laboratory - Switchback Reactor',objects:[...tiles.values()],enemies,
+const gateObjects=[210,225].flatMap(x=>[34,35,36].map(y=>({
+ typeId:301,position:{x,y},rotationDegrees:0,scale:{x:1,y:1}})));
+const stage={formatVersion:1,stageName:'Laboratory - Switchback Reactor',objects:[...tiles.values(),...gateObjects],enemies,
  fallRespawnZones:[{minX:-30,maxX:270,minY:-1000,maxY:-5}],
  bossApproachCameraZones:[{minX:209.5,maxX:225.5,minY:33.5,maxY:36.5}],
  bossEncounterZones:[{minX:225.5,maxX:239.5,minY:33.5,maxY:42.5}]};

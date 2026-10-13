@@ -10,11 +10,11 @@ void FreeCameraController::SyncCameraToController(const Camera& camera)
 	right = camera.GetRight();
 
 	// 視点から注視点までの距離を算出
-	DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&eye);
-	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
-	DirectX::XMVECTOR Vec = DirectX::XMVectorSubtract(Focus, Eye);
-	DirectX::XMVECTOR Distance = DirectX::XMVector3Length(Vec);
-	DirectX::XMStoreFloat(&distance, Distance);
+	DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&eye);
+	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
+	DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(focusVector, eyeVector);
+	DirectX::XMVECTOR distanceVector = DirectX::XMVector3Length(vec);
+	DirectX::XMStoreFloat(&distance, distanceVector);
 
 	// 回転角度を算出
 	const DirectX::XMFLOAT3& front = camera.GetFront();
@@ -119,21 +119,21 @@ void FreeCameraController::Update()
 	float cy = ::cosf(angleY);
 
 	// カメラの方向を算出
-	DirectX::XMVECTOR Front = DirectX::XMVectorSet(-cx * sy, -sx, -cx * cy, 0.0f);
-	DirectX::XMVECTOR Right = DirectX::XMVectorSet(cy, 0, -sy, 0.0f);
-	DirectX::XMVECTOR Up = DirectX::XMVector3Cross(Right, Front);
+	DirectX::XMVECTOR frontVector = DirectX::XMVectorSet(-cx * sy, -sx, -cx * cy, 0.0f);
+	DirectX::XMVECTOR rightVector = DirectX::XMVectorSet(cy, 0, -sy, 0.0f);
+	DirectX::XMVECTOR upVector = DirectX::XMVector3Cross(rightVector, frontVector);
 	// カメラの視点＆注視点を算出
-	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&focus);
-	DirectX::XMVECTOR Distance = DirectX::XMVectorSet(distance, distance, distance, 0.0f);
-	DirectX::XMVECTOR Eye = DirectX::XMVectorSubtract(Focus, DirectX::XMVectorMultiply(Front, Distance));
+	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
+	DirectX::XMVECTOR distanceVector = DirectX::XMVectorSet(distance, distance, distance, 0.0f);
+	DirectX::XMVECTOR eyeVector = DirectX::XMVectorSubtract(focusVector, DirectX::XMVectorMultiply(frontVector, distanceVector));
 	// ビュー行列からワールド行列を算出
-	DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, Focus, Up);
-	DirectX::XMMATRIX World = DirectX::XMMatrixTranspose(View);
+	DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
+	DirectX::XMMATRIX world = DirectX::XMMatrixTranspose(view);
 	// ワールド行列から方向を算出
-	Right = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(1, 0, 0, 0), World);
-	Up = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0, 1, 0, 0), World);
+	rightVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(1, 0, 0, 0), world);
+	upVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0, 1, 0, 0), world);
 	// 結果を格納
-	DirectX::XMStoreFloat3(&eye, Eye);
-	DirectX::XMStoreFloat3(&up, Up);
-	DirectX::XMStoreFloat3(&right, Right);
+	DirectX::XMStoreFloat3(&eye, eyeVector);
+	DirectX::XMStoreFloat3(&up, upVector);
+	DirectX::XMStoreFloat3(&right, rightVector);
 }

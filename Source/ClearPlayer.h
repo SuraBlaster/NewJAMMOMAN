@@ -13,5 +13,5 @@ public:
 private:
     enum class State { Waiting, Move, Wave };
     State state = State::Waiting;
-    static constexpr float MoveSpeed = 5.0f;
+    static constexpr float MOVE_SPEED = 5.0f;
 };

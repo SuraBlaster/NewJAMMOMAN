@@ -24,7 +24,7 @@ namespace
     bool Valid(const BackgroundObject& o)
     {
         const auto finite=[](const XMFLOAT3& v){return std::isfinite(v.x)&&std::isfinite(v.y)&&std::isfinite(v.z);};
-        return o.id>0 && o.id<1000000000 && o.asset>=0 && o.asset<Count &&
+        return o.id>0 && o.id<1000000000 && o.asset>=0 && o.asset<COUNT &&
             finite(o.position)&&finite(o.rotation)&&finite(o.scale)&&
             o.scale.x>=0.01f&&o.scale.y>=0.01f&&o.scale.z>=0.01f;
     }
@@ -503,7 +503,7 @@ void BackgroundEditor::DrawUI()
                 AddPattern(sizePresets[sizePresetChoice],p);
             }
         }
-        ImGui::Combo("Asset",&assetChoice,names,Count);
+        ImGui::Combo("Asset",&assetChoice,names,COUNT);
         ImGui::DragFloat("New object Z",&backgroundZ,0.1f);
         ImGui::Checkbox("Gizmo snap",&snap);ImGui::SameLine();
         if(ImGui::RadioButton("1",grid==1))grid=1;ImGui::SameLine();

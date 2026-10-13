@@ -31,9 +31,9 @@ bool TransformUtils::MatrixToRollPitchYaw(const DirectX::XMFLOAT4X4& m, float& p
 // クォータニオンからヨー、ピッチ、ロールを行列を計算する。
 bool TransformUtils::QuaternionToRollPitchYaw(const DirectX::XMFLOAT4& q, float& pitch, float& yaw, float& roll)
 {
-	DirectX::XMVECTOR Q = DirectX::XMLoadFloat4(&q);
-	DirectX::XMMATRIX M = DirectX::XMMatrixRotationQuaternion(Q);
+	DirectX::XMVECTOR qVector = DirectX::XMLoadFloat4(&q);
+	DirectX::XMMATRIX mMatrix = DirectX::XMMatrixRotationQuaternion(qVector);
 	DirectX::XMFLOAT4X4 m;
-	DirectX::XMStoreFloat4x4(&m, M);
+	DirectX::XMStoreFloat4x4(&m, mMatrix);
 	return MatrixToRollPitchYaw(m, pitch, yaw, roll);
 }

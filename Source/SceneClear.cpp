@@ -10,8 +10,8 @@
 
 namespace
 {
-    constexpr char Message[] = "Thank You For Playing";
-    constexpr size_t MessageLength = sizeof(Message) - 1;
+    constexpr char MESSAGE[] = "Thank You For Playing";
+    constexpr size_t MESSAGE_LENGTH = sizeof(MESSAGE) - 1;
 }
 
 void SceneClear::Initialize()
@@ -42,12 +42,12 @@ void SceneClear::Update(float elapsedTime)
     const float dt = presented ? (std::clamp)(elapsedTime, 0.0f, 0.05f) : 0.0f;
     presented = false;
     sceneTimer += dt;
-    if (sceneTimer >= TypewriterDelay + MessageLength * LetterInterval + 0.4f)
+    if (sceneTimer >= TYPEWRITER_DELAY + MESSAGE_LENGTH * LETTER_INTERVAL + 0.4f)
         player->BeginEntrance();
     const bool wasWaving = player->IsWaving();
     player->Update(dt);
     if (wasWaving) waveTimer += dt;
-    if (waveTimer >= WaveDisplayTime) ReturnToTitle();
+    if (waveTimer >= WAVE_DISPLAY_TIME) ReturnToTitle();
 }
 
 void SceneClear::Render(float elapsedTime)
@@ -93,12 +93,12 @@ void SceneClear::DrawGUI()
     const float scale = (std::min)(graphics.GetScreenWidth() / 1280, graphics.GetScreenHeight() / 720);
     const float offsetX = (graphics.GetScreenWidth() - 1280 * scale) * 0.5f;
     const float offsetY = (graphics.GetScreenHeight() - 720 * scale) * 0.5f;
-    const float progress = (std::max)(0.0f, sceneTimer - TypewriterDelay) / LetterInterval;
-    const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(MessageLength)));
-    const std::string visible(Message, count);
+    const float progress = (std::max)(0.0f, sceneTimer - TYPEWRITER_DELAY) / LETTER_INTERVAL;
+    const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(MESSAGE_LENGTH)));
+    const std::string visible(MESSAGE, count);
     const float fontSize = 56 * scale;
     // Fix the full sentence's left edge so typing does not slide existing letters.
-    const auto size = TextRenderer::Measure(Message, fontSize);
+    const auto size = TextRenderer::Measure(MESSAGE, fontSize);
     TextRenderer::Draw(offsetX + 640 * scale - size.x * 0.5f,
         offsetY + 340 * scale - size.y * 0.5f, visible.c_str(), fontSize,
         {0.06f, 0.20f, 0.36f, 1});

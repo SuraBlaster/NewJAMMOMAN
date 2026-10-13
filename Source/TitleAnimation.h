@@ -5,17 +5,17 @@
 // Rendering-independent timing and geometry for the 1280 x 720 design canvas.
 namespace TitleAnimation
 {
-    constexpr float DrawEnd = 0.8f;
-    constexpr float HoldEnd = 2.05f;
-    constexpr float MorphEnd = 2.9f;
-    constexpr float SwapEnd = 3.1f;
-    constexpr float LogoEnd = 3.7f;
-    constexpr float XEnd = 4.5f;
-    constexpr float IntroEnd = 4.8f;
+    constexpr float DRAW_END = 0.8f;
+    constexpr float HOLD_END = 2.05f;
+    constexpr float MORPH_END = 2.9f;
+    constexpr float SWAP_END = 3.1f;
+    constexpr float LOGO_END = 3.7f;
+    constexpr float X_END = 4.5f;
+    constexpr float INTRO_END = 4.8f;
     struct Point { float x, y; };
-    constexpr Point TriangleOrigin = {150, 235};
-    constexpr float TriangleWidth = 980;
-    constexpr float TriangleHeight = TriangleWidth * 809.0f / 6013.0f;
+    constexpr Point TRIANGLE_ORIGIN = {150, 235};
+    constexpr float TRIANGLE_WIDTH = 980;
+    constexpr float TRIANGLE_HEIGHT = TRIANGLE_WIDTH * 809.0f / 6013.0f;
     inline float Clamp(float t) { return (std::max)(0.0f, (std::min)(1.0f, t)); }
     inline float Progress(float t, float start, float end) { return Clamp((t - start) / (end - start)); }
     inline float Smooth(float t) { t = Clamp(t); return t * t * (3 - 2 * t); }
@@ -31,19 +31,19 @@ namespace TitleAnimation
         const Point initial[] = {{0, 365}, {1280, 365}, {320, 580}};
         // Match Triangle.png's silhouette: top left, top right, lower tip.
         const Point final[] = {
-            TriangleOrigin,
-            {TriangleOrigin.x + TriangleWidth, TriangleOrigin.y + TriangleHeight * (71.0f / 809)},
-            {TriangleOrigin.x + TriangleWidth * (741.0f / 6013), TriangleOrigin.y + TriangleHeight}};
+            TRIANGLE_ORIGIN,
+            {TRIANGLE_ORIGIN.x + TRIANGLE_WIDTH, TRIANGLE_ORIGIN.y + TRIANGLE_HEIGHT * (71.0f / 809)},
+            {TRIANGLE_ORIGIN.x + TRIANGLE_WIDTH * (741.0f / 6013), TRIANGLE_ORIGIN.y + TRIANGLE_HEIGHT}};
         State state = {};
         // Rotate in the screen plane, preserving the face's winding throughout.
-        const float morph = Smooth(Progress(time, HoldEnd, MorphEnd));
+        const float morph = Smooth(Progress(time, HOLD_END, MORPH_END));
         // Shrink around the moving center, then recover before the image swap.
-        constexpr float shrinkEnd = 2.55f;
-        constexpr float minimumScale = 0.45f;
-        const float shrink = time < shrinkEnd
-            ? Smooth(Progress(time, HoldEnd, shrinkEnd))
-            : 1 - Smooth(Progress(time, shrinkEnd, MorphEnd));
-        const float scale = 1 - (1 - minimumScale) * shrink;
+        constexpr float SHRINK_END = 2.55f;
+        constexpr float MINIMUM_SCALE = 0.45f;
+        const float shrink = time < SHRINK_END
+            ? Smooth(Progress(time, HOLD_END, SHRINK_END))
+            : 1 - Smooth(Progress(time, SHRINK_END, MORPH_END));
+        const float scale = 1 - (1 - MINIMUM_SCALE) * shrink;
         Point initialCenter = {}, finalCenter = {};
         for (int i = 0; i < 3; ++i)
         {
@@ -69,15 +69,15 @@ namespace TitleAnimation
             if (morph == 0) state.vertices[i] = initial[i];
             if (morph == 1) state.vertices[i] = target;
         }
-        state.drawProgress = Progress(time, 0, DrawEnd);
-        state.triangleAlpha = Smooth(Progress(time, MorphEnd, SwapEnd));
+        state.drawProgress = Progress(time, 0, DRAW_END);
+        state.triangleAlpha = Smooth(Progress(time, MORPH_END, SWAP_END));
         state.lineAlpha = 1 - state.triangleAlpha;
-        state.logoProgress = Smooth(Progress(time, SwapEnd, LogoEnd));
-        const float x = Progress(time, LogoEnd, XEnd);
+        state.logoProgress = Smooth(Progress(time, SWAP_END, LOGO_END));
+        const float x = Progress(time, LOGO_END, X_END);
         // Perspective-like recession: a near-camera X shrinks quickly, then settles.
         state.xScale = 1 + 6 * std::pow(1 - x, 3.0f);
-        state.xAlpha = Progress(time, LogoEnd, LogoEnd + 0.14f);
-        state.impactAlpha = time >= XEnd ? 1 - Progress(time, XEnd, IntroEnd) : 0;
+        state.xAlpha = Progress(time, LOGO_END, LOGO_END + 0.14f);
+        state.impactAlpha = time >= X_END ? 1 - Progress(time, X_END, INTRO_END) : 0;
         return state;
     }
     struct Segment { Point from, to; bool visible; };

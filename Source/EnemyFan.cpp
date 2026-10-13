@@ -13,7 +13,7 @@ EnemyFan::EnemyFan(ID3D11Device* device, Player* player)
 	radius = 0.55f;
 	height = 1.0f;
 	health = 3;
-	use_gravity = true;
+	useGravity = true;
 	InitializeAnimator();
 	UpdateTransform();
 }

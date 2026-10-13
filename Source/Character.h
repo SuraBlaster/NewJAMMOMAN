@@ -29,14 +29,14 @@ public:
 	const DirectX::XMFLOAT3& GetVelocity() const { return velocity; }
 	void AddImpulse(const DirectX::XMFLOAT3& impulse);
 
-	bool IsGround() const { return is_ground; }
+	bool IsGround() const { return isGround; }
 	float GetRadius() const { return radius; }
 	float GetHeight() const { return height; }
 	int GetHealth() const { return health; }
-	int GetMaxHealth() const { return max_health; }
+	int GetMaxHealth() const { return maxHealth; }
 	bool IsDead() const { return health <= 0; }
-	float GetInvincibleTime() const { return invincible_time; }
-	bool ApplyDamage(int damage, float invincibleTime = 0.0f);
+	float GetInvincibleTime() const { return invincibleTime; }
+	bool ApplyDamage(int damage, float invincibleDuration = 0.0f);
 
 	std::shared_ptr<Model> GetModel() const { return model; }
 	const DirectX::XMFLOAT4X4& GetTransform() const { return transform; }
@@ -68,10 +68,10 @@ protected:
 	DirectX::XMFLOAT3 velocity = { 0, 0, 0 };
 	float radius = 0.4f;
 	float height = 1.0f;
-	bool is_ground = false;
+	bool isGround = false;
 	int health = 5;
-	int max_health = 5;
-	float invincible_time = 0.0f;
-	float gravity_acceleration = 10.0f;
-	bool use_gravity = false;
+	int maxHealth = 5;
+	float invincibleTime = 0.0f;
+	float gravityAcceleration = 10.0f;
+	bool useGravity = false;
 };

@@ -17,7 +17,7 @@ EnemyFly::EnemyFly(ID3D11Device* device, Player* player)
 	radius = 0.45f;
 	height = 0.8f;
 	SetHealth(2);
-	use_gravity = false;
+	useGravity = false;
 	color = { 0.8f, 0.85f, 1.0f, 1.0f };
 	InitializeAnimator();
 	UpdateTransform();
@@ -33,13 +33,13 @@ void EnemyFly::Update(float elapsedTime)
 
 	const DirectX::XMFLOAT3 playerPosition = player->GetPosition();
 	if (position.x - playerPosition.x < 12.0f)
-		position.x -= move_speed * elapsedTime;
+		position.x -= moveSpeed * elapsedTime;
 
-	if (!egg_dropped && std::abs(position.x - playerPosition.x) < 5.0f)
+	if (!eggDropped && std::abs(position.x - playerPosition.x) < 5.0f)
 	{
 		EnemyManager::Instance().Register(
 			std::make_shared<EnemyEgg>(device, player, position));
-		egg_dropped = true;
+		eggDropped = true;
 	}
 
 	if (position.x - playerPosition.x < -10.0f || position.x < -20.0f) Destroy();

@@ -9,7 +9,7 @@
 	(1 != _CrtDbgReport(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s", msg)) || \
 	(_CrtDbgBreak(), 0))
 #else
-#define  _ASSERT_EXPR_A(expr, expr_str) ((void)0)
+#define  _ASSERT_EXPR_A(expr, exprStr) ((void)0)
 #endif
 
 inline LPWSTR HRTrace(HRESULT hr)
@@ -32,11 +32,11 @@ public:
 		QueryPerformanceCounter(&startTicks);
 		QueryPerformanceCounter(&currentTicks);
 	}
-	void begin()
+	void Begin()
 	{
 		QueryPerformanceCounter(&startTicks);
 	}
-	float end()
+	float End()
 	{
 		QueryPerformanceCounter(&currentTicks);
 		return static_cast<float>(currentTicks.QuadPart - startTicks.QuadPart) / static_cast<float>(ticksPerSecond.QuadPart);

@@ -94,7 +94,7 @@ void SceneLoading::Update(float elapsedTime)
     player->Update(dt);
     if (!showTitleIntro)
     {
-        if (loadComplete.load(std::memory_order_acquire) && !requested && timer >= MinimalDisplayTime)
+        if (loadComplete.load(std::memory_order_acquire) && !requested && timer >= MINIMAL_DISPLAY_TIME)
         {
             requested = true;
             LoadingProfile::Record("Loading.presentation_wait", LoadingProfile::Milliseconds(LoadingProfile::waitStart));
@@ -106,12 +106,12 @@ void SceneLoading::Update(float elapsedTime)
     if (descriptionPresented) readTimer += dt;
 
     // All animation uses the same visible timeline.
-    const float progress = (std::max)(0.0f, timer - TypewriterDelay) / LetterInterval;
+    const float progress = (std::max)(0.0f, timer - TYPEWRITER_DELAY) / LETTER_INTERVAL;
     const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(description.size())));
     displayedDescription = description.substr(0, count);
 
     // Wait for both loading and time to read the complete sentence.
-    const float readTime = IntroReadTime;
+    const float readTime = INTRO_READ_TIME;
     if (loadComplete.load(std::memory_order_acquire) && descriptionPresented && !requested && readTimer >= readTime)
     {
         requested = true;

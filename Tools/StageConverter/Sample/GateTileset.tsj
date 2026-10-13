@@ -1,0 +1,38 @@
+{
+  "columns": 2,
+  "image": "GateTileset.png",
+  "imageheight": 32,
+  "imagewidth": 64,
+  "margin": 0,
+  "name": "OneWayGates",
+  "spacing": 0,
+  "tilecount": 2,
+  "tileheight": 32,
+  "tilewidth": 32,
+  "type": "tileset",
+  "version": "1.10",
+  "tiles": [
+    {
+      "id": 0,
+      "type": "OneWayGateRight",
+      "properties": [
+        {
+          "name": "typeId",
+          "type": "int",
+          "value": 301
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "type": "OneWayGateLeft",
+      "properties": [
+        {
+          "name": "typeId",
+          "type": "int",
+          "value": 302
+        }
+      ]
+    }
+  ]
+}

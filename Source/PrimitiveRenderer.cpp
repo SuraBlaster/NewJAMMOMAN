@@ -34,7 +34,7 @@ PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 
 	// 頂点バッファ
 	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(Vertex) * VertexCapacity;
+	desc.ByteWidth = sizeof(Vertex) * VERTEX_CAPACITY;
 	desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -61,12 +61,12 @@ void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const Direc
 // 軸描画
 void PrimitiveRenderer::DrawAxis(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color)
 {
-	DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&transform);
+	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&transform);
 	DirectX::XMFLOAT3 p, x, y, z;
-	DirectX::XMStoreFloat3(&p, W.r[3]);
-	DirectX::XMStoreFloat3(&x, DirectX::XMVector3Transform(DirectX::XMVectorSet(1, 0, 0, 0), W));
-	DirectX::XMStoreFloat3(&y, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 1, 0, 0), W));
-	DirectX::XMStoreFloat3(&z, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, 1, 0), W));
+	DirectX::XMStoreFloat3(&p, w.r[3]);
+	DirectX::XMStoreFloat3(&x, DirectX::XMVector3Transform(DirectX::XMVectorSet(1, 0, 0, 0), w));
+	DirectX::XMStoreFloat3(&y, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 1, 0, 0), w));
+	DirectX::XMStoreFloat3(&z, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, 1, 0), w));
 	AddVertex(p, { 1, 0, 0, 1 });
 	AddVertex(x, { 1, 0, 0, 1 });
 	AddVertex(p, { 0, 1, 0, 1 });
@@ -91,19 +91,19 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 
 	// Create vertical lines
 	float scaling = static_cast<float>(subdivisions) * scale;
-	DirectX::XMMATRIX M = DirectX::XMMatrixScaling(scaling, scaling, scaling);
-	DirectX::XMVECTOR V, P;
+	DirectX::XMMATRIX m = DirectX::XMMatrixScaling(scaling, scaling, scaling);
+	DirectX::XMVECTOR vMatrix, pMatrix;
 	DirectX::XMFLOAT3 position;
 	for (int i = 0; i <= subdivisions; i++)
 	{
-		V = DirectX::XMVectorSet(s, 0, corner, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(s, 0, corner, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, white);
 
-		V = DirectX::XMVectorSet(s, 0, -corner, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(s, 0, -corner, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, white);
 
 		s += step;
@@ -113,14 +113,14 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 	s = -corner;
 	for (int i = 0; i <= subdivisions; i++)
 	{
-		V = DirectX::XMVectorSet(corner, 0, s, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(corner, 0, s, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, white);
 
-		V = DirectX::XMVectorSet(-corner, 0, s, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(-corner, 0, s, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, white);
 
 		s += step;
@@ -129,42 +129,42 @@ void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 	// X軸
 	{
 		const DirectX::XMFLOAT4 red = DirectX::XMFLOAT4(1, 0, 0, 1);
-		V = DirectX::XMVectorSet(0, 0, 0, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, red);
 
-		V = DirectX::XMVectorSet(corner, 0, 0, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(corner, 0, 0, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, red);
 	}
 
 	// Y軸
 	{
 		const DirectX::XMFLOAT4 green = DirectX::XMFLOAT4(0, 1, 0, 1);
-		V = DirectX::XMVectorSet(0, 0, 0, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, green);
 
-		V = DirectX::XMVectorSet(0, corner, 0, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(0, corner, 0, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, green);
 	}
 
 	// Z軸
 	{
 		const DirectX::XMFLOAT4 blue = DirectX::XMFLOAT4(0, 0, 1, 1);
-		V = DirectX::XMVectorSet(0, 0, 0, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, blue);
 
-		V = DirectX::XMVectorSet(0, 0, corner, 0);
-		P = DirectX::XMVector3TransformCoord(V, M);
-		DirectX::XMStoreFloat3(&position, P);
+		vMatrix = DirectX::XMVectorSet(0, 0, corner, 0);
+		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+		DirectX::XMStoreFloat3(&position, pMatrix);
 		AddVertex(position, blue);
 	}
 }
@@ -185,13 +185,13 @@ void PrimitiveRenderer::Render(
 	dc->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
 	// ビュープロジェクション行列作成
-	DirectX::XMMATRIX V = DirectX::XMLoadFloat4x4(&view);
-	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&projection);
-	DirectX::XMMATRIX VP = V * P;
+	DirectX::XMMATRIX vMatrix = DirectX::XMLoadFloat4x4(&view);
+	DirectX::XMMATRIX pMatrix = DirectX::XMLoadFloat4x4(&projection);
+	DirectX::XMMATRIX vp = vMatrix * pMatrix;
 
 	// 定数バッファ更新
 	CbScene cbScene;
-	DirectX::XMStoreFloat4x4(&cbScene.viewProjection, VP);
+	DirectX::XMStoreFloat4x4(&cbScene.viewProjection, vp);
 	dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 
 	// 頂点バッファ設定
@@ -204,7 +204,7 @@ void PrimitiveRenderer::Render(
 	// 描画
 	UINT totalVertexCount = static_cast<UINT>(vertices.size());
 	UINT start = 0;
-	UINT count = (totalVertexCount < VertexCapacity) ? totalVertexCount : VertexCapacity;
+	UINT count = (totalVertexCount < VERTEX_CAPACITY) ? totalVertexCount : VERTEX_CAPACITY;
 
 	while (start < totalVertexCount)
 	{

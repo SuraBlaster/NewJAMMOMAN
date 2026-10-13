@@ -18,18 +18,18 @@ EnemyScatter::EnemyScatter(
 	radius = 0.18f;
 	height = 0.25f;
 	health = 1;
-	use_gravity = false;
+	useGravity = false;
 	color = { 1.0f, 0.45f, 0.25f, 1.0f };
 
-	scatter_duration = 0.5f + static_cast<float>(std::rand() % 100) / 100.0f;
-	move_direction = {
+	scatterDuration = 0.5f + static_cast<float>(std::rand() % 100) / 100.0f;
+	moveDirection = {
 		static_cast<float>(std::rand() % 200) / 100.0f - 1.0f,
 		static_cast<float>(std::rand() % 150) / 100.0f + 0.5f,
 		0.0f
 	};
 	DirectX::XMVECTOR direction = DirectX::XMVector3Normalize(
-		DirectX::XMLoadFloat3(&move_direction));
-	DirectX::XMStoreFloat3(&move_direction, direction);
+		DirectX::XMLoadFloat3(&moveDirection));
+	DirectX::XMStoreFloat3(&moveDirection, direction);
 	InitializeAnimator();
 	UpdateTransform();
 }
@@ -44,8 +44,8 @@ void EnemyScatter::Update(float elapsedTime)
 
 	if (state == State::Scatter)
 	{
-		scatter_time += elapsedTime;
-		if (scatter_time >= scatter_duration)
+		scatterTime += elapsedTime;
+		if (scatterTime >= scatterDuration)
 		{
 			state = State::Charge;
 			const DirectX::XMFLOAT3 target = player->GetPosition();
@@ -54,15 +54,15 @@ void EnemyScatter::Update(float elapsedTime)
 				target.y + player->GetHeight() * 0.5f - position.y,
 				target.z - position.z
 			};
-			DirectX::XMStoreFloat3(&move_direction,
+			DirectX::XMStoreFloat3(&moveDirection,
 				DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&toTarget)));
 		}
 	}
 
 	const float moveScale = state == State::Scatter ? 0.5f : 1.0f;
-	position.x += move_direction.x * speed * moveScale * elapsedTime;
-	position.y += move_direction.y * speed * moveScale * elapsedTime;
-	position.z += move_direction.z * speed * moveScale * elapsedTime;
+	position.x += moveDirection.x * speed * moveScale * elapsedTime;
+	position.y += moveDirection.y * speed * moveScale * elapsedTime;
+	position.z += moveDirection.z * speed * moveScale * elapsedTime;
 
 	DamagePlayerOnContact(*player, 1, 1.2f, true);
 	const DirectX::XMFLOAT3 playerPosition = player->GetPosition();

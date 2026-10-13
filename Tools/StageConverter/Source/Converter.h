@@ -9,14 +9,14 @@
 namespace stage_converter
 {
     // 1ゲーム単位を何ピクセルとして扱うかの既定値。
-    inline constexpr double kDefaultPixelsPerUnit = 1.0;
+    inline constexpr double DEFAULT_PIXELS_PER_UNIT = 1.0;
 
     // コマンドラインから受け取る変換設定。
     struct ConverterOptions
     {
         std::filesystem::path inputPath;
         std::filesystem::path outputPath;
-        double pixelsPerUnit = kDefaultPixelsPerUnit;
+        double pixelsPerUnit = DEFAULT_PIXELS_PER_UNIT;
         std::optional<std::string> stageNameOverride;
         bool showHelp = false;
     };

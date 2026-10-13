@@ -4,10 +4,10 @@
 
 void EnemyManager::Update(float elapsedTime)
 {
-	if (!pending_enemies.empty())
+	if (!pendingEnemies.empty())
 	{
-		enemies.insert(enemies.end(), pending_enemies.begin(), pending_enemies.end());
-		pending_enemies.clear();
+		enemies.insert(enemies.end(), pendingEnemies.begin(), pendingEnemies.end());
+		pendingEnemies.clear();
 	}
 
 	for (const auto& enemy : enemies)
@@ -50,7 +50,7 @@ void EnemyManager::DrawPrimitive(ShapeRenderer* shapeRenderer) const
 
 void EnemyManager::Register(const std::shared_ptr<Enemy>& enemy)
 {
-	if (enemy) pending_enemies.push_back(enemy);
+	if (enemy) pendingEnemies.push_back(enemy);
 }
 
 void EnemyManager::Remove(const std::shared_ptr<Enemy>& enemy)
@@ -61,5 +61,5 @@ void EnemyManager::Remove(const std::shared_ptr<Enemy>& enemy)
 void EnemyManager::Clear()
 {
 	enemies.clear();
-	pending_enemies.clear();
+	pendingEnemies.clear();
 }

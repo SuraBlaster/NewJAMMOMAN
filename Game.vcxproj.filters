@@ -210,6 +210,9 @@
     <ClInclude Include="Source\SceneUI.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\BossGate.h">
+      <Filter>Source\Stage</Filter>
+    </ClInclude>
     <ClInclude Include="Source\StageObject.h">
       <Filter>Source\Stage</Filter>
     </ClInclude>
@@ -226,6 +229,12 @@
       <Filter>Source\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Source\GameScene.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyFactory.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\HealthGaugeUI.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\HealthGaugeTrail.h">
@@ -301,6 +310,9 @@
       <Filter>Source\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Player.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PlayerTrail.h">
       <Filter>Source\Character</Filter>
     </ClInclude>
     <ClInclude Include="Source\CollisionManager.h">
@@ -475,6 +487,12 @@
     <ClCompile Include="Source\GameScene.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Source\EnemyFactory.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HealthGaugeUI.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Source\ClearPlayer.cpp">
       <Filter>Source\Character\Demo</Filter>
     </ClCompile>
@@ -536,6 +554,12 @@
       <Filter>Source\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Player.cpp">
+      <Filter>Source\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PlayerStates.cpp">
+      <Filter>Source\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\PlayerTrail.cpp">
       <Filter>Source\Character</Filter>
     </ClCompile>
     <ClCompile Include="Source\CollisionManager.cpp">

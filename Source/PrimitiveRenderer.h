@@ -23,7 +23,7 @@ public:
 		D3D11_PRIMITIVE_TOPOLOGY primitiveTopology);
 
 private:
-	static const UINT VertexCapacity = 3 * 1024;
+	static const UINT VERTEX_CAPACITY = 3 * 1024;
 
 	struct CbScene
 	{

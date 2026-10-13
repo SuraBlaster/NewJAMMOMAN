@@ -3,9 +3,9 @@
 // íËêî
 //----------------------------------------------------------------------------
 static const float PI = 3.1415926f;
-static const float InvPI = 1.0f / PI;
-static const float Dielectricf0 = 0.04f;
-static const float4 ColorSpaceDielectricSpec = float4(0.04f, 0.04f, 0.04f, 1.0f - 0.04f);
+static const float INV_PI = 1.0f / PI;
+static const float DIELECTRIC_F0 = 0.04f;
+static const float4 COLOR_SPACE_DIELECTRIC_SPEC = float4(0.04f, 0.04f, 0.04f, 1.0f - 0.04f);
 
 //============================================================================
 // ä÷êî
@@ -25,18 +25,18 @@ inline float SmoothnessToPerceptualRoughness(float smoothness)
 	return (1 - smoothness);
 }
 
-inline float PerceptualRoughnessToRoughness(float perceptual_roughness)
+inline float PerceptualRoughnessToRoughness(float perceptualRoughness)
 {
-	return perceptual_roughness * perceptual_roughness;
+	return perceptualRoughness * perceptualRoughness;
 }
 
-inline float DisneyDiffuse(float nv, float nl, float lh, float perceptual_roughness)
+inline float DisneyDiffuse(float nv, float nl, float lh, float perceptualRoughness)
 {
-	float fd90 = 0.5f + 2 * lh * lh * perceptual_roughness;
-	float light_scatter = (1 + (fd90 - 1) * Pow5(1 - nl));
-	float view_scatter = (1 + (fd90 - 1) * Pow5(1 - nv));
+	float fd90 = 0.5f + 2 * lh * lh * perceptualRoughness;
+	float lightScatter = (1 + (fd90 - 1) * Pow5(1 - nl));
+	float viewScatter = (1 + (fd90 - 1) * Pow5(1 - nv));
 
-	float diffuse = light_scatter * view_scatter;
+	float diffuse = lightScatter * viewScatter;
 	//diffuse /= PI;
 	//diffuse *= InvPI;
 	return diffuse;
@@ -45,39 +45,39 @@ inline float DisneyDiffuse(float nv, float nl, float lh, float perceptual_roughn
 inline float SmithJointGGXVisibilityTerm(float nl, float nv, float roughness)
 {
 	float a = roughness;
-	float lambda_v = nl * (nv * (1 - a) + a);
-	float lambda_l = nv * (nl * (1 - a) + a);
+	float lambdaV = nl * (nv * (1 - a) + a);
+	float lambdaL = nv * (nl * (1 - a) + a);
 
-	return 0.5f / (lambda_v + lambda_l + 0.0001f);
+	return 0.5f / (lambdaV + lambdaL + 0.0001f);
 }
 
-inline float SmithVisibilityTerm(float NdotL, float NdotV, float k)
+inline float SmithVisibilityTerm(float ndotL, float ndotV, float k)
 {
-	float gL = NdotL * (1 - k) + k;
-	float gV = NdotV * (1 - k) + k;
+	float gL = ndotL * (1 - k) + k;
+	float gV = ndotV * (1 - k) + k;
 
 	return 1.0 / (gL * gV + 1e-5f); // This function is not intended to be running on Mobile,
 									// therefore epsilon is smaller than can be represented by half
 }
 
-inline float SmithBeckmannVisibilityTerm(float NdotL, float NdotV, float roughness)
+inline float SmithBeckmannVisibilityTerm(float ndotL, float ndotV, float roughness)
 {
 	float c = 0.797884560802865f; // c = sqrt(2 / Pi)
 	float k = roughness * c;
-	return SmithVisibilityTerm(NdotL, NdotV, k) * 0.25f; // * 0.25 is the 1/4 of the visibility term
+	return SmithVisibilityTerm(ndotL, ndotV, k) * 0.25f; // * 0.25 is the 1/4 of the visibility term
 }
 
-inline float NDFBlinnPhongNormalizedTerm(float NdotH, float n)
+inline float NDFBlinnPhongNormalizedTerm(float ndotH, float n)
 {
 	// norm = (n+2)/(2*pi)
 	float normTerm = (n + 2.0f) * (0.5f / PI);
-	float specTerm = pow(NdotH, n);
+	float specTerm = pow(ndotH, n);
 	return specTerm * normTerm;
 }
 
-inline float PerceptualRoughnessToSpecPower(float perceptual_roughness)
+inline float PerceptualRoughnessToSpecPower(float perceptualRoughness)
 {
-    float m = PerceptualRoughnessToRoughness(perceptual_roughness); // m is the true academic roughness.
+    float m = PerceptualRoughnessToRoughness(perceptualRoughness); // m is the true academic roughness.
 	float sq = max(1e-4f, m * m);
 	float n = (2.0 / sq) - 2.0;                          // https://dl.dropboxusercontent.com/u/55891920/papers/mm_brdf.pdf
 	n = max(n, 1e-4f);                                  // prevent possible cases of pow(0,0), which could happen when roughness is 1.0 and NdotH is zero
@@ -89,75 +89,75 @@ inline float GGXTerm(float nh, float roughness)
 	float a2 = roughness * roughness;
 	float d = (nh * a2 - nh) * nh + 1.0f;
 
-	return InvPI * a2 / (d * d + 0.0001f);
+	return INV_PI * a2 / (d * d + 0.0001f);
 }
 
-inline float3 FresnelTerm(float3 f0, float cos_a)
+inline float3 FresnelTerm(float3 f0, float cosA)
 {
-	float t = Pow5(1 - cos_a);
+	float t = Pow5(1 - cosA);
 	return f0 + (1 - f0) * t;
 }
 
-inline float3 FresnelLerp(float3 F0, float3 F90, float cosA)
+inline float3 FresnelLerp(float3 f0, float3 f90, float cosA)
 {
 	float t = Pow5(1 - cosA);   // ala Schlick interpoliation
-	return lerp(F0, F90, t);
+	return lerp(f0, f90, t);
 }
 
-inline float3 FresnelLerpFast(float3 F0, float3 F90, float cosA)
+inline float3 FresnelLerpFast(float3 f0, float3 f90, float cosA)
 {
 	float t = Pow4(1 - cosA);
-	return lerp(F0, F90, t);
+	return lerp(f0, f90, t);
 }
 
 inline float OneMinusReflectivityFromMetallic(float metallic)
 {
-	float oneMinusDielectricSpec = ColorSpaceDielectricSpec.a;
+	float oneMinusDielectricSpec = COLOR_SPACE_DIELECTRIC_SPEC.a;
 	return oneMinusDielectricSpec - metallic * oneMinusDielectricSpec;
 }
 
-inline float3 DiffuseAndSpecularFromMetallic(float3 albedo, float metallic, out float3 spec_color, out float one_minus_reflectivity)
+inline float3 DiffuseAndSpecularFromMetallic(float3 albedo, float metallic, out float3 specColor, out float oneMinusReflectivity)
 {
-    spec_color = lerp(ColorSpaceDielectricSpec.rgb, albedo, metallic);
-    one_minus_reflectivity = OneMinusReflectivityFromMetallic(metallic);
-    return albedo * one_minus_reflectivity;
+    specColor = lerp(COLOR_SPACE_DIELECTRIC_SPEC.rgb, albedo, metallic);
+    oneMinusReflectivity = OneMinusReflectivityFromMetallic(metallic);
+    return albedo * oneMinusReflectivity;
 }
 
-inline float3 PreMultiplyAlpha(float3 diff_color, float alpha, float one_minus_reflectivity, out float out_modified_alpha)
+inline float3 PreMultiplyAlpha(float3 diffColor, float alpha, float oneMinusReflectivity, out float outModifiedAlpha)
 {
 #if 1
-    diff_color *= alpha;
-    out_modified_alpha = 1 - one_minus_reflectivity + alpha * one_minus_reflectivity;
+    diffColor *= alpha;
+    outModifiedAlpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
 #else
-	out_modified_alpha = alpha;
+	outModifiedAlpha = alpha;
 #endif
-    return diff_color;
+    return diffColor;
 }
 
 
 float3 BRDF1(
 	float3 diffuse,
 	float3 specular,
-	float one_minus_reflectivity,
+	float oneMinusReflectivity,
 	float smoothness,
 	float3 normal,
-	float3 view_direction,
-	float3 light_direction,
-	float3 light_color,
-	float3 gi_diffuse,
-	float3 gi_specular)
+	float3 viewDirection,
+	float3 lightDirection,
+	float3 lightColor,
+	float3 giDiffuse,
+	float3 giSpecular)
 {
-	float perceptual_roughness = SmoothnessToPerceptualRoughness(smoothness);
-	float3 half_direction = normalize(light_direction + view_direction);
-	float nv = abs(dot(normal, view_direction));
-	float nl = saturate(dot(normal, light_direction));
-	float nh = saturate(dot(normal, half_direction));
+	float perceptualRoughness = SmoothnessToPerceptualRoughness(smoothness);
+	float3 halfDirection = normalize(lightDirection + viewDirection);
+	float nv = abs(dot(normal, viewDirection));
+	float nl = saturate(dot(normal, lightDirection));
+	float nh = saturate(dot(normal, halfDirection));
 	//float lv = saturate(dot(light_direction, view_direction));
-	float lh = saturate(dot(light_direction, half_direction));
+	float lh = saturate(dot(lightDirection, halfDirection));
 
-	float diffuse_term = DisneyDiffuse(nv, nl, lh, perceptual_roughness) * nl;
+	float diffuseTerm = DisneyDiffuse(nv, nl, lh, perceptualRoughness) * nl;
 
-	float roughness = PerceptualRoughnessToRoughness(perceptual_roughness);
+	float roughness = PerceptualRoughnessToRoughness(perceptualRoughness);
 #if 1
 	roughness = max(roughness, 0.002f);
 	float v = SmithJointGGXVisibilityTerm(nl, nv, roughness);
@@ -167,66 +167,66 @@ float3 BRDF1(
 	float d = NDFBlinnPhongNormalizedTerm(nh, PerceptualRoughnessToSpecPower(roughness));
 #endif
 
-	float specular_term = v * d * PI;
+	float specularTerm = v * d * PI;
 
-	specular_term = max(0, specular_term * nl);
+	specularTerm = max(0, specularTerm * nl);
 #if 0
-	specular_term = 0;
+	specularTerm = 0;
 #endif
 
-	float surface_reduction = 1.0f / (roughness * roughness + 1.0f);
+	float surfaceReduction = 1.0f / (roughness * roughness + 1.0f);
 
-	specular_term *= any(specular) ? 1.0f : 0.0f;
+	specularTerm *= any(specular) ? 1.0f : 0.0f;
 
-	float grazing_term = saturate(smoothness + (1 - one_minus_reflectivity));
+	float grazingTerm = saturate(smoothness + (1 - oneMinusReflectivity));
 
-	return diffuse * (gi_diffuse + light_color * diffuse_term)
-		+ light_color * specular_term * FresnelTerm(specular, lh)
-		+ surface_reduction * gi_specular * FresnelLerp(specular, grazing_term, nv);
+	return diffuse * (giDiffuse + lightColor * diffuseTerm)
+		+ lightColor * specularTerm * FresnelTerm(specular, lh)
+		+ surfaceReduction * giSpecular * FresnelLerp(specular, grazingTerm, nv);
 }
 
 float3 BRDF2(
 	float3 diffuse,
 	float3 specular,
-	float one_minus_reflectivity,
+	float oneMinusReflectivity,
 	float smoothness,
 	float3 normal,
-	float3 view_direction,
-	float3 light_direction,
-	float3 light_color,
-	float3 gi_diffuse,
-	float3 gi_specular)
+	float3 viewDirection,
+	float3 lightDirection,
+	float3 lightColor,
+	float3 giDiffuse,
+	float3 giSpecular)
 {
-	float3 half_direction = normalize(light_direction + view_direction);
+	float3 halfDirection = normalize(lightDirection + viewDirection);
 
-	float nl = saturate(dot(normal, light_direction));
-	float nh = saturate(dot(normal, half_direction));
-	float nv = dot(normal, view_direction);
-	float lh = saturate(dot(light_direction, half_direction));
+	float nl = saturate(dot(normal, lightDirection));
+	float nh = saturate(dot(normal, halfDirection));
+	float nv = dot(normal, viewDirection);
+	float lh = saturate(dot(lightDirection, halfDirection));
 
-	float perceptual_roughness = SmoothnessToPerceptualRoughness(smoothness);
-	float roughness = PerceptualRoughnessToRoughness(perceptual_roughness);
+	float perceptualRoughness = SmoothnessToPerceptualRoughness(smoothness);
+	float roughness = PerceptualRoughnessToRoughness(perceptualRoughness);
 
 #if 1
 	float a = roughness;
 	float a2 = a * a;
 	float d = nh * nh * (a2 - 1.f) + 1.00001f;
-	float specular_term = a2 / (max(0.1f, lh * lh) * (roughness + 0.5f) * (d * d) * 4);	
+	float specularTerm = a2 / (max(0.1f, lh * lh) * (roughness + 0.5f) * (d * d) * 4);
 #else
-	float specular_power = PerceptualRoughnessToSpecPower(perceptual_roughness);
-	float inv_v = lh * lh * smoothness + perceptual_roughness * perceptual_roughness;
-	float inv_f = lh;
-	float specular_term = ((specular_power + 1) * pow(nh, specular_power)) / (8.0f * inv_v * inv_f + 1e-4f);
+	float specularPower = PerceptualRoughnessToSpecPower(perceptualRoughness);
+	float invV = lh * lh * smoothness + perceptualRoughness * perceptualRoughness;
+	float invF = lh;
+	float specularTerm = ((specularPower + 1) * pow(nh, specularPower)) / (8.0f * invV * invF + 1e-4f);
 #endif
 
 
-	float surface_reduction = (0.6f - 0.08f * perceptual_roughness);
-	surface_reduction = 1.0 - roughness * perceptual_roughness * surface_reduction;
-	float grazing_term = saturate(smoothness + (1 - one_minus_reflectivity));
+	float surfaceReduction = (0.6f - 0.08f * perceptualRoughness);
+	surfaceReduction = 1.0 - roughness * perceptualRoughness * surfaceReduction;
+	float grazingTerm = saturate(smoothness + (1 - oneMinusReflectivity));
 
-	return (diffuse + specular_term * specular) * light_color * nl
-		+ gi_diffuse * diffuse
-		+ surface_reduction * gi_specular * FresnelLerpFast(specular, grazing_term, nv)
+	return (diffuse + specularTerm * specular) * lightColor * nl
+		+ giDiffuse * diffuse
+		+ surfaceReduction * giSpecular * FresnelLerpFast(specular, grazingTerm, nv)
 		;
 }
 
@@ -235,36 +235,36 @@ float3 BRDF(
 	float metallic,
 	float smoothness,
 	float3 normal,
-	float3 view_direction,
-	float3 light_direction,
-	float3 light_color,
+	float3 viewDirection,
+	float3 lightDirection,
+	float3 lightColor,
 	float3 ambient)
 {
-    float one_minus_reflectivity;
+    float oneMinusReflectivity;
 
 #if 0
-    float3 gi_specular;
-    float3 gi_diffuse = DiffuseAndSpecularFromMetallic(ambient, metallic, gi_specular, one_minus_reflectivity);
+    float3 giSpecular;
+    float3 giDiffuse = DiffuseAndSpecularFromMetallic(ambient, metallic, giSpecular, oneMinusReflectivity);
 #elif 1
-    const float3 gi_diffuse = ambient;
-    const float3 gi_specular = float3(0.1f, 0.1f, 0.1f);
+    const float3 giDiffuse = ambient;
+    const float3 giSpecular = float3(0.1f, 0.1f, 0.1f);
 #else
-    const float3 gi_diffuse = float3(0.2f, 0.2f, 0.2f);
-	const float3 gi_specular = float3(0.1f, 0.1f, 0.1f);
+    const float3 giDiffuse = float3(0.2f, 0.2f, 0.2f);
+	const float3 giSpecular = float3(0.1f, 0.1f, 0.1f);
 #endif
 
 	float3 specular;
-	float3 diffuse = DiffuseAndSpecularFromMetallic(albedo, metallic, specular, one_minus_reflectivity);
+	float3 diffuse = DiffuseAndSpecularFromMetallic(albedo, metallic, specular, oneMinusReflectivity);
 
 	return BRDF2(
 		diffuse,
 		specular,
-		one_minus_reflectivity,
+		oneMinusReflectivity,
 		smoothness,
 		normal,
-		view_direction,
-		light_direction,
-		light_color,
-		gi_diffuse,
-		gi_specular);
+		viewDirection,
+		lightDirection,
+		lightColor,
+		giDiffuse,
+		giSpecular);
 }

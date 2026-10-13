@@ -1,5 +1,6 @@
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const {spawnSync} = require('child_process');
+const configuration = process.argv[2] || 'Release';
 process.chdir(path.resolve(__dirname, '..'));
 const names = ['Wave', 'Scatter', 'Mage', 'Fan', 'Hover', 'Fly', 'Egg', 'Boss', 'Vacuum'];
 for (const folder of ['Data/Stage/Tiled', 'Tools/StageConverter/Sample']) {
@@ -24,7 +25,8 @@ for (const object of sample.layers[0].objects) {
 }
 fs.mkdirSync('obj/EnemyPlacementTests', {recursive: true});
 const output = 'obj/EnemyPlacementTests/sample.stage.json';
-const result = spawnSync(path.resolve('bin/x64/Release/StageConverter.exe'),
+const converter = path.resolve(`bin/x64/${configuration}/StageConverter.exe`);
+const result = spawnSync(converter,
  ['--input', 'Tools/StageConverter/Sample/EnemyPlacementSample.tmj', '--output', output, '--pixels-per-unit', '32']);
 assert.ifError(result.error);
 assert.equal(result.status, 0, String(result.stderr));
@@ -40,4 +42,18 @@ for (const object of exported.layers.find(l => l.name === 'Enemies').objects) {
  assert.equal(object.height, ['Mage', 'Boss'].includes(object.name) ? 64 : 32);
 }
 assert(fs.existsSync('obj/EnemyPlacementTests/Tiled/EnemyPlacementIcons/Vacuum.png'));
+// Accept the class name as an alias, while keeping game data canonical.
+const aliasTileset = JSON.parse(fs.readFileSync('Tools/StageConverter/Sample/EnemyPlacements.tsj', 'utf8'));
+for (const tile of aliasTileset.tiles) {
+ tile.image = path.resolve('Tools/StageConverter/Sample', tile.image);
+ for (const property of tile.properties) if (property.value === 'Vacuum') property.value = 'EnemyVacuum';
+}
+const aliasMap = structuredClone(sample);
+aliasMap.tilesets = [{firstgid: 1, ...aliasTileset}];
+fs.writeFileSync('obj/EnemyPlacementTests/alias.tmj', JSON.stringify(aliasMap));
+const aliasResult = spawnSync(converter, ['--input', 'obj/EnemyPlacementTests/alias.tmj',
+ '--output', 'obj/EnemyPlacementTests/alias.stage.json', '--pixels-per-unit', '32']);
+assert.ifError(aliasResult.error);
+assert.equal(aliasResult.status, 0, String(aliasResult.stderr));
+assert.deepStrictEqual(JSON.parse(fs.readFileSync('obj/EnemyPlacementTests/alias.stage.json', 'utf8')), stage);
 console.log('PASS: nine enemy types, placement image sizes, Vacuum conversion and unchanged spawn anchors.');

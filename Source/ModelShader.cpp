@@ -8,8 +8,8 @@ ModelShader::ModelShader(ID3D11Device* device)
 	GpuResourceUtils::LoadVertexShader(
 		device,
 		"Data/Shader/ModelVS.cso",
-		Model::InputElementDescs.data(),
-		static_cast<UINT>(Model::InputElementDescs.size()),
+		Model::INPUT_ELEMENT_DESCS.data(),
+		static_cast<UINT>(Model::INPUT_ELEMENT_DESCS.size()),
 		inputLayout.GetAddressOf(),
 		vertexShader.GetAddressOf());
 

@@ -7,10 +7,10 @@
 // 更新
 void GamePad::Update()
 {
-	if (vibrating && std::chrono::steady_clock::now() >= vibration_end) StopVibration();
-	axis_lx = axis_ly = 0.0f;
-	axis_rx = axis_ry = 0.0f;
-	trigger_l = trigger_r = 0.0f;
+	if (vibrating && std::chrono::steady_clock::now() >= vibrationEnd) StopVibration();
+	axisLx = axisLy = 0.0f;
+	axisRx = axisRy = 0.0f;
+	triggerL = triggerR = 0.0f;
 
 	GamePadButton newButtonState = 0;
 
@@ -53,20 +53,20 @@ void GamePad::Update()
 			pad.sThumbRY = 0;
 		}
 
-		trigger_l = static_cast<float>(pad.bLeftTrigger) / 255.0f;
-		trigger_r = static_cast<float>(pad.bRightTrigger) / 255.0f;
-		axis_lx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
-		axis_ly = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
-		axis_rx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
-		axis_ry = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
+		triggerL = static_cast<float>(pad.bLeftTrigger) / 255.0f;
+		triggerR = static_cast<float>(pad.bRightTrigger) / 255.0f;
+		axisLx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
+		axisLy = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
+		axisRx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
+		axisRy = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
 	}
 
 	{
-		button_state[1] = button_state[0];	// スイッチ履歴
-		button_state[0] = newButtonState;
+		buttonState[1] = buttonState[0];	// スイッチ履歴
+		buttonState[0] = newButtonState;
 
-		button_down = ~button_state[1] & newButtonState;	// 押した瞬間
-		button_up = ~newButtonState & button_state[1];	// 離した瞬間
+		buttonDown = ~buttonState[1] & newButtonState;	// 押した瞬間
+		buttonUp = ~newButtonState & buttonState[1];	// 離した瞬間
 	}
 }
 
@@ -79,7 +79,7 @@ void GamePad::Vibrate(float left, float right, float duration)
     value.wRightMotorSpeed = static_cast<WORD>((std::clamp)(right, 0.0f, 1.0f) * 65535.0f);
     if (XInputSetState(slot, &value) != ERROR_SUCCESS) return;
     vibrating = true;
-    vibration_end = std::chrono::steady_clock::now()
+    vibrationEnd = std::chrono::steady_clock::now()
         + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(duration));
 }
 

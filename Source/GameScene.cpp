@@ -1,116 +1,26 @@
-#include "LoadingProfile.h"
 #include <imgui.h>
-#include "Graphics.h"
-#include "Camera.h"
-#include "Light.h"
-#include "ViewVolume.h"
-#include "GameScene.h"
 #include <iostream>
 #include <stdexcept>
 #include <StageLoader.h>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <array>
+#include "GameScene.h"
+#include "EnemyFactory.h"
+#include "Graphics.h"
+#include "Camera.h"
+#include "Collision.h"
 #include "EnemyManager.h"
 #include "EnemyBoss.h"
-#include "EnemyEgg.h"
-#include "EnemyFan.h"
-#include "EnemyFly.h"
-#include "EnemyHover.h"
-#include "EnemyMage.h"
-#include "EnemyScatter.h"
-#include "EnemyWave.h"
-#include "EnemyVacuum.h"
-#include <array>
-#include "Collision.h"
 #include "HitStopManager.h"
+#include "Audio/Audio.h"
+#include "LoadingProfile.h"
+#include "Light.h"
+#include "ViewVolume.h"
+#include "ModelManager.h"
 
-namespace
-{
-	// 読み込み済みの配置データから対応する敵クラスを生成する。Managerへの登録は呼び出し側で行う。
-	std::shared_ptr<Enemy> CreateEnemyFromSpawnData(ID3D11Device* device, Player* player, const EnemySpawnData& spawnData)
-	{
-		// 2.5Dの奥行きレーンを揃えるため、Z座標はプレイヤーの現在位置を使用する。
-		DirectX::XMFLOAT3 spawnPosition = { spawnData.positionX,spawnData.positionY,player->GetPosition().z };
 
-		// 共通のEnemyポインタとして返し、呼び出し側の登録処理を敵種別から独立させる。
-		switch (spawnData.enemyType)
-		{
-		case EnemyType::Wave:
-		{
-			auto enemyWave = std::make_shared<EnemyWave>(device, player);
-			enemyWave->SetPosition(spawnPosition);
-			// StageData側の方向をEnemyWave固有の方向型へ変換する。
-			if (spawnData.enemySpawnDirection == EnemySpawnDirection::Right)
-			{
-				enemyWave->SetDirection(EnemyWave::Direction::Right);
-			}
-			else
-			{
-				enemyWave->SetDirection(EnemyWave::Direction::Left);
-			}
-			return enemyWave;
-		}
-		case EnemyType::Scatter:
-		{
-			auto enemyScatter = std::make_shared<EnemyScatter>(device, player,spawnPosition);
-			return enemyScatter;
-		}
-		case EnemyType::Egg:
-		{
-			auto enemyEgg = std::make_shared<EnemyEgg>(device, player, spawnPosition);
-			return enemyEgg;
-		}
-		case EnemyType::Mage:
-		{
-			auto enemyMage = std::make_shared<EnemyMage>(device, player);
-			enemyMage->SetPosition(spawnPosition);
-			return enemyMage;
-		}
-		case EnemyType::Fan:
-		{
-			auto enemyFan = std::make_shared<EnemyFan>(device, player);
-			enemyFan->SetPosition(spawnPosition);
-			return enemyFan;
-		}
-		case EnemyType::Hover:
-		{
-			auto enemyHover = std::make_shared<EnemyHover>(device, player);
-			enemyHover->SetPosition(spawnPosition);
-			return enemyHover;
-		}
-		case EnemyType::Fly:
-		{
-			auto enemyFly = std::make_shared<EnemyFly>(device, player);
-			enemyFly->SetPosition(spawnPosition);
-			return enemyFly;
-		}
-		case EnemyType::Boss:
-		{
-			auto enemyBoss = std::make_shared<EnemyBoss>(device, player);
-			enemyBoss->SetPosition(spawnPosition);
-			return enemyBoss;
-		}
-		case EnemyType::Vacuum:
-		{
-			auto enemyVacuum = std::make_shared<EnemyVacuum>(device, player);
-			enemyVacuum->SetPosition(spawnPosition);
-			enemyVacuum->SetDirection(spawnData.enemySpawnDirection == EnemySpawnDirection::Right ? 1.0f : -1.0f);
-			return enemyVacuum;
-		}
-		case EnemyType::Unknown:
-		{
-		}
-		default:
-		{
-		}
-		}
-
-		return nullptr;
-	}
-}
-
-// コンストラクタ
 GameScene::GameScene()
 {
     LoadingProfile::Scope profile("GameScene");
@@ -118,14 +28,7 @@ GameScene::GameScene()
 	backgroundEditor = std::make_unique<BackgroundEditor>(device);
     backgroundFog = std::make_unique<BackgroundFog>(device);
     backgroundCity = std::make_unique<BackgroundCity>(device);
-	playerGauge = std::make_unique<Sprite>(device, "Data/Sprite/PlayerGauge.png", true, "Data/Shader/HealthGaugePS.cso");
-	bossGauge = std::make_unique<Sprite>(device, "Data/Sprite/EnemyGauge.png", true, "Data/Shader/HealthGaugePS.cso");
-	D3D11_BUFFER_DESC gaugeBuffer = {};
-	gaugeBuffer.ByteWidth = sizeof(DirectX::XMFLOAT4) * 3;
-	gaugeBuffer.Usage = D3D11_USAGE_DEFAULT;
-	gaugeBuffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	if (FAILED(device->CreateBuffer(&gaugeBuffer, nullptr, gaugeConstants.GetAddressOf())))
-		throw std::runtime_error("Failed to create health gauge constants.");
+	healthGaugeUI = std::make_unique<HealthGaugeUI>(device);
 
 	// JSON読み込み
 	if (!tileTypeManager.LoadDefinitions("Data/Stage/TileTypes.json"))
@@ -135,7 +38,7 @@ GameScene::GameScene()
 	}
 
 	if (!StageLoader::Load(
-		"Data/Stage/ConvertedStage.stage.json",
+		"Data/Stage/LaboratoryCourse.stage.json",
 		tileTypeManager,
 		stageData))
 	{
@@ -144,10 +47,8 @@ GameScene::GameScene()
 			<< std::endl;
 
 		throw std::runtime_error(
-			"Failed to load ConvertedStage.stage.json.");
+			"Failed to load LaboratoryCourse.stage.json.");
 	}
-
-	// カメラ設定
 
 	// 3Dオブジェクト
 	EnemyBoss::SetDefeat(false);
@@ -180,7 +81,7 @@ GameScene::GameScene()
 			continue;
 		}
 
-		auto spawnedEnemy = CreateEnemyFromSpawnData(
+		auto spawnedEnemy = EnemyFactory::CreateFromSpawnData(
 			device,
 			player.get(),
 			spawnData);
@@ -207,6 +108,13 @@ GameScene::GameScene()
 	{
 		collisionManager.RegisterTerrainAABB(box);
 	}
+    bossGates = BossGate::FromObjects(stageData.objects);
+    for (const auto& gate : bossGates)
+    {
+        bossGateModels.push_back(ModelManager::Instance().CreateInstance(
+            device, "Data/Model/Cube/Cube.gltf"));
+    }
+    UpdateBossGates(0.0f);
     profile.Step("collision_registration");
 
 }
@@ -231,6 +139,8 @@ void GameScene::Initialize()
 	);
 
     LoadingProfile::gameReady = true;
+
+	Audio::Instance().Play("BGM_STAGE");
 }
 
 GameScene::~GameScene()
@@ -249,11 +159,14 @@ void GameScene::Update(float elapsedTime)
     if (backgroundEditor->Update(elapsedTime)) return;
 	HitStopManager::Instance().Update(elapsedTime);
 
-	float scale_elapsed_time = elapsedTime * HitStopManager::Instance().GetTimeScale();
+	float scaleElapsedTime = elapsedTime * HitStopManager::Instance().GetTimeScale();
 
 	if (!isPaused)
 	{
-		player->Update(scale_elapsed_time);
+		UpdateBossGates(scaleElapsedTime);
+        player->Update(scaleElapsedTime);
+        // Detect a complete crossing after movement, including a dash this frame.
+        UpdateBossGates(0.0f);
 
 		// 接地中の位置だけを記録し、空中では最後の安全な足場位置を保持する。
 		if (player->IsGround())
@@ -267,87 +180,17 @@ void GameScene::Update(float elapsedTime)
 		// プレイヤーがボス戦開始エリアへ入った場合、保留中のボスを生成する。
 		if (!player->IsClearing() && !player->IsDead()) TryStartBossEncounter();
 
-		if (!player->IsDead()) EnemyManager::Instance().Update(scale_elapsed_time);
+		if (!player->IsDead()) EnemyManager::Instance().Update(scaleElapsedTime);
 
-		if (bossGaugeVisible && !player->IsDead())
-			bossGaugeIntroTime = (std::min)(bossGaugeIntroDuration,
-				bossGaugeIntroTime + (std::max)(0.0f, elapsedTime));
-		playerHealthTrail.Update(static_cast<float>(player->GetHealth()) /
-			(std::max)(1, player->GetMaxHealth()), elapsedTime);
-		if (bossGaugeVisible)
-		{
-			const auto boss = encounterBoss.lock();
-			const float ratio = boss ? static_cast<float>(boss->GetHealth()) /
-				(std::max)(1, boss->GetMaxHealth()) : 0.0f;
-			if (boss && !boss->IsDead() && bossGaugeIntroTime < bossGaugeIntroDuration)
-				bossHealthTrail.Reset(bossGaugeIntroTime / bossGaugeIntroDuration);
-			else
-				bossHealthTrail.Update(ratio, elapsedTime);
-		}
+		healthGaugeUI->Update(*player, elapsedTime);
 	}
 
 	if (!isPaused)
 	{
-		Camera::Instance().ShakeUpdate(scale_elapsed_time);
+		Camera::Instance().ShakeUpdate(scaleElapsedTime);
 	}
 
-	ImGuiIO& io = ImGui::GetIO();
-	if (!io.WantCaptureMouse && io.MouseWheel != 0.0f)
-	{
-		cameraController.Zoom(io.MouseWheel);
-	}
-
-	const DirectX::XMFLOAT3& playerPosition =
-		player->GetPosition();
-
-	const BossEncounterZoneData* bossEncounterZone =
-		FindBossEncounterZone(playerPosition);
-
-	const BossApproachCameraZoneData* approachCameraZone =
-		FindBossApproachCameraZone(playerPosition);
-
-	const CameraLimitZoneData* cameraLimitZone =
-		FindCameraLimitZone(playerPosition);
-
-	// ボス部屋のカメラを最優先する。
-	if (bossEncounterZone != nullptr)
-	{
-		const DirectX::XMFLOAT3 fixedFocus =
-		{
-			(bossEncounterZone->minX + bossEncounterZone->maxX) * 0.5f,
-			(bossEncounterZone->minY + bossEncounterZone->maxY) * 0.5f,
-			playerPosition.z
-		};
-
-		cameraController.UpdateFixed2D(
-			elapsedTime,
-			fixedFocus);
-	}
-	// ボス部屋の外で通路エリア内なら、通路用カメラを使用する。
-	else if (approachCameraZone != nullptr)
-	{
-		const DirectX::XMFLOAT3 fixedFocus =
-		{
-			(approachCameraZone->minX + approachCameraZone->maxX) * 0.5f,
-			(approachCameraZone->minY + approachCameraZone->maxY) * 0.5f,
-			playerPosition.z
-		};
-
-		cameraController.UpdateFixed2D(
-			elapsedTime,
-			fixedFocus);
-	}
-	// どちらの専用エリアにもいなければ、通常カメラを使用する。
-	else
-	{
-		cameraController.SetTarget(playerPosition);
-
-		cameraController.Update(
-			elapsedTime,
-			playerPosition,
-			player->GetVelocity(),
-			cameraLimitZone);
-	}
+	UpdateCamera(elapsedTime);
 }
 
 void GameScene::Render(float elapsedTime)
@@ -370,13 +213,7 @@ void GameScene::Render(float elapsedTime)
         return;
     }
     backgroundCity->Render();
-	// Run after world effects, in Debug and Release, then restore ImGui's state.
-	auto* hud = ImGui::GetForegroundDrawList();
-	hud->AddCallback([](const ImDrawList*, const ImDrawCmd* command)
-	{
-		static_cast<GameScene*>(command->UserCallbackData)->RenderHealthGauges();
-	}, this);
-	hud->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
+	healthGaugeUI->EnqueueRender();
 	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 	RenderState* renderState = Graphics::Instance().GetRenderState();
 	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
@@ -406,24 +243,30 @@ void GameScene::Render(float elapsedTime)
 			{ 1.0f, 1.0f, 1.0f, 1.0f },
 			1.0f);
 	}
-	modelRenderer->Draw(ShaderId::Model, player->GetModel(), { 1,1,1,1 }, 1.0f);
+	for (std::size_t i = 0; i < bossGates.size(); ++i)
+    {
+        const auto& gate = bossGates[i];
+        const auto& bounds = gate.GetBounds();
+        const float visibleHeight = (bounds.max.y - bounds.min.y) * (1.0f - gate.GetOpenness());
+        if (visibleHeight <= 0.0f) continue;
+        auto center = bounds.GetCenter();
+        auto half = bounds.GetHalfSize();
+        // Draw only the shutter below its original top edge.
+        // The lower edge rises during opening; the part above the doorway disappears.
+        half.y = visibleHeight * 0.5f;
+        center.y = bounds.max.y - half.y;
+        DirectX::XMFLOAT4X4 world;
+        DirectX::XMStoreFloat4x4(&world,
+            DirectX::XMMatrixScaling(half.x * 2.0f, half.y * 2.0f, half.z * 2.0f) *
+            DirectX::XMMatrixTranslation(center.x, center.y, center.z));
+        bossGateModels[i]->UpdateTransform(world);
+        modelRenderer->Draw(ShaderId::Model, bossGateModels[i],
+            { 0.25f, 0.55f, 0.65f, 1.0f }, 1.0f);
+    }
+    modelRenderer->Draw(ShaderId::Model, player->GetModel(), { 1,1,1,1 }, 1.0f);
 	EnemyManager::Instance().Render(modelRenderer);
 
-	const auto& trails = player->GetTrails();
-	for (const auto& trail : trails)
-	{
-		if (trail.trailModel)
-		{
-			DirectX::XMMATRIX S = DirectX::XMMatrixScaling(trail.scale.x, trail.scale.y, trail.scale.z);
-			DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(trail.angle.x, trail.angle.y, trail.angle.z);
-			DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(trail.position.x, trail.position.y, trail.position.z);
-			DirectX::XMFLOAT4X4 world;
-			DirectX::XMStoreFloat4x4(&world, S * R * T);
-
-			trail.trailModel->UpdateTransform(world);
-			modelRenderer->Draw(ShaderId::Model, trail.trailModel, trail.drawColor, trail.alpha);
-		}
-	}
+	player->RenderMotionTrail(modelRenderer);
 
 	// ここで不透明モデル(ステージ・プレイヤー・残像)を実際に描画し切る
 	RenderContext rc;
@@ -643,12 +486,14 @@ void GameScene::TryStartBossEncounter()
 
 	for (const BossEncounterZoneData& zone : stageData.bossEncounterZones)
 	{
-		if (!IsInsideBossEncounterZone(playerPosition, zone))
+		if (!IsInsideBossEncounterZone(playerPosition, zone) ||
+            player->GetBodyAABB().min.x < zone.minX + 0.05f ||
+            player->GetBodyAABB().max.x > zone.maxX - 0.05f)
 		{
 			continue;
 		}
 
-		auto spawnedBoss = CreateEnemyFromSpawnData(
+		auto spawnedBoss = EnemyFactory::CreateFromSpawnData(
 			Graphics::Instance().GetDevice(),
 			player.get(),
 			pendingBossSpawnData.value());
@@ -666,53 +511,95 @@ void GameScene::TryStartBossEncounter()
 			throw std::runtime_error("Boss encounter spawned a non-boss enemy.");
 		}
 		boss->SetArenaBounds(zone.minX, zone.maxX);
-		encounterBoss = boss;
-		bossGaugeVisible = true;
-		bossGaugeIntroTime = 0.0f;
-		bossHealthTrail.Reset(0.0f);
+		healthGaugeUI->ShowBoss(boss);
 
 		EnemyManager::Instance().Register(spawnedBoss);
 
 		// 配置情報を空にして、次のフレーム以降に同じボスが生成されるのを防ぐ。
-		pendingBossSpawnData.reset();
+		activeBossArena = zone;
+        lastSafePosition = playerPosition;
+        pendingBossSpawnData.reset();
 		return;
 	}
 }
 
-void GameScene::RenderHealthGauges()
+
+
+void GameScene::UpdateBossGates(float elapsedTime)
 {
-    auto& graphics = Graphics::Instance();
-    auto* dc = graphics.GetDeviceContext();
-    auto* states = graphics.GetRenderState();
-    dc->OMSetBlendState(states->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
-    dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
-    dc->RSSetState(states->GetRasterizerState(RasterizerState::SolidCullNone));
-    auto* sampler = states->GetSamplerState(SamplerState::LinearClamp);
-    dc->PSSetSamplers(0, 1, &sampler);
-    dc->PSSetConstantBuffers(1, 1, gaugeConstants.GetAddressOf());
-    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f,
-        graphics.GetScreenHeight() / 720.0f);
-    const float height = 300.0f * scale;
-    const float margin = 24.0f * scale;
-    const auto draw = [&](const Sprite& sprite, float x, float width,
-        const DirectX::XMFLOAT4& mask, const DirectX::XMFLOAT4& color, const HealthGaugeTrail& health)
+    if (bossGates.empty()) return;
+    auto& collisionManager = CollisionManager::Instance();
+    collisionManager.ClearTerrainAABBs();
+    for (const auto& box : stage->GetTerrainAABBs())
+        collisionManager.RegisterTerrainAABB(box);
+    const auto body = player->GetBodyAABB();
+    for (auto& gate : bossGates)
     {
-        const DirectX::XMFLOAT4 data[] = { mask, color,
-            { health.current, health.trailing, 0, 0 } };
-        dc->UpdateSubresource(gaugeConstants.Get(), 0, nullptr, data, 0, 0);
-        sprite.Render(dc, x, margin, 0, width, height, 0, 1, 1, 1, 1);
-    };
-    draw(*playerGauge, margin, height * 807.0f / 1949.0f,
-        { 260.0f / 807, 80.0f / 1949, 535.0f / 807, 1270.0f / 1949 },
-        { 0.12f, 0.95f, 0.28f, 1 },
-        playerHealthTrail);
-    if (bossGaugeVisible)
-    {
-        const float width = height * 724.0f / 2171.0f;
-        draw(*bossGauge, graphics.GetScreenWidth() - margin - width, width,
-            { 310.0f / 724, 95.0f / 2171, 635.0f / 724, 1405.0f / 2171 },
-            { 0.72f, 0.20f, 1.0f, 1 }, bossHealthTrail);
+        const bool wasLocked = gate.IsLocked();
+        gate.Update(elapsedTime, body);
+        // A fall must never restore the player to the entry side of a sealed gate.
+        if (!wasLocked && gate.IsLocked()) lastSafePosition = player->GetPosition();
+        if (gate.IsSolid()) collisionManager.RegisterTerrainAABB(gate.GetBounds());
     }
-    ID3D11Buffer* noBuffer = nullptr;
-    dc->PSSetConstantBuffers(1, 1, &noBuffer);
+}
+
+void GameScene::UpdateCamera(float elapsedTime)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (!io.WantCaptureMouse && io.MouseWheel != 0.0f)
+	{
+		cameraController.Zoom(io.MouseWheel);
+	}
+
+	const DirectX::XMFLOAT3& playerPosition =
+		player->GetPosition();
+
+	const BossEncounterZoneData* bossEncounterZone =
+		activeBossArena ? &activeBossArena.value() : FindBossEncounterZone(playerPosition);
+
+	const BossApproachCameraZoneData* approachCameraZone =
+		FindBossApproachCameraZone(playerPosition);
+
+	const CameraLimitZoneData* cameraLimitZone =
+		FindCameraLimitZone(playerPosition);
+
+	// ボス部屋のカメラを最優先する。
+	if (bossEncounterZone != nullptr)
+	{
+		const DirectX::XMFLOAT3 fixedFocus =
+		{
+			(bossEncounterZone->minX + bossEncounterZone->maxX) * 0.5f,
+			(bossEncounterZone->minY + bossEncounterZone->maxY) * 0.5f,
+			playerPosition.z
+		};
+
+		cameraController.UpdateFixed2D(
+			elapsedTime,
+			fixedFocus);
+	}
+	// ボス部屋の外で通路エリア内なら、通路用カメラを使用する。
+	else if (approachCameraZone != nullptr)
+	{
+		const DirectX::XMFLOAT3 fixedFocus =
+		{
+			(approachCameraZone->minX + approachCameraZone->maxX) * 0.5f,
+			(approachCameraZone->minY + approachCameraZone->maxY) * 0.5f,
+			playerPosition.z
+		};
+
+		cameraController.UpdateFixed2D(
+			elapsedTime,
+			fixedFocus);
+	}
+	// どちらの専用エリアにもいなければ、通常カメラを使用する。
+	else
+	{
+		cameraController.SetTarget(playerPosition);
+
+		cameraController.Update(
+			elapsedTime,
+			playerPosition,
+			player->GetVelocity(),
+			cameraLimitZone);
+	}
 }

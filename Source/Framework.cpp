@@ -18,7 +18,7 @@
 #include "SceneLoading.h"
 
 // 垂直同期間隔設定
-static const int syncInterval = 1;
+static const int SYNC_INTERVAL = 1;
 
 // コンストラクタ
 Framework::Framework(HWND hWnd)
@@ -92,7 +92,7 @@ void Framework::Render(float elapsedTime)
 	ImGuiRenderer::Render(dc);
 
 	// 画面表示
-	Graphics::Instance().Present(syncInterval);
+	Graphics::Instance().Present(SYNC_INTERVAL);
     if (LoadingProfile::Enabled() && LoadingProfile::gameReady && !LoadingProfile::firstGameFrame)
     {
         LoadingProfile::firstGameFrame = true;
@@ -140,12 +140,12 @@ void Framework::CalculateFrameStats()
 	// average time it takes to render one frame.  These stats 
 	// are appended to the window caption bar.
 	static int frames = 0;
-	static float time_tlapsed = 0.0f;
+	static float timeElapsed = 0.0f;
 
 	frames++;
 
 	// Compute averages over one second period.
-	if ((timer.TimeStamp() - time_tlapsed) >= 1.0f)
+	if ((timer.TimeStamp() - timeElapsed) >= 1.0f)
 	{
 		float fps = static_cast<float>(frames); // fps = frameCnt / 1
 		float mspf = 1000.0f / fps;
@@ -156,7 +156,7 @@ void Framework::CalculateFrameStats()
 
 		// Reset for next average.
 		frames = 0;
-		time_tlapsed += 1.0f;
+		timeElapsed += 1.0f;
 	}
 }
 

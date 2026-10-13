@@ -4,9 +4,8 @@
 #include <DirectXMath.h>
 #include <optional>
 #include "Scene.h"
-#include "Sprite.h"
-#include "HealthGaugeTrail.h"
-class EnemyBoss;
+#include "BossGate.h"
+#include "HealthGaugeUI.h"
 #include "Player.h"
 #include "Stage.h"
 #include "CameraController.h"
@@ -59,12 +58,16 @@ private:
 	void HandleFallRespawn();
 
 	void TryStartBossEncounter();
-	void RenderHealthGauges();
+    void UpdateBossGates(float elapsedTime);
+	void UpdateCamera(float elapsedTime);
 
 private:
 	TileTypeManager tileTypeManager;
 	StageData stageData;
 	std::optional<EnemySpawnData> pendingBossSpawnData;
+    std::optional<BossEncounterZoneData> activeBossArena;
+    std::vector<BossGate> bossGates;
+    std::vector<std::shared_ptr<Model>> bossGateModels;
 	std::unique_ptr<Player> player;
 	std::unique_ptr<Stage> stage;
 	std::unique_ptr<BackgroundEditor> backgroundEditor;
@@ -72,15 +75,7 @@ private:
     std::unique_ptr<BackgroundCity> backgroundCity;
 	CameraController cameraController;
 	bool isPaused = false;
-	std::unique_ptr<Sprite> playerGauge;
-	std::unique_ptr<Sprite> bossGauge;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> gaugeConstants;
-	std::weak_ptr<EnemyBoss> encounterBoss;
-	HealthGaugeTrail playerHealthTrail;
-	HealthGaugeTrail bossHealthTrail;
-	bool bossGaugeVisible = false;
-	float bossGaugeIntroTime = 0.0f;
-	static constexpr float bossGaugeIntroDuration = 1.5f;
+	std::unique_ptr<HealthGaugeUI> healthGaugeUI;
 
 	std::array<AABB, 3> testTerrainBoxes = {
 		// è∞ÅFè„ñ Ç™Y=0

@@ -21,12 +21,12 @@ public:
     bool Intersects(const DirectX::BoundingBox& box) const
     {
         // Small world-space guard band keeps boundary rounding conservative.
-        constexpr float margin=0.05f;
+        constexpr float MARGIN=0.05f;
         for(const auto& p:planes)
         {
             const float center=p.x*box.Center.x+p.y*box.Center.y+p.z*box.Center.z+p.w;
-            const float radius=std::abs(p.x)*(box.Extents.x+margin)+
-                std::abs(p.y)*(box.Extents.y+margin)+std::abs(p.z)*(box.Extents.z+margin);
+            const float radius=std::abs(p.x)*(box.Extents.x+MARGIN)+
+                std::abs(p.y)*(box.Extents.y+MARGIN)+std::abs(p.z)*(box.Extents.z+MARGIN);
             if(center+radius<0)return false;
         }
         return true;

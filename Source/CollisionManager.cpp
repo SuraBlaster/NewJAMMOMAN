@@ -16,18 +16,18 @@ void CollisionManager::Unregister(CollisionMesh* mesh)
     }
 }
 
-bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result)
+bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult)
 {
 	bool hit = false;
-	hit_result.distance = FLT_MAX;
+	hitResult.distance = FLT_MAX;
     for (const CollisionMesh* mesh : meshes)
     {
-		HitResult temp_result;
-        if (RayCast(mesh, start, end, temp_result))
+		HitResult tempResult;
+        if (RayCast(mesh, start, end, tempResult))
         {
-            if (temp_result.distance < hit_result.distance)
+            if (tempResult.distance < hitResult.distance)
             {
-				hit_result = temp_result;
+				hitResult = tempResult;
 			}
 			hit = true;
         }
@@ -99,13 +99,13 @@ SweepStatus CollisionManager::SweepTerrain(const AABB& movingBox, const DirectX:
 	// 2. 最初の接触時刻を確定する。
 	hit.time = earliestTime;
 
-	constexpr float timeTolerance = 0.000001f;
+	constexpr float TIME_TOLERANCE = 0.000001f;
 
 	// 3. 最初の時刻とほぼ同時に当たる面を集める。
 	for (const SweepHit& candidate : candidates)
 	{
 		if (std::abs(candidate.time - earliestTime)
-			> timeTolerance)
+			> TIME_TOLERANCE)
 		{
 			continue;
 		}
@@ -138,47 +138,47 @@ SweepStatus CollisionManager::SweepTerrain(const AABB& movingBox, const DirectX:
 	return SweepStatus::Hit;
 }
 
-bool CollisionManager::RayCast(const CollisionMesh* collision_mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result)
+bool CollisionManager::RayCast(const CollisionMesh* collisionMesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult)
 {
-	DirectX::XMVECTOR RayStart = DirectX::XMLoadFloat3(&start);
-	DirectX::XMVECTOR RayEnd = DirectX::XMLoadFloat3(&end);
-	DirectX::XMVECTOR RayVec = DirectX::XMVectorSubtract(RayEnd, RayStart);
-	DirectX::XMVECTOR RayLength = DirectX::XMVector3Length(RayVec);
+	DirectX::XMVECTOR rayStart = DirectX::XMLoadFloat3(&start);
+	DirectX::XMVECTOR rayEnd = DirectX::XMLoadFloat3(&end);
+	DirectX::XMVECTOR rayVec = DirectX::XMVectorSubtract(rayEnd, rayStart);
+	DirectX::XMVECTOR rayLength = DirectX::XMVector3Length(rayVec);
 
 	// ワールド空間のレイの長さ
-	float distance = DirectX::XMVectorGetX(RayLength);
+	float distance = DirectX::XMVectorGetX(rayLength);
 	if (distance == 0.0f) return false;
 
 	bool hit = false;
-	DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(collision_mesh->transform);
-	for (const Model::Mesh& mesh : collision_mesh->model->GetMeshes())
+	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(collisionMesh->transform);
+	for (const Model::Mesh& mesh : collisionMesh->model->GetMeshes())
 	{
 		// レイをワールド空間からローカル空間へ変換
-		DirectX::XMMATRIX G = DirectX::XMLoadFloat4x4(&mesh.node->globalTransform);
-		DirectX::XMMATRIX Transform = DirectX::XMMatrixMultiply(G, W);
-		DirectX::XMMATRIX InverseTransform = DirectX::XMMatrixInverse(nullptr, Transform);
+		DirectX::XMMATRIX g = DirectX::XMLoadFloat4x4(&mesh.node->globalTransform);
+		DirectX::XMMATRIX transformMatrix = DirectX::XMMatrixMultiply(g, w);
+		DirectX::XMMATRIX inverseTransform = DirectX::XMMatrixInverse(nullptr, transformMatrix);
 
-		DirectX::XMVECTOR S = DirectX::XMVector3Transform(RayStart, InverseTransform);
-		DirectX::XMVECTOR E = DirectX::XMVector3Transform(RayEnd, InverseTransform);
-		DirectX::XMVECTOR SE = DirectX::XMVectorSubtract(E, S);
-		DirectX::XMVECTOR V = DirectX::XMVector3Normalize(SE);
-		DirectX::XMVECTOR Length = DirectX::XMVector3Length(SE);
+		DirectX::XMVECTOR s = DirectX::XMVector3Transform(rayStart, inverseTransform);
+		DirectX::XMVECTOR e = DirectX::XMVector3Transform(rayEnd, inverseTransform);
+		DirectX::XMVECTOR se = DirectX::XMVectorSubtract(e, s);
+		DirectX::XMVECTOR v = DirectX::XMVector3Normalize(se);
+		DirectX::XMVECTOR lengthVector = DirectX::XMVector3Length(se);
 
 		// レイの長さ
-		float length = DirectX::XMVectorGetX(Length);
+		float length = DirectX::XMVectorGetX(lengthVector);
 		if (length <= 0.0f) continue;
 
 		float neart = length;
 
 #if 0
 		// バウンディングボックスとの交差判定（高速化）
-		DirectX::XMVECTOR BBoxMin = DirectX::XMLoadFloat3(&mesh.bounding_box[0]);
-		DirectX::XMVECTOR BBoxMax = DirectX::XMLoadFloat3(&mesh.bounding_box[1]);
+		DirectX::XMVECTOR bboxMin = DirectX::XMLoadFloat3(&mesh.boundingBox[0]);
+		DirectX::XMVECTOR bboxMax = DirectX::XMLoadFloat3(&mesh.boundingBox[1]);
 		DirectX::BoundingBox bbox;
-		DirectX::BoundingBox::CreateFromPoints(bbox, BBoxMin, BBoxMax);
+		DirectX::BoundingBox::CreateFromPoints(bbox, bboxMin, bboxMax);
 
-		float bbox_distance = length;
-		if (!bbox.Intersects(S, V, bbox_distance))
+		float bboxDistance = length;
+		if (!bbox.Intersects(s, v, bboxDistance))
 		{
 			// バウンディングボックスと交差しない場合はスキップ
 			continue;
@@ -189,9 +189,9 @@ bool CollisionManager::RayCast(const CollisionMesh* collision_mesh, const Direct
 		const std::vector<Model::Vertex>& vertices = mesh.vertices;
 		const std::vector<uint32_t>& indices = mesh.indices;
 
-		bool hit_mesh = false;
-		DirectX::XMVECTOR HitPosition;
-		DirectX::XMVECTOR HitNormal;
+		bool hitMesh = false;
+		DirectX::XMVECTOR hitPosition;
+		DirectX::XMVECTOR hitNormal;
 		for (size_t i = 0; i < indices.size(); i += 3)
 		{
 			// 三角形の頂点を抽出
@@ -199,53 +199,53 @@ bool CollisionManager::RayCast(const CollisionMesh* collision_mesh, const Direct
 			const Model::Vertex& b = vertices[indices[i + 1]];
 			const Model::Vertex& c = vertices[indices[i + 2]];
 
-			DirectX::XMVECTOR A = DirectX::XMLoadFloat3(&a.position);
-			DirectX::XMVECTOR B = DirectX::XMLoadFloat3(&b.position);
-			DirectX::XMVECTOR C = DirectX::XMLoadFloat3(&c.position);
+			DirectX::XMVECTOR aVector = DirectX::XMLoadFloat3(&a.position);
+			DirectX::XMVECTOR bVector = DirectX::XMLoadFloat3(&b.position);
+			DirectX::XMVECTOR cVector = DirectX::XMLoadFloat3(&c.position);
 
 			// 三角形の三辺ベクトルを算出
-			DirectX::XMVECTOR AB = DirectX::XMVectorSubtract(B, A);
-			DirectX::XMVECTOR BC = DirectX::XMVectorSubtract(C, B);
-			DirectX::XMVECTOR CA = DirectX::XMVectorSubtract(A, C);
+			DirectX::XMVECTOR ab = DirectX::XMVectorSubtract(bVector, aVector);
+			DirectX::XMVECTOR bc = DirectX::XMVectorSubtract(cVector, bVector);
+			DirectX::XMVECTOR ca = DirectX::XMVectorSubtract(aVector, cVector);
 
 			// 三角形の法線ベクトルを算出		
-			DirectX::XMVECTOR N = DirectX::XMVector3Cross(AB, BC);
+			DirectX::XMVECTOR n = DirectX::XMVector3Cross(ab, bc);
 
 			// 内積の結果がプラスならば裏向き
-			DirectX::XMVECTOR Dot = DirectX::XMVector3Dot(V, N);
-			float dot = DirectX::XMVectorGetX(Dot);
+			DirectX::XMVECTOR dotVector = DirectX::XMVector3Dot(v, n);
+			float dot = DirectX::XMVectorGetX(dotVector);
 			if (dot >= 0) continue;
 
 			// 三角形とレイの交差判定
 			float dist = neart;
-			if (!DirectX::TriangleTests::Intersects(S, V, A, B, C, dist))
+			if (!DirectX::TriangleTests::Intersects(s, v, aVector, bVector, cVector, dist))
 				continue;
 
 			if (dist >= neart) continue;
 
 			neart = dist;
-			HitPosition = DirectX::XMVectorAdd(S, DirectX::XMVectorScale(V, neart));
-			HitNormal = N;
+			hitPosition = DirectX::XMVectorAdd(s, DirectX::XMVectorScale(v, neart));
+			hitNormal = n;
 
-			hit_mesh = true;
+			hitMesh = true;
 		}
-		if (hit_mesh)
+		if (hitMesh)
 		{
 			// ローカル空間からワールド空間へ変換
-			DirectX::XMVECTOR WorldHitPosition = DirectX::XMVector3Transform(HitPosition, Transform);
-			DirectX::XMVECTOR WorldHitVec = DirectX::XMVectorSubtract(WorldHitPosition, RayStart);
-			DirectX::XMVECTOR WorldHitDistance = DirectX::XMVector3Length(WorldHitVec);
-			float world_hit_distance = DirectX::XMVectorGetX(WorldHitDistance);
+			DirectX::XMVECTOR worldHitPosition = DirectX::XMVector3Transform(hitPosition, transformMatrix);
+			DirectX::XMVECTOR worldHitVec = DirectX::XMVectorSubtract(worldHitPosition, rayStart);
+			DirectX::XMVECTOR worldHitDistanceVector = DirectX::XMVector3Length(worldHitVec);
+			float worldHitDistance = DirectX::XMVectorGetX(worldHitDistanceVector);
 
 			// ヒット情報保存
-			if (distance > world_hit_distance)
+			if (distance > worldHitDistance)
 			{
-				distance = world_hit_distance;
+				distance = worldHitDistance;
 
-				DirectX::XMVECTOR WorldNormal = XMVector3TransformNormal(HitNormal, Transform);
-				DirectX::XMStoreFloat3(&hit_result.position, WorldHitPosition);
-				DirectX::XMStoreFloat3(&hit_result.normal, DirectX::XMVector3Normalize(WorldNormal));
-				hit_result.distance = world_hit_distance;
+				DirectX::XMVECTOR worldNormal = XMVector3TransformNormal(hitNormal, transformMatrix);
+				DirectX::XMStoreFloat3(&hitResult.position, worldHitPosition);
+				DirectX::XMStoreFloat3(&hitResult.normal, DirectX::XMVector3Normalize(worldNormal));
+				hitResult.distance = worldHitDistance;
 
 				hit = true;
 			}

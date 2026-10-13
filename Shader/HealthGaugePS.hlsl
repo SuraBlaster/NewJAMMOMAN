@@ -9,7 +9,7 @@ cbuffer HealthGauge : register(b1)
     float4 health;
 };
 
-float4 main(VS_OUT pin) : SV_TARGET
+float4 main(VsOutput pin) : SV_TARGET
 {
     float4 source = spriteTexture.Sample(spriteSampler, pin.texcoord);
     // Combine a spatial mask with the colored interior of the supplied artwork.

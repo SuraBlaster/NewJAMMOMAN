@@ -11,43 +11,43 @@ class BossSideProjectile final
 public:
     enum class Motion { ScatterAndAccelerate, Continuous };
     BossSideProjectile(const DirectX::XMFLOAT3& start,
-        const DirectX::XMFLOAT3& scatter_target, float direction_x,
+        const DirectX::XMFLOAT3& scatterTarget, float directionX,
         Motion motion = Motion::ScatterAndAccelerate);
     ~BossSideProjectile();
     BossSideProjectile(const BossSideProjectile&) = delete;
     BossSideProjectile& operator=(const BossSideProjectile&) = delete;
 
-    void Update(float elapsed_time);
+    void Update(float elapsedTime);
     void HitPlayer(Player& player);
     void DrawDebugPrimitive(ShapeRenderer* renderer) const;
     bool IsActive() const { return active; }
-    static constexpr float GetRadius() { return radius; }
+    static constexpr float GetRadius() { return RADIUS; }
 
 private:
     enum class Phase { Scattering, Moving };
     void Destroy();
 
-    static constexpr float scatter_speed = 20.0f;
-    static constexpr float scatter_duration = 1.0f;
-    static constexpr float continuous_start_delay = 0.1f;
-    static constexpr float acceleration = 10.0f;
-    static constexpr float max_speed = 15.0f;
-    static constexpr float lifetime = 4.0f;
-    static constexpr float radius = 0.4f;
-    static constexpr int damage = 1;
-    static constexpr float invincible_duration = 1.2f;
-    static constexpr float knockback_power = 5.0f;
-    static constexpr float effect_scale = 0.08f;
-    static constexpr float effect_y_offset = -0.5f;
+    static constexpr float SCATTER_SPEED = 20.0f;
+    static constexpr float SCATTER_DURATION = 1.0f;
+    static constexpr float CONTINUOUS_START_DELAY = 0.1f;
+    static constexpr float ACCELERATION = 10.0f;
+    static constexpr float MAX_SPEED = 15.0f;
+    static constexpr float LIFETIME = 4.0f;
+    static constexpr float RADIUS = 0.4f;
+    static constexpr int DAMAGE = 1;
+    static constexpr float INVINCIBLE_DURATION = 1.2f;
+    static constexpr float KNOCKBACK_POWER = 5.0f;
+    static constexpr float EFFECT_SCALE = 0.08f;
+    static constexpr float EFFECT_Y_OFFSET = -0.5f;
 
     DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT3 scatter_target;
-    float direction_x;
+    DirectX::XMFLOAT3 scatterTarget;
+    float directionX;
     Motion motion;
     float age = 0.0f;
-    float current_speed = 0.0f;
+    float currentSpeed = 0.0f;
     Phase phase = Phase::Scattering;
     bool active = true;
-    Effect wind_effect{ "Data/Effect/wind.efkefc" };
-    Effekseer::Handle wind_handle = -1;
+    Effect windEffect{ "Data/Effect/wind.efkefc" };
+    Effekseer::Handle windHandle = -1;
 };

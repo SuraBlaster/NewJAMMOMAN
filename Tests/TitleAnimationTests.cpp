@@ -7,15 +7,15 @@ int main()
     namespace A = TitleAnimation;
     const auto start = A::Evaluate(0);
     assert(!A::VisibleEdge(start, 0).visible && start.xAlpha == 0);
-    const auto drawn = A::Evaluate(A::DrawEnd);
+    const auto drawn = A::Evaluate(A::DRAW_END);
     for (int edge = 0; edge < 3; ++edge)
     {
         const auto segment = A::VisibleEdge(drawn, edge);
         assert(segment.visible);
         assert(A::Length(segment.to, drawn.vertices[(edge + 2) % 3]) < 0.001f);
     }
-    const auto morphed = A::Evaluate(A::MorphEnd);
-    const auto held = A::Evaluate(A::HoldEnd);
+    const auto morphed = A::Evaluate(A::MORPH_END);
+    const auto held = A::Evaluate(A::HOLD_END);
     assert(held.vertices[0].x == 0 && held.vertices[1].x == 1280);
     assert(held.vertices[2].y > held.vertices[0].y);
     // The long edge must turn counterclockwise without reversing the face.
@@ -23,7 +23,7 @@ int main()
     float totalTurn = 0;
     for (int i = 1; i <= 200; ++i)
     {
-        const auto current = A::Evaluate(A::HoldEnd + (A::MorphEnd - A::HoldEnd) * i / 200);
+        const auto current = A::Evaluate(A::HOLD_END + (A::MORPH_END - A::HOLD_END) * i / 200);
         const A::Point a = {previous.vertices[1].x - previous.vertices[0].x,
                             previous.vertices[1].y - previous.vertices[0].y};
         const A::Point b = {current.vertices[1].x - current.vertices[0].x,
@@ -46,13 +46,13 @@ int main()
     assert(smallEdge < A::Length(recovering.vertices[0], recovering.vertices[1]));
     assert(A::Length(recovering.vertices[0], recovering.vertices[1])
         < A::Length(morphed.vertices[0], morphed.vertices[1]));
-    assert(A::Length(morphed.vertices[2], A::TriangleOrigin) < 0.001f);
+    assert(A::Length(morphed.vertices[2], A::TRIANGLE_ORIGIN) < 0.001f);
     assert(morphed.lineAlpha == 1 && morphed.triangleAlpha == 0);
-    const auto swapped = A::Evaluate(A::SwapEnd);
+    const auto swapped = A::Evaluate(A::SWAP_END);
     assert(swapped.lineAlpha == 0 && swapped.triangleAlpha == 1 && swapped.logoProgress == 0);
-    const auto logo = A::Evaluate(A::LogoEnd);
+    const auto logo = A::Evaluate(A::LOGO_END);
     assert(logo.logoProgress == 1 && logo.xAlpha == 0 && logo.xScale == 7);
-    const auto done = A::Evaluate(A::IntroEnd);
+    const auto done = A::Evaluate(A::INTRO_END);
     assert(done.xScale == 1 && done.xAlpha == 1 && done.impactAlpha == 0);
     float previousScale = 7;
     for (int i = 0; i <= 480; ++i)

@@ -23,45 +23,45 @@ namespace stage_converter
     {
         using json = nlohmann::json;
 
-        constexpr int kOutputFormatVersion = 1;
-        constexpr int kOutputIndentSpaces = 2;
-        constexpr int kMinimumTypeId = 1;
-        constexpr double kDefaultRotationDegrees = 0.0;
-        constexpr double kDefaultScale = 1.0;
-        constexpr double kZeroNormalizationThreshold = 1.0e-12;
-        constexpr std::uint32_t kEmptyGlobalTileId = 0;
-        constexpr std::uint32_t kHorizontalFlipFlag = 0x80000000U;
-        constexpr std::uint32_t kVerticalFlipFlag = 0x40000000U;
-        constexpr std::uint32_t kDiagonalFlipFlag = 0x20000000U;
-        constexpr std::uint32_t kHexagonalRotationFlag = 0x10000000U;
-        constexpr std::uint32_t kTileTransformFlags =
-            kHorizontalFlipFlag |
-            kVerticalFlipFlag |
-            kDiagonalFlipFlag |
-            kHexagonalRotationFlag;
-        constexpr std::uint32_t kGlobalTileIdMask = ~kTileTransformFlags;
+        constexpr int OUTPUT_FORMAT_VERSION = 1;
+        constexpr int OUTPUT_INDENT_SPACES = 2;
+        constexpr int MINIMUM_TYPE_ID = 1;
+        constexpr double DEFAULT_ROTATION_DEGREES = 0.0;
+        constexpr double DEFAULT_SCALE = 1.0;
+        constexpr double ZERO_NORMALIZATION_THRESHOLD = 1.0e-12;
+        constexpr std::uint32_t EMPTY_GLOBAL_TILE_ID = 0;
+        constexpr std::uint32_t HORIZONTAL_FLIP_FLAG = 0x80000000U;
+        constexpr std::uint32_t VERTICAL_FLIP_FLAG = 0x40000000U;
+        constexpr std::uint32_t DIAGONAL_FLIP_FLAG = 0x20000000U;
+        constexpr std::uint32_t HEXAGONAL_ROTATION_FLAG = 0x10000000U;
+        constexpr std::uint32_t TILE_TRANSFORM_FLAGS =
+            HORIZONTAL_FLIP_FLAG |
+            VERTICAL_FLIP_FLAG |
+            DIAGONAL_FLIP_FLAG |
+            HEXAGONAL_ROTATION_FLAG;
+        constexpr std::uint32_t GLOBAL_TILE_ID_MASK = ~TILE_TRANSFORM_FLAGS;
 
-        constexpr std::string_view kInputOption = "--input";
-        constexpr std::string_view kOutputOption = "--output";
-        constexpr std::string_view kPixelsPerUnitOption = "--pixels-per-unit";
-        constexpr std::string_view kStageNameOption = "--stage-name";
-        constexpr std::string_view kHelpOption = "--help";
-        constexpr std::string_view kShortHelpOption = "-h";
+        constexpr std::string_view INPUT_OPTION = "--input";
+        constexpr std::string_view OUTPUT_OPTION = "--output";
+        constexpr std::string_view PIXELS_PER_UNIT_OPTION = "--pixels-per-unit";
+        constexpr std::string_view STAGE_NAME_OPTION = "--stage-name";
+        constexpr std::string_view HELP_OPTION = "--help";
+        constexpr std::string_view SHORT_HELP_OPTION = "-h";
 
-        constexpr std::string_view kTypeIdProperty = "typeId";
-        constexpr std::string_view kScaleXProperty = "scaleX";
-        constexpr std::string_view kScaleYProperty = "scaleY";
-        constexpr std::string_view kStageNameProperty = "stageName";
-        constexpr std::string_view kEnemyTypeProperty = "enemyType";
-        constexpr std::string_view kDirectionProperty = "direction";
-        constexpr std::string_view kFallRespawnZonesLayerName = "FallRespawnZones";
-        constexpr std::string_view kBossEncounterZoneLayerName = "BossEncounterZone";
-        constexpr std::string_view kBossApproachCameraZoneLayerName = "BossApproachCameraZone";
-        constexpr std::string_view kCameraBoundsLayerName = "CameraBounds";
-        constexpr std::string_view kDefaultEnemyDirection = "Right";
+        constexpr std::string_view TYPE_ID_PROPERTY = "typeId";
+        constexpr std::string_view SCALE_XPROPERTY = "scaleX";
+        constexpr std::string_view SCALE_YPROPERTY = "scaleY";
+        constexpr std::string_view STAGE_NAME_PROPERTY = "stageName";
+        constexpr std::string_view ENEMY_TYPE_PROPERTY = "enemyType";
+        constexpr std::string_view DIRECTION_PROPERTY = "direction";
+        constexpr std::string_view FALL_RESPAWN_ZONES_LAYER_NAME = "FallRespawnZones";
+        constexpr std::string_view BOSS_ENCOUNTER_ZONE_LAYER_NAME = "BossEncounterZone";
+        constexpr std::string_view BOSS_APPROACH_CAMERA_ZONE_LAYER_NAME = "BossApproachCameraZone";
+        constexpr std::string_view CAMERA_BOUNDS_LAYER_NAME = "CameraBounds";
+        constexpr std::string_view DEFAULT_ENEMY_DIRECTION = "Right";
 
         // ゲーム側に実装済みの敵名だけを許可し、入力ミスを変換時に検出する。
-        constexpr std::array<std::string_view, 9> kSupportedEnemyTypes{
+        constexpr std::array<std::string_view, 9> SUPPORTED_ENEMY_TYPES{
             "Wave",
             "Scatter",
             "Mage",
@@ -77,8 +77,8 @@ namespace stage_converter
         struct TileDefinition
         {
             int typeId = 0;
-            double scaleX = kDefaultScale;
-            double scaleY = kDefaultScale;
+            double scaleX = DEFAULT_SCALE;
+            double scaleY = DEFAULT_SCALE;
         };
 
         // firstGidはマップ内のGIDをタイルセット内IDへ戻すために使用する。
@@ -101,7 +101,7 @@ namespace stage_converter
         // -0.0の出力を避け、比較しやすいJSONに揃える。
         double NormalizeZero(double value)
         {
-            return std::abs(value) < kZeroNormalizationThreshold ? 0.0 : value;
+            return std::abs(value) < ZERO_NORMALIZATION_THRESHOLD ? 0.0 : value;
         }
 
         json CreateOutputObject(
@@ -134,7 +134,7 @@ namespace stage_converter
             const std::string& direction)
         {
             return json{
-                { "enemyType", enemyType },
+                { "enemyType", enemyType == "EnemyVacuum" ? "Vacuum" : enemyType },
                 { "position", {
                     { "x", NormalizeZero(gameX) },
                     { "y", NormalizeZero(gameY) }
@@ -208,7 +208,7 @@ namespace stage_converter
                     "出力ファイルを開けません。パス: " + PathForMessage(path));
             }
 
-            output << root.dump(kOutputIndentSpaces) << '\n';
+            output << root.dump(OUTPUT_INDENT_SPACES) << '\n';
             if (!output)
             {
                 throw std::runtime_error(
@@ -303,10 +303,11 @@ namespace stage_converter
 
         bool IsSupportedEnemyType(std::string_view enemyType)
         {
+            if (enemyType == "EnemyVacuum") return true;
             return std::find(
-                kSupportedEnemyTypes.begin(),
-                kSupportedEnemyTypes.end(),
-                enemyType) != kSupportedEnemyTypes.end();
+                SUPPORTED_ENEMY_TYPES.begin(),
+                SUPPORTED_ENEMY_TYPES.end(),
+                enemyType) != SUPPORTED_ENEMY_TYPES.end();
         }
 
         // ゲーム側に生成処理がない敵名を、実行時ではなく変換時に検出する。
@@ -443,7 +444,7 @@ namespace stage_converter
 
         std::optional<int> ReadOptionalTypeId(const json& object, const std::string& context)
         {
-            const json* value = FindPropertyValue(object, kTypeIdProperty);
+            const json* value = FindPropertyValue(object, TYPE_ID_PROPERTY);
             if (value == nullptr)
             {
                 return std::nullopt;
@@ -455,7 +456,7 @@ namespace stage_converter
             }
 
             const std::int64_t typeId = value->get<std::int64_t>();
-            if (typeId < kMinimumTypeId || typeId > std::numeric_limits<int>::max())
+            if (typeId < MINIMUM_TYPE_ID || typeId > std::numeric_limits<int>::max())
             {
                 throw std::runtime_error(
                     context + "のtypeIdプロパティが有効範囲外です。");
@@ -496,10 +497,10 @@ namespace stage_converter
             }
 
             // タイル・点・楕円・多角形などを誤って置いた場合は、曖昧に変換せず入力ミスとして知らせる。
-            constexpr std::array<std::string_view, 5> kNonRectangleShapeKeys{
+            constexpr std::array<std::string_view, 5> NON_RECTANGLE_SHAPE_KEYS{
                 "gid", "ellipse", "point", "polygon", "polyline"
             };
-            for (const std::string_view key : kNonRectangleShapeKeys)
+            for (const std::string_view key : NON_RECTANGLE_SHAPE_KEYS)
             {
                 if (object.find(std::string(key)) != object.end())
                 {
@@ -520,9 +521,9 @@ namespace stage_converter
             const double rotation = ReadOptionalNumber(
                 object,
                 "rotation",
-                kDefaultRotationDegrees,
+                DEFAULT_ROTATION_DEGREES,
                 context);
-            if (std::abs(rotation) > kZeroNormalizationThreshold)
+            if (std::abs(rotation) > ZERO_NORMALIZATION_THRESHOLD)
             {
                 throw std::runtime_error(context + "の長方形ゾーンは回転できません。");
             }
@@ -567,18 +568,18 @@ namespace stage_converter
             const double tiledRotation = ReadOptionalNumber(
                 object,
                 "rotation",
-                kDefaultRotationDegrees,
+                DEFAULT_ROTATION_DEGREES,
                 context);
 
             const double scaleX = ReadOptionalNumberProperty(
                 object,
-                kScaleXProperty,
-                kDefaultScale,
+                SCALE_XPROPERTY,
+                DEFAULT_SCALE,
                 context);
             const double scaleY = ReadOptionalNumberProperty(
                 object,
-                kScaleYProperty,
-                kDefaultScale,
+                SCALE_YPROPERTY,
+                DEFAULT_SCALE,
                 context);
 
             if (scaleX <= 0.0 || scaleY <= 0.0)
@@ -628,13 +629,13 @@ namespace stage_converter
             definition.typeId = *typeId;
             definition.scaleX = ReadOptionalNumberProperty(
                 tile,
-                kScaleXProperty,
-                kDefaultScale,
+                SCALE_XPROPERTY,
+                DEFAULT_SCALE,
                 context);
             definition.scaleY = ReadOptionalNumberProperty(
                 tile,
-                kScaleYProperty,
-                kDefaultScale,
+                SCALE_YPROPERTY,
+                DEFAULT_SCALE,
                 context);
             if (definition.scaleX <= 0.0 || definition.scaleY <= 0.0)
             {
@@ -723,10 +724,10 @@ namespace stage_converter
                 const std::string tileContext =
                     context + "のtile[id=" + std::to_string(localId) + ']';
 
-                const bool hasTypeId = FindPropertyValue(tile, kTypeIdProperty) != nullptr;
+                const bool hasTypeId = FindPropertyValue(tile, TYPE_ID_PROPERTY) != nullptr;
                 const std::optional<std::string> enemyType = ReadOptionalStringProperty(
                     tile,
-                    kEnemyTypeProperty,
+                    ENEMY_TYPE_PROPERTY,
                     tileContext);
 
                 // 地形と敵の両方を表すタイルは用途が曖昧になるため禁止する。
@@ -900,11 +901,11 @@ namespace stage_converter
 
             const std::string context = ObjectDescription(object);
             const std::uint32_t rawGid = ReadGlobalTileId(*gidIterator, context);
-            if (rawGid == kEmptyGlobalTileId)
+            if (rawGid == EMPTY_GLOBAL_TILE_ID)
             {
                 return std::nullopt;
             }
-            if ((rawGid & kTileTransformFlags) != 0)
+            if ((rawGid & TILE_TRANSFORM_FLAGS) != 0)
             {
                 throw std::runtime_error(
                     context + "の敵タイルには反転または回転を使用できません。");
@@ -927,8 +928,8 @@ namespace stage_converter
 
             const std::string direction = ReadOptionalStringProperty(
                 object,
-                kDirectionProperty,
-                context).value_or(std::string(kDefaultEnemyDirection));
+                DIRECTION_PROPERTY,
+                context).value_or(std::string(DEFAULT_ENEMY_DIRECTION));
             ValidateEnemyDirection(direction, context);
 
             return CreateOutputEnemy(*enemyType, gameX, gameY, direction);
@@ -980,18 +981,18 @@ namespace stage_converter
                     ",y=" + std::to_string(tileY) + ']';
 
                 const std::uint32_t storedGid = ReadGlobalTileId(data[index], cellContext);
-                if (storedGid == kEmptyGlobalTileId)
+                if (storedGid == EMPTY_GLOBAL_TILE_ID)
                 {
                     continue;
                 }
-                if ((storedGid & kTileTransformFlags) != 0)
+                if ((storedGid & TILE_TRANSFORM_FLAGS) != 0)
                 {
                     throw std::runtime_error(
                         cellContext + "に反転または回転したタイルがあります。"
                         "現在は通常向きのタイルだけに対応しています。");
                 }
 
-                const std::uint32_t globalTileId = storedGid & kGlobalTileIdMask;
+                const std::uint32_t globalTileId = storedGid & GLOBAL_TILE_ID_MASK;
                 const TileDefinition* tileDefinition = FindTileDefinition(
                     globalTileId,
                     tilesets,
@@ -1010,7 +1011,7 @@ namespace stage_converter
                     tileDefinition->typeId,
                     tiledX / pixelsPerUnit,
                     -tiledY / pixelsPerUnit,
-                    kDefaultRotationDegrees,
+                    DEFAULT_ROTATION_DEGREES,
                     tileDefinition->scaleX,
                     tileDefinition->scaleY));
             }
@@ -1210,10 +1211,10 @@ namespace stage_converter
                 }
 
                 // 専用名のレイヤーは、通常の地形ではなく用途別の長方形ゾーンとして出力する。
-                const bool isFallRespawnZoneLayer = layerName == kFallRespawnZonesLayerName;
-                const bool isBossEncounterZoneLayer = layerName == kBossEncounterZoneLayerName;
-                const bool isBossApproachCameraZoneLayer = layerName == kBossApproachCameraZoneLayerName;
-                const bool isCameraBoundsLayer = layerName == kCameraBoundsLayerName;
+                const bool isFallRespawnZoneLayer = layerName == FALL_RESPAWN_ZONES_LAYER_NAME;
+                const bool isBossEncounterZoneLayer = layerName == BOSS_ENCOUNTER_ZONE_LAYER_NAME;
+                const bool isBossApproachCameraZoneLayer = layerName == BOSS_APPROACH_CAMERA_ZONE_LAYER_NAME;
+                const bool isCameraBoundsLayer = layerName == CAMERA_BOUNDS_LAYER_NAME;
                 if (isFallRespawnZoneLayer ||
                     isBossEncounterZoneLayer ||
                     isBossApproachCameraZoneLayer ||
@@ -1285,7 +1286,7 @@ namespace stage_converter
                 return *options.stageNameOverride;
             }
 
-            const json* stageNameProperty = FindPropertyValue(mapRoot, kStageNameProperty);
+            const json* stageNameProperty = FindPropertyValue(mapRoot, STAGE_NAME_PROPERTY);
             if (stageNameProperty != nullptr)
             {
                 if (!stageNameProperty->is_string())
@@ -1329,20 +1330,20 @@ namespace stage_converter
         for (int index = 1; index < argumentCount; ++index)
         {
             const std::string_view argument = arguments[index];
-            if (argument == kHelpOption || argument == kShortHelpOption)
+            if (argument == HELP_OPTION || argument == SHORT_HELP_OPTION)
             {
                 parsedOptions.showHelp = true;
                 continue;
             }
 
             std::string value;
-            if (argument == kInputOption)
+            if (argument == INPUT_OPTION)
             {
                 if (!ReadNextArgument(
                     argumentCount,
                     arguments,
                     index,
-                    kInputOption,
+                    INPUT_OPTION,
                     value,
                     errorMessage))
                 {
@@ -1350,13 +1351,13 @@ namespace stage_converter
                 }
                 parsedOptions.inputPath = std::filesystem::u8path(value);
             }
-            else if (argument == kOutputOption)
+            else if (argument == OUTPUT_OPTION)
             {
                 if (!ReadNextArgument(
                     argumentCount,
                     arguments,
                     index,
-                    kOutputOption,
+                    OUTPUT_OPTION,
                     value,
                     errorMessage))
                 {
@@ -1364,13 +1365,13 @@ namespace stage_converter
                 }
                 parsedOptions.outputPath = std::filesystem::u8path(value);
             }
-            else if (argument == kPixelsPerUnitOption)
+            else if (argument == PIXELS_PER_UNIT_OPTION)
             {
                 if (!ReadNextArgument(
                     argumentCount,
                     arguments,
                     index,
-                    kPixelsPerUnitOption,
+                    PIXELS_PER_UNIT_OPTION,
                     value,
                     errorMessage))
                 {
@@ -1393,13 +1394,13 @@ namespace stage_converter
                     return false;
                 }
             }
-            else if (argument == kStageNameOption)
+            else if (argument == STAGE_NAME_OPTION)
             {
                 if (!ReadNextArgument(
                     argumentCount,
                     arguments,
                     index,
-                    kStageNameOption,
+                    STAGE_NAME_OPTION,
                     value,
                     errorMessage))
                 {
@@ -1462,7 +1463,7 @@ namespace stage_converter
             << "  StageConverter --input <map.tmj> --output <stage.json> [options]\n\n"
             << "Options:\n"
             << "  --pixels-per-unit <value>  Tiled pixels per one game unit (default: "
-            << kDefaultPixelsPerUnit << ")\n"
+            << DEFAULT_PIXELS_PER_UNIT << ")\n"
             << "  --stage-name <name>         Override output stageName\n"
             << "  --help, -h                  Show this help\n";
     }
@@ -1550,7 +1551,7 @@ namespace stage_converter
         result.convertedCameraBoundsCount = convertedCameraBounds.size();
 
         const json outputRoot{
-            { "formatVersion", kOutputFormatVersion },
+            { "formatVersion", OUTPUT_FORMAT_VERSION },
             { "stageName", result.stageName },
             { "objects", convertedObjects },
             { "enemies", convertedEnemies },

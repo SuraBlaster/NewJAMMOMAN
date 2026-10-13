@@ -34,16 +34,16 @@ void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& fo
 	};
 
 	// 視点、注視点、上方向からビュー行列を作成
-	DirectX::XMVECTOR Eye = DirectX::XMLoadFloat3(&finalEye);
-	DirectX::XMVECTOR Focus = DirectX::XMLoadFloat3(&finalFocus);
-	DirectX::XMVECTOR Up = DirectX::XMLoadFloat3(&up);
-	DirectX::XMMATRIX View = DirectX::XMMatrixLookAtLH(Eye, Focus, Up);
-	DirectX::XMStoreFloat4x4(&view, View);
+	DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&finalEye);
+	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&finalFocus);
+	DirectX::XMVECTOR upVector = DirectX::XMLoadFloat3(&up);
+	DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
+	DirectX::XMStoreFloat4x4(&view, viewMatrix);
 
 	// ビューを逆行列化し、ワールド行列に戻す
-	DirectX::XMMATRIX World = DirectX::XMMatrixInverse(nullptr, View);
+	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixInverse(nullptr, viewMatrix);
 	DirectX::XMFLOAT4X4 world;
-	DirectX::XMStoreFloat4x4(&world, World);
+	DirectX::XMStoreFloat4x4(&world, worldMatrix);
 
 	// カメラの方向を取り出す
 	this->right.x = world._11;
@@ -67,16 +67,16 @@ void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& fo
 void Camera::SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ)
 {
 	// 画角、画面比率、クリップ距離からプロジェクション行列を作成
-	DirectX::XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
+	DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
 
 	//奥行きが気にならないようにする(orthoWeightの値を大きくすると効果あり)
-	DirectX::XMMATRIX Ortho = DirectX::XMMatrixOrthographicLH(1920 * 0.01f, 1080 * 0.01f, nearZ, farZ);
+	DirectX::XMMATRIX ortho = DirectX::XMMatrixOrthographicLH(1920 * 0.01f, 1080 * 0.01f, nearZ, farZ);
 	orthoWeight = 0.8f;
 	perspectiveWeight = 1.0f - orthoWeight;
 
-	DirectX::XMMATRIX S = DirectX::XMMatrixSet(orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight);
-	DirectX::XMMATRIX A = DirectX::XMMatrixSet(perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight);
-	DirectX::XMStoreFloat4x4(&projection, Projection * A + Ortho * S);
+	DirectX::XMMATRIX s = DirectX::XMMatrixSet(orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight);
+	DirectX::XMMATRIX a = DirectX::XMMatrixSet(perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight);
+	DirectX::XMStoreFloat4x4(&projection, projectionMatrix * a + ortho * s);
 }
 
 void Camera::StartShake(float magnitude, float duration)

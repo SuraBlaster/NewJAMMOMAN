@@ -28,7 +28,7 @@ void ClearPlayer::Update(float elapsedTime)
     const float dt = (std::max)(0.0f, elapsedTime);
     if (state == State::Move)
     {
-        position.x = (std::max)(0.0f, position.x - MoveSpeed * dt);
+        position.x = (std::max)(0.0f, position.x - MOVE_SPEED * dt);
         if (position.x <= 0)
         {
             state = State::Wave;

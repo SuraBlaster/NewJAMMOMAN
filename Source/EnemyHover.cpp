@@ -15,7 +15,7 @@ EnemyHover::EnemyHover(ID3D11Device* device, Player* player)
 	radius = 0.5f;
 	height = 0.8f;
 	health = 3;
-	use_gravity = false;
+	useGravity = false;
 	color = { 0.35f, 0.8f, 1.0f, 1.0f };
 	InitializeAnimator();
 	UpdateTransform();
@@ -29,17 +29,17 @@ void EnemyHover::Update(float elapsedTime)
 		return;
 	}
 
-	if (base_y == 0.0f) base_y = position.y;
-	hover_time += elapsedTime;
-	position.y = base_y + std::sin(hover_time * 2.0f) * 0.25f;
-	attack_timer -= elapsedTime;
+	if (baseY == 0.0f) baseY = position.y;
+	hoverTime += elapsedTime;
+	position.y = baseY + std::sin(hoverTime * 2.0f) * 0.25f;
+	attackTimer -= elapsedTime;
 	const DirectX::XMFLOAT3 target = player->GetPosition();
-	if (attack_timer <= 0.0f
+	if (attackTimer <= 0.0f
 		&& std::abs(position.x - target.x) < 7.0f
 		&& std::abs(position.y - target.y) < 5.0f)
 	{
 		FireRadialProjectiles();
-		attack_timer = 3.0f;
+		attackTimer = 3.0f;
 		PlayAnimation(1, false);
 	}
 
@@ -52,15 +52,15 @@ void EnemyHover::Update(float elapsedTime)
 
 void EnemyHover::FireRadialProjectiles()
 {
-	constexpr int projectileCount = 6;
-	constexpr float projectileSpeed = 5.0f;
+	constexpr int PROJECTILE_COUNT = 6;
+	constexpr float PROJECTILE_SPEED = 5.0f;
 	const DirectX::XMFLOAT3 start = { position.x, position.y + 0.5f, position.z };
-	for (int i = 0; i < projectileCount; ++i)
+	for (int i = 0; i < PROJECTILE_COUNT; ++i)
 	{
-		const float angle = DirectX::XM_2PI * i / projectileCount;
+		const float angle = DirectX::XM_2PI * i / PROJECTILE_COUNT;
 		const DirectX::XMFLOAT3 velocity = {
-			std::cos(angle) * projectileSpeed,
-			std::sin(angle) * projectileSpeed,
+			std::cos(angle) * PROJECTILE_SPEED,
+			std::sin(angle) * PROJECTILE_SPEED,
 			0.0f
 		};
 		projectiles.emplace_back(start, velocity);

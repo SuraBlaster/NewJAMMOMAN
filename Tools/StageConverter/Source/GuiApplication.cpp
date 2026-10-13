@@ -33,23 +33,23 @@ namespace stage_converter
     {
         using Microsoft::WRL::ComPtr;
 
-        constexpr wchar_t kWindowClassName[] = L"StageConverterWindowClass";
-        constexpr wchar_t kWindowTitle[] = L"Stage Converter";
-        constexpr int kInitialWindowWidth = 820;
-        constexpr int kInitialWindowHeight = 440;
-        constexpr UINT kSwapChainBufferCount = 2;
-        constexpr UINT kPresentSyncInterval = 1;
-        constexpr float kClearColor[] = { 0.10f, 0.11f, 0.13f, 1.0f };
-        constexpr float kJapaneseFontSize = 18.0f;
-        constexpr wchar_t kJapaneseFontFileName[] = L"meiryo.ttc";
-        constexpr std::size_t kPathBufferSize = 2048;
-        constexpr std::size_t kStageNameBufferSize = 256;
-        constexpr double kGuiDefaultPixelsPerUnit = 32.0;
-        constexpr double kPixelsPerUnitStep = 1.0;
-        constexpr double kPixelsPerUnitFastStep = 16.0;
-        constexpr WPARAM kSystemCommandMask = 0xFFF0U;
-        constexpr int kExitSuccess = 0;
-        constexpr int kExitInitializationFailure = 1;
+        constexpr wchar_t WINDOW_CLASS_NAME[] = L"StageConverterWindowClass";
+        constexpr wchar_t WINDOW_TITLE[] = L"Stage Converter";
+        constexpr int INITIAL_WINDOW_WIDTH = 820;
+        constexpr int INITIAL_WINDOW_HEIGHT = 440;
+        constexpr UINT SWAP_CHAIN_BUFFER_COUNT = 2;
+        constexpr UINT PRESENT_SYNC_INTERVAL = 1;
+        constexpr float CLEAR_COLOR[] = { 0.10f, 0.11f, 0.13f, 1.0f };
+        constexpr float JAPANESE_FONT_SIZE = 18.0f;
+        constexpr wchar_t JAPANESE_FONT_FILE_NAME[] = L"meiryo.ttc";
+        constexpr std::size_t PATH_BUFFER_SIZE = 2048;
+        constexpr std::size_t STAGE_NAME_BUFFER_SIZE = 256;
+        constexpr double GUI_DEFAULT_PIXELS_PER_UNIT = 32.0;
+        constexpr double PIXELS_PER_UNIT_STEP = 1.0;
+        constexpr double PIXELS_PER_UNIT_FAST_STEP = 16.0;
+        constexpr WPARAM SYSTEM_COMMAND_MASK = 0xFFF0U;
+        constexpr int CONVERTER_EXIT_SUCCESS = 0;
+        constexpr int EXIT_INITIALIZATION_FAILURE = 1;
 
         struct DirectXResources
         {
@@ -61,16 +61,16 @@ namespace stage_converter
 
         struct GuiState
         {
-            std::array<char, kPathBufferSize> inputPath{};
-            std::array<char, kPathBufferSize> outputPath{};
-            std::array<char, kStageNameBufferSize> stageName{};
-            double pixelsPerUnit = kGuiDefaultPixelsPerUnit;
+            std::array<char, PATH_BUFFER_SIZE> inputPath{};
+            std::array<char, PATH_BUFFER_SIZE> outputPath{};
+            std::array<char, STAGE_NAME_BUFFER_SIZE> stageName{};
+            double pixelsPerUnit = GUI_DEFAULT_PIXELS_PER_UNIT;
             std::string statusMessage = u8"入力ファイルと出力先を指定してください。";
             bool statusIsError = false;
         };
 
-        DirectXResources g_directX;
-        HWND g_mainWindow = nullptr;
+        DirectXResources gDirectX;
+        HWND gMainWindow = nullptr;
 
         std::wstring Utf8ToWide(const std::string& text)
         {
@@ -176,7 +176,7 @@ namespace stage_converter
 
         std::optional<std::filesystem::path> GetDialogResult(IFileDialog* dialog)
         {
-            const HRESULT showResult = dialog->Show(g_mainWindow);
+            const HRESULT showResult = dialog->Show(gMainWindow);
             if (showResult == HRESULT_FROM_WIN32(ERROR_CANCELLED))
             {
                 return std::nullopt;
@@ -209,13 +209,13 @@ namespace stage_converter
                     IID_PPV_ARGS(&dialog)),
                 "入力ファイル選択ダイアログを作成できません。");
 
-            constexpr COMDLG_FILTERSPEC filters[] = {
+            constexpr COMDLG_FILTERSPEC FILTERS[] = {
                 { L"Tiled JSON map (*.tmj)", L"*.tmj" },
                 { L"JSON file (*.json)", L"*.json" },
                 { L"All files (*.*)", L"*.*" }
             };
             ThrowIfFailed(
-                dialog->SetFileTypes(static_cast<UINT>(std::size(filters)), filters),
+                dialog->SetFileTypes(static_cast<UINT>(std::size(FILTERS)), FILTERS),
                 "入力ファイルのフィルターを設定できません。");
             dialog->SetTitle(L"変換するTiledマップを選択");
             return GetDialogResult(dialog.Get());
@@ -232,13 +232,13 @@ namespace stage_converter
                     IID_PPV_ARGS(&dialog)),
                 "出力ファイル選択ダイアログを作成できません。");
 
-            constexpr COMDLG_FILTERSPEC filters[] = {
+            constexpr COMDLG_FILTERSPEC FILTERS[] = {
                 { L"Stage JSON (*.stage.json)", L"*.stage.json" },
                 { L"JSON file (*.json)", L"*.json" },
                 { L"All files (*.*)", L"*.*" }
             };
             ThrowIfFailed(
-                dialog->SetFileTypes(static_cast<UINT>(std::size(filters)), filters),
+                dialog->SetFileTypes(static_cast<UINT>(std::size(FILTERS)), FILTERS),
                 "出力ファイルのフィルターを設定できません。");
             dialog->SetTitle(L"ゲーム用ステージJSONの保存先を選択");
             dialog->SetDefaultExtension(L"stage.json");
@@ -250,20 +250,20 @@ namespace stage_converter
         {
             ComPtr<ID3D11Texture2D> backBuffer;
             ThrowIfFailed(
-                g_directX.swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)),
+                gDirectX.swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)),
                 "スワップチェーンのバックバッファを取得できません。");
             ThrowIfFailed(
-                g_directX.device->CreateRenderTargetView(
+                gDirectX.device->CreateRenderTargetView(
                     backBuffer.Get(),
                     nullptr,
-                    &g_directX.renderTargetView),
+                    &gDirectX.renderTargetView),
                 "描画先を作成できません。");
         }
 
         void CreateDirectXDevice(HWND window)
         {
             DXGI_SWAP_CHAIN_DESC swapChainDescription{};
-            swapChainDescription.BufferCount = kSwapChainBufferCount;
+            swapChainDescription.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
             swapChainDescription.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             swapChainDescription.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             swapChainDescription.OutputWindow = window;
@@ -271,32 +271,32 @@ namespace stage_converter
             swapChainDescription.Windowed = TRUE;
             swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-            constexpr D3D_FEATURE_LEVEL requestedFeatureLevels[] = {
+            constexpr D3D_FEATURE_LEVEL REQUESTED_FEATURE_LEVELS[] = {
                 D3D_FEATURE_LEVEL_11_0,
                 D3D_FEATURE_LEVEL_10_0
             };
-            constexpr D3D_DRIVER_TYPE driverTypes[] = {
+            constexpr D3D_DRIVER_TYPE DRIVER_TYPES[] = {
                 D3D_DRIVER_TYPE_HARDWARE,
                 D3D_DRIVER_TYPE_WARP
             };
 
             HRESULT createResult = E_FAIL;
             D3D_FEATURE_LEVEL createdFeatureLevel{};
-            for (const D3D_DRIVER_TYPE driverType : driverTypes)
+            for (const D3D_DRIVER_TYPE driverType : DRIVER_TYPES)
             {
                 createResult = D3D11CreateDeviceAndSwapChain(
                     nullptr,
                     driverType,
                     nullptr,
                     0,
-                    requestedFeatureLevels,
-                    static_cast<UINT>(std::size(requestedFeatureLevels)),
+                    REQUESTED_FEATURE_LEVELS,
+                    static_cast<UINT>(std::size(REQUESTED_FEATURE_LEVELS)),
                     D3D11_SDK_VERSION,
                     &swapChainDescription,
-                    &g_directX.swapChain,
-                    &g_directX.device,
+                    &gDirectX.swapChain,
+                    &gDirectX.device,
                     &createdFeatureLevel,
-                    &g_directX.context);
+                    &gDirectX.context);
                 if (SUCCEEDED(createResult))
                 {
                     break;
@@ -319,7 +319,7 @@ namespace stage_converter
             }
 
             const std::filesystem::path fontPath =
-                std::filesystem::path(windowsDirectory) / L"Fonts" / kJapaneseFontFileName;
+                std::filesystem::path(windowsDirectory) / L"Fonts" / JAPANESE_FONT_FILE_NAME;
             if (!std::filesystem::exists(fontPath))
             {
                 return;
@@ -329,7 +329,7 @@ namespace stage_converter
             ImGuiIO& inputOutput = ImGui::GetIO();
             inputOutput.Fonts->AddFontFromFileTTF(
                 fontPathUtf8.c_str(),
-                kJapaneseFontSize,
+                JAPANESE_FONT_SIZE,
                 nullptr,
                 inputOutput.Fonts->GetGlyphRangesJapanese());
         }
@@ -357,6 +357,12 @@ namespace stage_converter
                 {
                     std::filesystem::path suggestedOutput = *selectedPath;
                     suggestedOutput.replace_extension(L".stage.json");
+                    if (selectedPath->filename() == L"LaboratoryCourse.tmj" &&
+                        selectedPath->parent_path().filename() == L"Stage" &&
+                        selectedPath->parent_path().parent_path().filename() == L"Data")
+                    {
+                        suggestedOutput = selectedPath->parent_path() / L"ConvertedStage.stage.json";
+                    }
                     CopyToBuffer(PathToUtf8(suggestedOutput), state.outputPath);
                 }
 
@@ -447,13 +453,13 @@ namespace stage_converter
             ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
             ImGui::SetNextWindowSize(inputOutput.DisplaySize);
 
-            constexpr ImGuiWindowFlags windowFlags =
+            constexpr ImGuiWindowFlags WINDOW_FLAGS =
                 ImGuiWindowFlags_NoTitleBar |
                 ImGuiWindowFlags_NoResize |
                 ImGuiWindowFlags_NoMove |
                 ImGuiWindowFlags_NoCollapse;
 
-            ImGui::Begin("StageConverterMainWindow", nullptr, windowFlags);
+            ImGui::Begin("StageConverterMainWindow", nullptr, WINDOW_FLAGS);
             ImGui::TextUnformatted(u8"Tiled ステージコンバーター");
             ImGui::Separator();
             ImGui::Spacing();
@@ -491,8 +497,8 @@ namespace stage_converter
             ImGui::InputDouble(
                 "##PixelsPerUnit",
                 &state.pixelsPerUnit,
-                kPixelsPerUnitStep,
-                kPixelsPerUnitFastStep,
+                PIXELS_PER_UNIT_STEP,
+                PIXELS_PER_UNIT_FAST_STEP,
                 "%.3f");
             ImGui::SameLine();
             ImGui::TextDisabled(u8"Tiledの何ピクセルをゲーム内の1単位にするか");
@@ -535,12 +541,12 @@ namespace stage_converter
             switch (message)
             {
             case WM_SIZE:
-                if (g_directX.swapChain && wordParameter != SIZE_MINIMIZED)
+                if (gDirectX.swapChain && wordParameter != SIZE_MINIMIZED)
                 {
-                    g_directX.renderTargetView.Reset();
+                    gDirectX.renderTargetView.Reset();
                     const UINT width = static_cast<UINT>(LOWORD(longParameter));
                     const UINT height = static_cast<UINT>(HIWORD(longParameter));
-                    if (SUCCEEDED(g_directX.swapChain->ResizeBuffers(
+                    if (SUCCEEDED(gDirectX.swapChain->ResizeBuffers(
                         0, width, height, DXGI_FORMAT_UNKNOWN, 0)))
                     {
                         try
@@ -549,21 +555,21 @@ namespace stage_converter
                         }
                         catch (const std::exception&)
                         {
-                            PostQuitMessage(kExitInitializationFailure);
+                            PostQuitMessage(EXIT_INITIALIZATION_FAILURE);
                         }
                     }
                 }
                 return 0;
 
             case WM_SYSCOMMAND:
-                if ((wordParameter & kSystemCommandMask) == SC_KEYMENU)
+                if ((wordParameter & SYSTEM_COMMAND_MASK) == SC_KEYMENU)
                 {
                     return 0;
                 }
                 break;
 
             case WM_DESTROY:
-                PostQuitMessage(kExitSuccess);
+                PostQuitMessage(CONVERTER_EXIT_SUCCESS);
                 return 0;
             }
 
@@ -583,9 +589,9 @@ namespace stage_converter
             MessageBoxW(
                 nullptr,
                 L"Windowsのファイル選択機能を初期化できません。",
-                kWindowTitle,
+                WINDOW_TITLE,
                 MB_OK | MB_ICONERROR);
-            return kExitInitializationFailure;
+            return EXIT_INITIALIZATION_FAILURE;
         }
 
         WNDCLASSEXW windowClass{};
@@ -594,33 +600,33 @@ namespace stage_converter
         windowClass.lpfnWndProc = WindowProcedure;
         windowClass.hInstance = instance;
         windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-        windowClass.lpszClassName = kWindowClassName;
+        windowClass.lpszClassName = WINDOW_CLASS_NAME;
 
         if (RegisterClassExW(&windowClass) == 0)
         {
             CoUninitialize();
-            return kExitInitializationFailure;
+            return EXIT_INITIALIZATION_FAILURE;
         }
 
         const HWND window = CreateWindowW(
-            kWindowClassName,
-            kWindowTitle,
+            WINDOW_CLASS_NAME,
+            WINDOW_TITLE,
             WS_OVERLAPPEDWINDOW,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
-            kInitialWindowWidth,
-            kInitialWindowHeight,
+            INITIAL_WINDOW_WIDTH,
+            INITIAL_WINDOW_HEIGHT,
             nullptr,
             nullptr,
             instance,
             nullptr);
         if (window == nullptr)
         {
-            UnregisterClassW(kWindowClassName, instance);
+            UnregisterClassW(WINDOW_CLASS_NAME, instance);
             CoUninitialize();
-            return kExitInitializationFailure;
+            return EXIT_INITIALIZATION_FAILURE;
         }
-        g_mainWindow = window;
+        gMainWindow = window;
 
         try
         {
@@ -629,11 +635,11 @@ namespace stage_converter
         catch (const std::exception& error)
         {
             const std::wstring wideMessage = Utf8ToWide(error.what());
-            MessageBoxW(window, wideMessage.c_str(), kWindowTitle, MB_OK | MB_ICONERROR);
+            MessageBoxW(window, wideMessage.c_str(), WINDOW_TITLE, MB_OK | MB_ICONERROR);
             DestroyWindow(window);
-            UnregisterClassW(kWindowClassName, instance);
+            UnregisterClassW(WINDOW_CLASS_NAME, instance);
             CoUninitialize();
-            return kExitInitializationFailure;
+            return EXIT_INITIALIZATION_FAILURE;
         }
 
         IMGUI_CHECKVERSION();
@@ -641,7 +647,7 @@ namespace stage_converter
         ImGui::StyleColorsDark();
         LoadJapaneseFont();
         ImGui_ImplWin32_Init(window);
-        ImGui_ImplDX11_Init(g_directX.device.Get(), g_directX.context.Get());
+        ImGui_ImplDX11_Init(gDirectX.device.Get(), gDirectX.context.Get());
 
         ShowWindow(window, showCommand);
         UpdateWindow(window);
@@ -671,30 +677,30 @@ namespace stage_converter
             DrawGui(guiState);
             ImGui::Render();
 
-            g_directX.context->OMSetRenderTargets(
+            gDirectX.context->OMSetRenderTargets(
                 1,
-                g_directX.renderTargetView.GetAddressOf(),
+                gDirectX.renderTargetView.GetAddressOf(),
                 nullptr);
-            g_directX.context->ClearRenderTargetView(
-                g_directX.renderTargetView.Get(),
-                kClearColor);
+            gDirectX.context->ClearRenderTargetView(
+                gDirectX.renderTargetView.Get(),
+                CLEAR_COLOR);
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-            g_directX.swapChain->Present(kPresentSyncInterval, 0);
+            gDirectX.swapChain->Present(PRESENT_SYNC_INTERVAL, 0);
         }
 
         ImGui_ImplDX11_Shutdown();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
 
-        g_directX.renderTargetView.Reset();
-        g_directX.swapChain.Reset();
-        g_directX.context.Reset();
-        g_directX.device.Reset();
+        gDirectX.renderTargetView.Reset();
+        gDirectX.swapChain.Reset();
+        gDirectX.context.Reset();
+        gDirectX.device.Reset();
 
         DestroyWindow(window);
-        g_mainWindow = nullptr;
-        UnregisterClassW(kWindowClassName, instance);
+        gMainWindow = nullptr;
+        UnregisterClassW(WINDOW_CLASS_NAME, instance);
         CoUninitialize();
-        return kExitSuccess;
+        return CONVERTER_EXIT_SUCCESS;
     }
 }

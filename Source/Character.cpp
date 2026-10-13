@@ -17,14 +17,14 @@ void Character::UpdateTransform()
 	}
 }
 
-bool Character::ApplyDamage(int damage, float invincibleTime)
+bool Character::ApplyDamage(int damage, float invincibleDuration)
 {
-	if (damage <= 0 || IsDead() || invincible_time > 0.0f)
+	if (damage <= 0 || IsDead() || invincibleTime > 0.0f)
 	{
 		return false;
 	}
 	health = (std::max)(0, health - damage);
-	invincible_time = (std::max)(0.0f, invincibleTime);
+	invincibleTime = (std::max)(0.0f, invincibleDuration);
 	if (IsDead()) OnDead();
 	else OnDamaged();
 	return true;
@@ -39,7 +39,7 @@ void Character::AddImpulse(const DirectX::XMFLOAT3& impulse)
 
 void Character::UpdateInvincibleTimer(float elapsedTime)
 {
-	invincible_time = (std::max)(0.0f, invincible_time - elapsedTime);
+	invincibleTime = (std::max)(0.0f, invincibleTime - elapsedTime);
 }
 
 void Character::UpdateGroundPhysics(float elapsedTime)
@@ -47,18 +47,18 @@ void Character::UpdateGroundPhysics(float elapsedTime)
 	position.x += velocity.x * elapsedTime;
 	position.z += velocity.z * elapsedTime;
 
-	if (!use_gravity)
+	if (!useGravity)
 	{
 		position.y += velocity.y * elapsedTime;
 		return;
 	}
 
-	velocity.y -= gravity_acceleration * elapsedTime;
+	velocity.y -= gravityAcceleration * elapsedTime;
 	const float moveY = velocity.y * elapsedTime;
 	if (moveY >= 0.0f)
 	{
 		position.y += moveY;
-		is_ground = false;
+		isGround = false;
 		return;
 	}
 
@@ -67,18 +67,18 @@ void Character::UpdateGroundPhysics(float elapsedTime)
 	HitResult hit;
 	if (CollisionManager::Instance().Raycast(start, end, hit))
 	{
-		const bool landedThisFrame = !is_ground;
+		const bool landedThisFrame = !isGround;
 		position.y = hit.position.y;
 		velocity.y = 0.0f;
 		velocity.x = 0.0f;
 		velocity.z = 0.0f;
-		is_ground = true;
+		isGround = true;
 		if (landedThisFrame) OnLanding();
 	}
 	else
 	{
 		position.y += moveY;
-		is_ground = false;
+		isGround = false;
 	}
 }
 
@@ -98,6 +98,6 @@ void Character::PlayAnimation(int clip, bool loop, float blendDuration)
 
 void Character::SetHealth(int value)
 {
-	max_health = (std::max)(1, value);
-	health = max_health;
+	maxHealth = (std::max)(1, value);
+	health = maxHealth;
 }

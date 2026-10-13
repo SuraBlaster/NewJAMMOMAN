@@ -1,6 +1,6 @@
 #include "ShapeRenderer.hlsli"
 
-float4 main(VS_OUT pin) : SV_TARGET
+float4 main(VsOutput pin) : SV_TARGET
 {
 	return pin.color;
 }

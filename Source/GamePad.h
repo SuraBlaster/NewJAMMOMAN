@@ -26,7 +26,7 @@ public:
 
 
 private:
-	std::chrono::steady_clock::time_point vibration_end{};
+	std::chrono::steady_clock::time_point vibrationEnd{};
 	bool vibrating = false;
 
 public:
@@ -44,41 +44,41 @@ public:
 	void SetSlot(int slot) { this->slot = slot; }
 
 	// ボタン入力状態の取得
-	GamePadButton GetButton() const { return button_state[0]; }
+	GamePadButton GetButton() const { return buttonState[0]; }
 
 	// ボタン押下状態の取得
-	GamePadButton GetButtonDown() const { return button_down; }
+	GamePadButton GetButtonDown() const { return buttonDown; }
 
 	// ボタン押上状態の取得
-	GamePadButton GetButtonUp() const { return button_up; }
+	GamePadButton GetButtonUp() const { return buttonUp; }
 
 	// 左スティックX軸入力状態の取得
-	float GetAxisLX() const { return axis_lx; }
+	float GetAxisLX() const { return axisLx; }
 
 	// 左スティックY軸入力状態の取得
-	float GetAxisLY() const { return axis_ly; }
+	float GetAxisLY() const { return axisLy; }
 
 	// 右スティックX軸入力状態の取得
-	float GetAxisRX() const { return axis_rx; }
+	float GetAxisRX() const { return axisRx; }
 
 	// 右スティックY軸入力状態の取得
-	float GetAxisRY() const { return axis_ry; }
+	float GetAxisRY() const { return axisRy; }
 
 	// 左トリガー入力状態の取得
-	float GetTriggerL() const { return trigger_l; }
+	float GetTriggerL() const { return triggerL; }
 
 	// 右トリガー入力状態の取得
-	float GetTriggerR() const { return trigger_r; }
+	float GetTriggerR() const { return triggerR; }
 
 private:
-	GamePadButton		button_state[2] = { 0 };
-	GamePadButton		button_down = 0;
-	GamePadButton		button_up = 0;
-	float				axis_lx = 0.0f;
-	float				axis_ly = 0.0f;
-	float				axis_rx = 0.0f;
-	float				axis_ry = 0.0f;
-	float				trigger_l = 0.0f;
-	float				trigger_r = 0.0f;
+	GamePadButton		buttonState[2] = { 0 };
+	GamePadButton		buttonDown = 0;
+	GamePadButton		buttonUp = 0;
+	float				axisLx = 0.0f;
+	float				axisLy = 0.0f;
+	float				axisRx = 0.0f;
+	float				axisRy = 0.0f;
+	float				triggerL = 0.0f;
+	float				triggerR = 0.0f;
 	int					slot = 0;
 };

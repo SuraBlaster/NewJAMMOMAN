@@ -10,7 +10,7 @@
 #include "GpuResourceUtils.h"
 #include "Model.h"
 
-const std::vector<D3D11_INPUT_ELEMENT_DESC> Model::InputElementDescs =
+const std::vector<D3D11_INPUT_ELEMENT_DESC> Model::INPUT_ELEMENT_DESCS =
 {
 	{ "POSITION",     0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	{ "NORMAL",       0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -501,35 +501,35 @@ int Model::GetNodeIndex(const char* name) const
 // トランスフォーム更新処理
 void Model::UpdateTransform(const DirectX::XMFLOAT4X4& worldTransform)
 {
-	DirectX::XMMATRIX ParentWorldTransform = DirectX::XMLoadFloat4x4(&worldTransform);
+	DirectX::XMMATRIX parentWorldTransform = DirectX::XMLoadFloat4x4(&worldTransform);
 
 	for (Node& node : nodes)
 	{
 		// ローカル行列算出
-		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
-		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotation));
-		DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(node.position.x, node.position.y, node.position.z);
-		DirectX::XMMATRIX LocalTransform = S * R * T;
+		DirectX::XMMATRIX s = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
+		DirectX::XMMATRIX r = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotation));
+		DirectX::XMMATRIX t = DirectX::XMMatrixTranslation(node.position.x, node.position.y, node.position.z);
+		DirectX::XMMATRIX localTransformMatrix = s * r * t;
 
 		// グローバル行列算出
-		DirectX::XMMATRIX ParentGlobalTransform;
+		DirectX::XMMATRIX parentGlobalTransform;
 		if (node.parent != nullptr)
 		{
-			ParentGlobalTransform = DirectX::XMLoadFloat4x4(&node.parent->globalTransform);
+			parentGlobalTransform = DirectX::XMLoadFloat4x4(&node.parent->globalTransform);
 		}
 		else
 		{
-			ParentGlobalTransform = DirectX::XMMatrixIdentity();
+			parentGlobalTransform = DirectX::XMMatrixIdentity();
 		}
-		DirectX::XMMATRIX GlobalTransform = LocalTransform * ParentGlobalTransform;
+		DirectX::XMMATRIX globalTransformMatrix = localTransformMatrix * parentGlobalTransform;
 
 		// ワールド行列算出
-		DirectX::XMMATRIX WorldTransform = GlobalTransform * ParentWorldTransform;
+		DirectX::XMMATRIX worldTransformMatrix = globalTransformMatrix * parentWorldTransform;
 
 		// 計算結果を格納
-		DirectX::XMStoreFloat4x4(&node.localTransform, LocalTransform);
-		DirectX::XMStoreFloat4x4(&node.globalTransform, GlobalTransform);
-		DirectX::XMStoreFloat4x4(&node.worldTransform, WorldTransform);
+		DirectX::XMStoreFloat4x4(&node.localTransform, localTransformMatrix);
+		DirectX::XMStoreFloat4x4(&node.globalTransform, globalTransformMatrix);
+		DirectX::XMStoreFloat4x4(&node.worldTransform, worldTransformMatrix);
 	}
 }
 
@@ -550,11 +550,11 @@ void Model::ComputeAnimation(int animationIndex, int nodeIndex, float time, Node
 			float rate = (time - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
 			// 前のキーフレームと次のキーフレームの姿勢を補完
-			DirectX::XMVECTOR V0 = DirectX::XMLoadFloat3(&keyframe0.value);
-			DirectX::XMVECTOR V1 = DirectX::XMLoadFloat3(&keyframe1.value);
-			DirectX::XMVECTOR V = DirectX::XMVectorLerp(V0, V1, rate);
+			DirectX::XMVECTOR v0 = DirectX::XMLoadFloat3(&keyframe0.value);
+			DirectX::XMVECTOR v1 = DirectX::XMLoadFloat3(&keyframe1.value);
+			DirectX::XMVECTOR vVector = DirectX::XMVectorLerp(v0, v1, rate);
 			// 計算結果をノードに格納
-			DirectX::XMStoreFloat3(&nodePose.position, V);
+			DirectX::XMStoreFloat3(&nodePose.position, vVector);
 		}
 	}
 	// 回転
@@ -569,11 +569,11 @@ void Model::ComputeAnimation(int animationIndex, int nodeIndex, float time, Node
 			float rate = (time - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
 			// 前のキーフレームと次のキーフレームの姿勢を補完
-			DirectX::XMVECTOR Q0 = DirectX::XMLoadFloat4(&keyframe0.value);
-			DirectX::XMVECTOR Q1 = DirectX::XMLoadFloat4(&keyframe1.value);
-			DirectX::XMVECTOR Q = DirectX::XMQuaternionSlerp(Q0, Q1, rate);
+			DirectX::XMVECTOR q0 = DirectX::XMLoadFloat4(&keyframe0.value);
+			DirectX::XMVECTOR q1 = DirectX::XMLoadFloat4(&keyframe1.value);
+			DirectX::XMVECTOR q = DirectX::XMQuaternionSlerp(q0, q1, rate);
 			// 計算結果をノードに格納
-			DirectX::XMStoreFloat4(&nodePose.rotation, Q);
+			DirectX::XMStoreFloat4(&nodePose.rotation, q);
 		}
 	}
 	// スケール
@@ -588,11 +588,11 @@ void Model::ComputeAnimation(int animationIndex, int nodeIndex, float time, Node
 			float rate = (time - keyframe0.seconds) / (keyframe1.seconds - keyframe0.seconds);
 
 			// 前のキーフレームと次のキーフレームの姿勢を補完
-			DirectX::XMVECTOR V0 = DirectX::XMLoadFloat3(&keyframe0.value);
-			DirectX::XMVECTOR V1 = DirectX::XMLoadFloat3(&keyframe1.value);
-			DirectX::XMVECTOR V = DirectX::XMVectorLerp(V0, V1, rate);
+			DirectX::XMVECTOR v0 = DirectX::XMLoadFloat3(&keyframe0.value);
+			DirectX::XMVECTOR v1 = DirectX::XMLoadFloat3(&keyframe1.value);
+			DirectX::XMVECTOR vVector = DirectX::XMVectorLerp(v0, v1, rate);
 			// 計算結果をノードに格納
-			DirectX::XMStoreFloat3(&nodePose.scale, V);
+			DirectX::XMStoreFloat3(&nodePose.scale, vVector);
 		}
 	}
 }

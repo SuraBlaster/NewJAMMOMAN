@@ -89,13 +89,13 @@ HRESULT GpuResourceUtils::LoadTexture(
 	// フォーマット毎に画像読み込み処理
 	HRESULT hr;
 	DirectX::TexMetadata metadata;
-	DirectX::ScratchImage scratch_image;
+	DirectX::ScratchImage scratchImage;
 	if (extension == ".tga")
 	{
 		hr = DirectX::GetMetadataFromTGAFile(wfilename.c_str(), metadata);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromTGAFile(wfilename.c_str(), &metadata, scratch_image);
+		hr = DirectX::LoadFromTGAFile(wfilename.c_str(), &metadata, scratchImage);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 	else if (extension == ".dds")
@@ -103,7 +103,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, metadata);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratch_image);
+		hr = DirectX::LoadFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 	else if (extension == ".hdr")
@@ -111,7 +111,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromHDRFile(wfilename.c_str(), metadata);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromHDRFile(wfilename.c_str(), &metadata, scratch_image);
+		hr = DirectX::LoadFromHDRFile(wfilename.c_str(), &metadata, scratchImage);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 	else
@@ -119,12 +119,12 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromWICFile(wfilename.c_str(), DirectX::WIC_FLAGS_NONE, metadata);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromWICFile(wfilename.c_str(), ignoreSRGB ? DirectX::WIC_FLAGS_IGNORE_SRGB : DirectX::WIC_FLAGS_NONE, &metadata, scratch_image);
+		hr = DirectX::LoadFromWICFile(wfilename.c_str(), ignoreSRGB ? DirectX::WIC_FLAGS_IGNORE_SRGB : DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 
 	// シェーダーリソースビュー作成
-	hr = DirectX::CreateShaderResourceView(device, scratch_image.GetImages(), scratch_image.GetImageCount(),
+	hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
 		metadata, shaderResourceView);
 	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
@@ -153,14 +153,14 @@ HRESULT GpuResourceUtils::LoadTexture(
 	// フォーマット毎に画像読み込み処理
 	HRESULT hr = E_FAIL;
 	DirectX::TexMetadata metadata;
-	DirectX::ScratchImage scratch_image;
+	DirectX::ScratchImage scratchImage;
 
 	// .tga
 	{
 		hr = DirectX::GetMetadataFromTGAMemory(data, size, metadata);
 		if (SUCCEEDED(hr))
 		{
-			hr = DirectX::LoadFromTGAMemory(data, size, &metadata, scratch_image);
+			hr = DirectX::LoadFromTGAMemory(data, size, &metadata, scratchImage);
 		}
 	}
 	// .dds
@@ -169,7 +169,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, metadata);
 		if (SUCCEEDED(hr))
 		{
-			hr = DirectX::LoadFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, &metadata, scratch_image);
+			hr = DirectX::LoadFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
 		}
 	}
 	// .hdr
@@ -178,7 +178,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromHDRMemory(data, size, metadata);
 		if (SUCCEEDED(hr))
 		{
-			hr = DirectX::LoadFromHDRMemory(data, size, &metadata, scratch_image);
+			hr = DirectX::LoadFromHDRMemory(data, size, &metadata, scratchImage);
 		}
 	}
 	if (FAILED(hr))
@@ -186,7 +186,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 		hr = DirectX::GetMetadataFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, metadata);
 		if (SUCCEEDED(hr))
 		{
-			hr = DirectX::LoadFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, &metadata, scratch_image);
+			hr = DirectX::LoadFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
 		}
 	}
 	if (FAILED(hr))
@@ -195,7 +195,7 @@ HRESULT GpuResourceUtils::LoadTexture(
 	}
 
 	// シェーダーリソースビュー作成
-	hr = DirectX::CreateShaderResourceView(device, scratch_image.GetImages(), scratch_image.GetImageCount(),
+	hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
 		metadata, shaderResourceView);
 	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 

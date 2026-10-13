@@ -1,0 +1,55 @@
+{
+  "type": "map",
+  "version": "1.10",
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "infinite": false,
+  "width": 8,
+  "height": 3,
+  "tilewidth": 32,
+  "tileheight": 32,
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "source": "GateTileset.tsj"
+    }
+  ],
+  "layers": [
+    {
+      "id": 1,
+      "name": "Gates",
+      "type": "tilelayer",
+      "visible": true,
+      "x": 0,
+      "y": 0,
+      "width": 8,
+      "height": 3,
+      "data": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        2,
+        0
+      ]
+    }
+  ]
+}

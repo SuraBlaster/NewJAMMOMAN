@@ -14,16 +14,15 @@ SE_PLAYER_APPEAR,Data/Audio/Character/Player/AppearNoise.wav
 SE_PLAYER_APPEAR_LANDING,Data/Audio/Character/Player/PlayerAppearLanding.wav
 SE_PLAYER_AFTER_APPEAR,Data/Audio/Character/Player/PlayerAfterAppear.wav
 SE_PLAYER_RUN,Data/Audio/Character/Player/Run.wav,1.0
-SE_PLAYER_SLIDE,Data/Audio/Character/Player/Sliding.wav,0.8
-SE_PLAYER_CHARGE,Data/Audio/Character/Player/Charge.wav,1.8
+SE_PLAYER_DASH,Data/Audio/Character/Player/Dash.wav,0.8
 SE_PLAYER_JUMP,Data/Audio/Character/Player/PlayerJump.wav,1.2
 SE_PLAYER_LAND,Data/Audio/Character/Player/PlayerLand.wav,0.8
-SE_PLAYER_SHOT,Data/Audio/Character/Player/PlayerShot.wav
-SE_PLAYER_CHARGE_SHOT,Data/Audio/Character/Player/ChargeShot.wav
+SE_PLAYER_SWISH,Data/Audio/Character/Player/Swish.wav,0.6
+SE_PLAYER_SLASH,Data/Audio/Character/Player/Slash.wav,1.2
+SE_PLAYER_WALLSLIDE,Data/Audio/Character/Player/WallSlide.wav,0.4
+SE_PLAYER_WALLJUMP,Data/Audio/Character/Player/WallJump.wav,0.8
 SE_PLAYER_DAMAGE,Data/Audio/Character/Player/PlayerDamage.wav,0.3
 SE_PLAYER_DAMAGE_SPARK,Data/Audio/Character/Player/PlayerDamageSpark.wav,0.4
-SE_PLAYER_GEAR_ACTIVATE,Data/Audio/Character/Player/SpeedGear.wav
-SE_PLAYER_GEAR_CANCEL,Data/Audio/Character/Player/CancelSpeedGear.wav
 SE_PLAYER_RETURN,Data/Audio/Character/Player/PlayerReturn.wav
 
 

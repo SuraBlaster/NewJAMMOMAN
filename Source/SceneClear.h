@@ -14,9 +14,9 @@ public:
     void DrawGUI() override;
 private:
     void ReturnToTitle();
-    static constexpr float TypewriterDelay = 0.5f;
-    static constexpr float LetterInterval = 0.08f;
-    static constexpr float WaveDisplayTime = 4.0f;
+    static constexpr float TYPEWRITER_DELAY = 0.5f;
+    static constexpr float LETTER_INTERVAL = 0.08f;
+    static constexpr float WAVE_DISPLAY_TIME = 4.0f;
     std::unique_ptr<Sprite> background;
     std::unique_ptr<ClearPlayer> player;
     float sceneTimer = 0.0f;

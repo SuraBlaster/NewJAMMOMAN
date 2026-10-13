@@ -48,9 +48,9 @@ void SceneTitle::StartGame()
 {
     if (isTransitioning) return;
     // First press skips the intro; a fresh press starts the game.
-    if (introTimer < TitleAnimation::IntroEnd)
+    if (introTimer < TitleAnimation::INTRO_END)
     {
-        introTimer = TitleAnimation::IntroEnd;
+        introTimer = TitleAnimation::INTRO_END;
         return;
     }
     isTransitioning = true;
@@ -68,12 +68,12 @@ void SceneTitle::Update(float elapsedTime)
 #ifdef _DEBUG
     if (!introPaused)
 #endif
-        introTimer = (std::min)(introTimer + dt, TitleAnimation::IntroEnd);
+        introTimer = (std::min)(introTimer + dt, TitleAnimation::INTRO_END);
     blinkTimer = std::fmod(blinkTimer + dt, 1.0f);
     if (LoadingProfile::Automatic() && acceptInput && !isTransitioning) StartGame();
     if (acceptInput) UpdateInput();
     UpdateTransition(dt);
-    if (introTimer >= TitleAnimation::XEnd)
+    if (introTimer >= TitleAnimation::X_END)
         UpdateDecorations(dt);
 }
 
@@ -94,7 +94,7 @@ void SceneTitle::UpdateDecorations(float elapsedTime)
 
 void SceneTitle::RenderDecorations()
 {
-    if (introTimer < TitleAnimation::XEnd) return;
+    if (introTimer < TitleAnimation::X_END) return;
     auto& graphics = Graphics::Instance();
     auto& camera = Camera::Instance();
     camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45),
@@ -123,14 +123,14 @@ void SceneTitle::UpdateInput()
     }
     // InputManager::Update runs once per frame in Framework. Use press edges so
     // holding a button after skipping the intro does not also start the game.
-    constexpr InputButton startButtons =
+    constexpr InputButton START_BUTTONS =
         InputManager::BTN_A | InputManager::BTN_B | InputManager::BTN_X | InputManager::BTN_Y |
         InputManager::BTN_START | InputManager::BTN_BACK |
         InputManager::BTN_UP | InputManager::BTN_RIGHT | InputManager::BTN_DOWN | InputManager::BTN_LEFT |
         InputManager::BTN_LEFT_THUMB | InputManager::BTN_RIGHT_THUMB |
         InputManager::BTN_LEFT_SHOULDER | InputManager::BTN_RIGHT_SHOULDER |
         InputManager::BTN_LEFT_TRIGGER | InputManager::BTN_RIGHT_TRIGGER;
-    const bool padPressed = (InputManager::Instance().GetButtonDown() & startButtons) != 0;
+    const bool padPressed = (InputManager::Instance().GetButtonDown() & START_BUTTONS) != 0;
     if (padPressed || keyPressed)
         StartGame();
 }
@@ -179,8 +179,8 @@ void SceneTitle::RenderTriangleLines(ID3D11DeviceContext* dc, const TitleAnimati
     if (animation.lineAlpha <= 0) return;
 
     // During the turn, the wire becomes a red face before handing off to the PNG.
-    const float fill = TitleAnimation::Progress(introTimer, TitleAnimation::HoldEnd,
-        TitleAnimation::HoldEnd + 0.3f);
+    const float fill = TitleAnimation::Progress(introTimer, TitleAnimation::HOLD_END,
+        TitleAnimation::HOLD_END + 0.3f);
     if (fill > 0)
     {
         auto& graphics = Graphics::Instance();
@@ -229,9 +229,9 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
 
     if (animation.triangleAlpha > 0)
         triangle->Render(dc,
-            screenOffsetX + Anim::TriangleOrigin.x * scale,
-            screenOffsetY + Anim::TriangleOrigin.y * scale, 0,
-            Anim::TriangleWidth * scale, Anim::TriangleHeight * scale,
+            screenOffsetX + Anim::TRIANGLE_ORIGIN.x * scale,
+            screenOffsetY + Anim::TRIANGLE_ORIGIN.y * scale, 0,
+            Anim::TRIANGLE_WIDTH * scale, Anim::TRIANGLE_HEIGHT * scale,
             0, 1, 1, 1, animation.triangleAlpha);
 
     if (animation.logoProgress > 0)
@@ -246,7 +246,7 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
     if (animation.xAlpha > 0)
     {
         // BGM�ݒ�: X�̕����̔z�u�A�j���[�V�����������������x�������[�v�Đ�����B
-        if (!titleBgmStarted && introTimer >= Anim::XEnd)
+        if (!titleBgmStarted && introTimer >= Anim::X_END)
         {
             Audio::Instance().Play("BGM_TITLE", true);
             titleBgmStarted = true;
@@ -265,7 +265,7 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
 
 void SceneTitle::DrawGUI()
 {
-    if (introTimer >= TitleAnimation::IntroEnd && !isTransitioning && blinkTimer < 0.5f)
+    if (introTimer >= TitleAnimation::INTRO_END && !isTransitioning && blinkTimer < 0.5f)
         TextRenderer::DrawCentered(screenOffsetX + 640 * screenScale,
             screenOffsetY + 600 * screenScale, "Press Any Button", 32 * screenScale);
 #ifdef _DEBUG
@@ -282,7 +282,7 @@ void SceneTitle::DrawDebugGUI()
     if (ImGui::Begin("Title animation"))
     {
         ImGui::Checkbox("Pause intro", &introPaused);
-        if (ImGui::SliderFloat("Time", &introTimer, 0, TitleAnimation::IntroEnd, "%.2f s"))
+        if (ImGui::SliderFloat("Time", &introTimer, 0, TitleAnimation::INTRO_END, "%.2f s"))
         {
             introPaused = true;
             isTransitioning = false;
