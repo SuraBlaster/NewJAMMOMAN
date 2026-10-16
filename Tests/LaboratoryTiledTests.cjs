@@ -1,7 +1,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert'),
       {spawnSync} = require('child_process');
 process.chdir(path.resolve(__dirname, '..'));
-const mapFile = 'Data/Stage/LaboratoryCourse.tmj', out = 'obj/LaboratoryCourse.roundtrip.stage.json';
+const mapFile = 'Data/Stage/LaboratoryCombinedCourse.tmj', out = 'obj/LaboratoryCombinedCourse.roundtrip.stage.json';
 
 function convert(input, output)
 {
@@ -16,7 +16,7 @@ const canonical = s => ({
     cameraBounds : s.cameraBounds || [],
     objects : s.objects.toSorted((a, b) => a.position.x - b.position.x || a.position.y - b.position.y)
 });
-const stage = JSON.parse(fs.readFileSync('Data/Stage/ConvertedStage.stage.json', 'utf8'));
+const stage = JSON.parse(fs.readFileSync('Data/Stage/LaboratoryCombinedCourse.stage.json', 'utf8'));
 assert.deepStrictEqual(canonical(convert(mapFile, out)), canonical(stage));
 
 const map = JSON.parse(fs.readFileSync(mapFile, 'utf8'));
@@ -46,7 +46,9 @@ const bg = JSON.parse(fs.readFileSync('Data/Stage/Background.stage.json'));
 const manifest = JSON.parse(fs.readFileSync('Data/Stage/LaboratoryWalls.generated.json'));
 const authored = bg.objects.filter(o => !manifest.ids.includes(o.id));
 assert.equal(authored.length, manifest.authoredObjects);
-assert(manifest.decorationObjects > 0);
+const decorationObjects = bg.objects.filter(o => manifest.ids.includes(o.id) && o.asset >= 2).length;
+assert(decorationObjects > 0);
+assert.equal(manifest.ids.length, bg.objects.length - authored.length);
 
 for (const asset of [3, 4, 5, 6, 7, 9, 10])
 {
@@ -56,4 +58,4 @@ for (const asset of [3, 4, 5, 6, 7, 9, 10])
 assert(bg.objects.every(o => Number.isFinite(o.position[2]) && o.position[2] > 0));
 console.log(`PASS: ${stage.objects.length} tiles, ${
     stage.enemies.length} enemies and all zones round-trip; edits survive conversion; ${
-    manifest.decorationObjects} background decorations.`);
+    decorationObjects} background decorations.`);

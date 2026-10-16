@@ -62,10 +62,15 @@ void EnemyHover::Update(float elapsedTime)
 
 void EnemyHover::FireRadialProjectiles()
 {
-    // Fire runs on the main thread; share this resource across all six shots.
+    // エフェクトはメインスレッドで読み込み、6発の弾で共有
     if (!projectileEffect)
     {
         projectileEffect = std::make_shared<Effect>("Data/Effect/FlyEnemyShot.efkefc");
+    }
+
+    if (!terrainImpactEffect)
+    {
+        terrainImpactEffect = std::make_shared<Effect>("Data/Effect/Fire.efkefc");
     }
 
     constexpr int PROJECTILE_COUNT = 6;
@@ -79,6 +84,7 @@ void EnemyHover::FireRadialProjectiles()
                                             std::sin(angle) * PROJECTILE_SPEED, 0.0f};
         projectiles.emplace_back(start, velocity);
         projectiles.back().AttachEffect(projectileEffect, 0.5f);
+        projectiles.back().EnableTerrainCollision(terrainImpactEffect);
     }
 }
 

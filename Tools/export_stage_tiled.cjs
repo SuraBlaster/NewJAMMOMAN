@@ -3,18 +3,30 @@ const fs = require('fs'), path = require('path'), assert = require('assert');
 function exportStage(input, output)
 {
     const stage = JSON.parse(fs.readFileSync(input, 'utf8'));
-    assert(stage.objects.every(o => [100, 301, 302].includes(o.typeId)), 'Unsupported tile type for export');
+    const groundGids = new Map([[100, 1], [101, 14], [102, 15], [103, 16]]);
+    assert(stage.objects.every(o => groundGids.has(o.typeId) || [301, 302].includes(o.typeId)),
+           'Unsupported tile type for export');
     const dir = path.dirname(output), resources = path.join(dir, 'Tiled');
     fs.mkdirSync(resources, {recursive : true});
 
     for (const file of ['CubeBlockTileset.tsj', 'BlockTileset.png', 'EnemyPlacements.tsj',
-                        'EnemyPlacements.png', 'GateTileset.tsj', 'GateTileset.png'])
+                        'EnemyPlacements.png', 'GateTileset.tsj', 'GateTileset.png',
+                        'LaboratoryBlocks.tsj', 'LaboratoryBlocks.png'])
     {
         fs.copyFileSync(path.join(__dirname, 'StageConverter/Sample', file), path.join(resources, file));
     }
 
     fs.cpSync(path.join(__dirname, 'StageConverter/Sample/EnemyPlacementIcons'),
               path.join(resources, 'EnemyPlacementIcons'), {recursive : true});
+    // Walker resources are authored alongside the live map.
+    const walkerResources = path.join(__dirname, '../Data/Stage/Tiled');
+    if (path.resolve(walkerResources) !== path.resolve(resources))
+    {
+        fs.copyFileSync(path.join(walkerResources, 'WalkerPlacements.tsj'),
+                        path.join(resources, 'WalkerPlacements.tsj'));
+        fs.copyFileSync(path.join(walkerResources, 'EnemyPlacementIcons/Walker.png'),
+                        path.join(resources, 'EnemyPlacementIcons/Walker.png'));
+    }
     let layerId = 1, objectId = 1;
     const properties = (name, type, value) => ({name, type, value});
     const layers = [];
@@ -28,10 +40,10 @@ function exportStage(input, output)
     {
         const chunks = new Map();
 
-        for (const o of stage.objects.filter(o => o.typeId === 100 && o.position.x >= min &&
+        for (const o of stage.objects.filter(o => groundGids.has(o.typeId) && o.position.x >= min &&
                                                   o.position.x < max))
         {
-            assert(o.typeId === 100 && o.rotationDegrees === 0 && o.scale.x === 1 && o.scale.y === 1,
+            assert(o.rotationDegrees === 0 && o.scale.x === 1 && o.scale.y === 1,
                    'Tile export requires unit blocks');
             const x = o.position.x, y = -o.position.y;
             assert(Number.isInteger(x) && Number.isInteger(y));
@@ -44,7 +56,7 @@ function exportStage(input, output)
 
             const c = chunks.get(key), index = (y - cy) * 16 + x - cx;
             assert(!c.data[index], 'Duplicate cell');
-            c.data[index] = 1;
+            c.data[index] = groundGids.get(o.typeId);
         }
 
         const cells = [...chunks.values() ];
@@ -194,7 +206,8 @@ function exportStage(input, output)
             {firstgid : 1, source : 'Tiled/CubeBlockTileset.tsj'},
             {firstgid : 2, source : 'Tiled/EnemyPlacements.tsj'},
             {firstgid : 11, source : 'Tiled/GateTileset.tsj'},
-            {firstgid : 13, source : 'Tiled/WalkerPlacements.tsj'}
+            {firstgid : 13, source : 'Tiled/WalkerPlacements.tsj'},
+            {firstgid : 14, source : 'Tiled/LaboratoryBlocks.tsj'}
         ],
         layers
     };

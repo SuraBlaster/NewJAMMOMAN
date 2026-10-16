@@ -10,6 +10,10 @@ Tiledで `LaboratoryCombinedCourse.tmj` を開いてください。
 
 地形は1つの無限レイヤー `Terrain`、ゲートは `Gates`、全レイヤーはロック解除。ガイドは編集用で、ゲーム配置には変換されません。風と固定チェックポイントは未実装です。序盤中盤の落下復帰範囲を補い、後半の復帰範囲は元の設定を平行移動しています。旧ステージ開始エリア限定のCameraBoundsは引き継いでいません。
 
-変換済み `LaboratoryCombinedCourse.stage.json` を付属しています。ゲーム用ステージへ切り替える場合は `ConvertLaboratoryCombined.cmd` を実行します。変換成功後、現在のゲーム用JSONを `ConvertedStage.before-combined.stage.json` にバックアップして置き換えます。バックアップはコマンド実行ごとに更新されます。
+ゲームは `LaboratoryCombinedCourse.stage.json` を読み込みます。Tiledで編集後は `ConvertLaboratoryCombined.cmd` を実行してください。変換前の統合版JSONを `LaboratoryCombinedCourse.before-tiled.stage.json` にバックアップします。旧マップ用の `ConvertedStage.stage.json` は上書きしません。
 
 背景は今回の統合対象に含めていません。新しい全長に合わせた研究所の背景配置は別途調整が必要です。全コースの難易度・所要時間・戦闘は実プレイで確認してください。
+
+## ブロックの見た目
+
+地形3,121個とゲート6個の配置・サイズは保持しています。通常1,580個、オレンジ床507個、補強パネル976個、換気口58個。床の上端・壁の縦端・内部の設備模様で使い分けています。編集用パレットは `LaboratoryBlocks`、地形の塗り分けを再生成する場合は `node Tools/style_laboratory_blocks.cjs` です。敵18体とカメラ・落下範囲も維持しています。

@@ -27,6 +27,7 @@ class EnemyProjectile
     EnemyProjectile& operator=(const EnemyProjectile&) = delete;
 
     void AttachEffect(const std::shared_ptr<Effect>& effect, float scale);
+    void EnableTerrainCollision(const std::shared_ptr<Effect>& effect, float scale = 0.15f);
 
     // 更新処理
     void Update(float elapsedTime);
@@ -46,6 +47,12 @@ class EnemyProjectile
 
     struct VisualEffect;
     std::unique_ptr<VisualEffect> visualEffect;
+    std::shared_ptr<Effect> terrainImpactEffect;
+
+    bool collideWithTerrain = false;
+    float terrainImpactScale = 0.15f;
+
+    bool HitTerrain(const DirectX::XMFLOAT3& displacement);
 
     DirectX::XMFLOAT3 position;
     DirectX::XMFLOAT3 velocity;

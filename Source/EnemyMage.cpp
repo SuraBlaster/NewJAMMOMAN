@@ -76,11 +76,17 @@ void EnemyMage::SetDirection(float direction)
 
 void EnemyMage::FireProjectile()
 {
+    if (!terrainImpactEffect)
+    {
+        terrainImpactEffect = std::make_shared<Effect>("Data/Effect/Fire.efkefc");
+    }
+
     const DirectX::XMFLOAT3 start = {position.x, position.y + height * 0.7f, position.z};
     const DirectX::XMFLOAT3 direction = {facingDirection * 7.0f, 0.0f, 0.0f};
 
     projectiles.emplace_back(start, direction, 0.2f, 5.0f, 1);
     projectiles.back().AttachEffect(projectileEffect, 0.5f);
+    projectiles.back().EnableTerrainCollision(terrainImpactEffect);
 }
 
 // UpdateProjectiles の更新処理

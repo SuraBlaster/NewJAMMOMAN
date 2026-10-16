@@ -1,0 +1,12 @@
+{
+  "description": "Orange walkable edges, reinforced vertical edges and supports, paired service vents.",
+  "counts": {
+    "100": 1580,
+    "101": 507,
+    "102": 976,
+    "103": 58
+  },
+  "terrainCells": 3121,
+  "geometryHash": "3e2be8cae61b2e1d6a13635aa423ee4f69128fa05a4b98f88424de0985f1a7c5",
+  "preserved": "All object positions, rotations, scales, gates, enemies and zones."
+}

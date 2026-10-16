@@ -1,9 +1,12 @@
 ﻿#include "EnemyProjectile.h"
 
 #include "Collision.h"
+#include "CollisionManager.h"
 #include "Player.h"
 #include "ShapeRenderer.h"
 #include "Effect/Effect.h"
+
+#include <algorithm>
 
 struct EnemyProjectile::VisualEffect
 {
@@ -55,6 +58,42 @@ void EnemyProjectile::Destroy()
     visualEffect.reset();
 }
 
+void EnemyProjectile::EnableTerrainCollision(const std::shared_ptr<Effect>& effect, float scale)
+{
+    collideWithTerrain = true;
+    terrainImpactEffect = effect;
+    terrainImpactScale = scale;
+}
+
+// 地形に接触した位置で弾を消し、撃破エフェクトを再生
+bool EnemyProjectile::HitTerrain(const DirectX::XMFLOAT3& displacement)
+{
+    const AABB body = {{position.x - radius, position.y - radius, position.z - radius},
+                       {position.x + radius, position.y + radius, position.z + radius}};
+
+    TerrainSweepHit hit;
+    const auto status = CollisionManager::Instance().SweepTerrain(body, displacement, hit);
+
+    if (status == SweepStatus::NoHit)
+    {
+        return false;
+    }
+
+    const float hitTime = status == SweepStatus::InitialOverlap ? 0.0f : hit.time;
+    position.x += displacement.x * hitTime;
+    position.y += displacement.y * hitTime;
+    position.z += displacement.z * hitTime;
+
+    Destroy();
+
+    if (terrainImpactEffect)
+    {
+        terrainImpactEffect->Play(position, terrainImpactScale);
+    }
+
+    return true;
+}
+
 // 更新処理
 void EnemyProjectile::Update(float elapsedTime)
 {
@@ -63,10 +102,20 @@ void EnemyProjectile::Update(float elapsedTime)
         return;
     }
 
-    position.x += velocity.x * elapsedTime;
-    position.y += velocity.y * elapsedTime;
-    position.z += velocity.z * elapsedTime;
-    lifetime -= elapsedTime;
+    const float safeElapsedTime = (std::max)(elapsedTime, 0.0f);
+    const float travelTime = (std::min)(safeElapsedTime, (std::max)(lifetime, 0.0f));
+    const DirectX::XMFLOAT3 displacement = {velocity.x * travelTime, velocity.y * travelTime,
+                                            velocity.z * travelTime};
+
+    if (collideWithTerrain && HitTerrain(displacement))
+    {
+        return;
+    }
+
+    position.x += displacement.x;
+    position.y += displacement.y;
+    position.z += displacement.z;
+    lifetime -= safeElapsedTime;
 
     if (lifetime <= 0.0f)
     {

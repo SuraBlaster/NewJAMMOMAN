@@ -37,6 +37,7 @@ class EnemyMage final : public Enemy
     Player* player = nullptr;
     std::vector<EnemyProjectile> projectiles;
     std::shared_ptr<Effect> projectileEffect;
+    std::shared_ptr<Effect> terrainImpactEffect;
     float attackTimer = 1.5f;
     float facingDirection = -1.0f;
 };

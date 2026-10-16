@@ -67,6 +67,18 @@ int main()
         Check(cube60->GetMeshes()[0].vertexBuffer != cube30->GetMeshes()[0].vertexBuffer,
               "sample rates share cache key");
         manager.Clear();
+        for (const char* path : {"Data/Model/laboratory/Generated/LabBlock_Orange_1m.gltf",
+                                 "Data/Model/laboratory/Generated/LabBlock_Panel_1m.gltf",
+                                 "Data/Model/laboratory/Generated/LabBlock_Vent_1m.gltf"})
+        {
+            auto block = manager.CreateInstance(device.Get(), path);
+            Check(!block->GetMeshes().empty(), "laboratory block meshes missing");
+            for (const auto& mesh : block->GetMeshes())
+            {
+                Check(mesh.vertexBuffer.Get() != nullptr && mesh.indexBuffer.Get() != nullptr,
+                      "laboratory block GPU buffers missing");
+            }
+        }
         std::cout << "ModelManager tests passed\n";
 
         for (const char* path : {"Data/Model/Enemy/Wizard.gltf", "Data/Model/Enemy/FlyEnemy.gltf"})

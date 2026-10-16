@@ -32,6 +32,10 @@
     {
       "firstgid": 11,
       "source": "Tiled/GateTileset.tsj"
+    },
+    {
+      "firstgid": 14,
+      "source": "Tiled/LaboratoryBlocks.tsj"
     }
   ],
   "layers": [

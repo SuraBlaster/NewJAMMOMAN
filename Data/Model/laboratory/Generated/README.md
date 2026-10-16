@@ -49,3 +49,21 @@ preview.png は組み合わせ例、stage-preview.png は実ステージ配置�
 
 元素材: Quaternius Modular Sci-Fi Megakit (CC0)
 https://quaternius.com/packs/modularscifimegakit.html
+
+## 追加ブロック（101～103）
+
+`Tools/build_laboratory_blocks.py` で元FBXから生成します（Python、numpy、Pillowが必要）。
+`python Tools/build_laboratory_blocks.py` を実行するとモデル・Tiledの32pxアイコン・比較画像を更新します。
+元FBXと既存の `build_laboratory.cjs` の出力には変更を加えません。
+
+| ID | モデル | 元素材 |
+|---|---|---|
+| 101 | LabBlock_Orange_1m.gltf | FloorTile_Basic2.fbx |
+| 102 | LabBlock_Panel_1m.gltf | RoofTile_Plate2.fbx |
+| 103 | LabBlock_Vent_1m.gltf | Walls/Wall_5.fbxの中央換気口 |
+
+範囲は全軸 -0.5～0.5、中心原点。衝突は既存Cubeを共有します。
+正面はゲームのカメラに向く-Z側です。101の側面・底面は既存LabBlock_1mのメッシュとマテリアル色を流用します。101は上面のみに元素材を配置し、Y軸まわりに90度回転して横方向の模様をそろえています。102は上面と正面に配置しています。
+比較画像は `block-variants-preview.png`（簡易照明）。
+FBX読み取りは同梱素材の7.4形式・平面ポリゴン・非階層モデルを対象としています。
+検証: `node Tests/LaboratoryBlockTests.cjs`。
