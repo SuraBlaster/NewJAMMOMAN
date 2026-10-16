@@ -1,4 +1,4 @@
-#include <imgui.h>
+Ôªø#include <imgui.h>
 #include <iostream>
 #include <stdexcept>
 #include <StageLoader.h>
@@ -13,6 +13,7 @@
 #include "Collision.h"
 #include "EnemyManager.h"
 #include "EnemyBoss.h"
+#include "EnemyWave.h"
 #include "HitStopManager.h"
 #include "Audio/Audio.h"
 #include "LoadingProfile.h"
@@ -20,182 +21,199 @@
 #include "ViewVolume.h"
 #include "ModelManager.h"
 
-
+// „Ç≥„É≥„Çπ„Éà„É©„ÇØ„Çø
 GameScene::GameScene()
 {
     LoadingProfile::Scope profile("GameScene");
-	ID3D11Device* device = Graphics::Instance().GetDevice();
-	backgroundEditor = std::make_unique<BackgroundEditor>(device);
+    ID3D11Device* device = Graphics::Instance().GetDevice();
+    backgroundEditor = std::make_unique<BackgroundEditor>(device);
     backgroundFog = std::make_unique<BackgroundFog>(device);
     backgroundCity = std::make_unique<BackgroundCity>(device);
-	healthGaugeUI = std::make_unique<HealthGaugeUI>(device);
+    healthGaugeUI = std::make_unique<HealthGaugeUI>(device);
 
-	// JSONì«Ç›çûÇ›
-	if (!tileTypeManager.LoadDefinitions("Data/Stage/TileTypes.json"))
-	{
-		std::cerr << "ÉGÉâÅ[: É^ÉCÉãíËã`ÇÃì«Ç›çûÇ›Ç…é∏îsÇµÇ‹ÇµÇΩÅB" << std::endl;
-		throw std::runtime_error("Failed to load TileTypes.json.");
-	}
+    // JSONË™≠„ÅøËæº„Åø
+    if (!tileTypeManager.LoadDefinitions("Data/Stage/TileTypes.json"))
+    {
+        std::cerr << "„Ç®„É©„Éº: „Çø„Ç§„É´ÂÆöÁæ©„ÅÆË™≠„ÅøËæº„Åø„Å´Â§±Êïó„Åó„Åæ„Åó„Åü„ÄÇ" << std::endl;
+        throw std::runtime_error("Failed to load TileTypes.json.");
+    }
 
-	if (!StageLoader::Load(
-		"Data/Stage/LaboratoryCourse.stage.json",
-		tileTypeManager,
-		stageData))
-	{
-		std::cerr
-			<< "ÉGÉâÅ[: ÉXÉeÅ[ÉWÉfÅ[É^ÇÃì«Ç›çûÇ›Ç…é∏îsÇµÇ‹ÇµÇΩÅB"
-			<< std::endl;
+    if (!StageLoader::Load("Data/Stage/LaboratoryCombinedCourse.stage.json", tileTypeManager, stageData))
+    {
+        std::cerr << "„Ç®„É©„Éº: „Çπ„ÉÜ„Éº„Ç∏„Éá„Éº„Çø„ÅÆË™≠„ÅøËæº„Åø„Å´Â§±Êïó„Åó„Åæ„Åó„Åü„ÄÇ" << std::endl;
 
-		throw std::runtime_error(
-			"Failed to load LaboratoryCourse.stage.json.");
-	}
+        throw std::runtime_error("Failed to load LaboratoryCourse.stage.json.");
+    }
 
-	// 3DÉIÉuÉWÉFÉNÉg
-	EnemyBoss::SetDefeat(false);
-	profile.Step("stage_json_and_camera");
-	player = std::make_unique<Player>(device);
+    // 3D„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà
+    EnemyBoss::SetDefeat(false);
+    profile.Step("stage_json_and_camera");
+    player = std::make_unique<Player>(device);
     profile.Step("player");
-	// ç≈èâÇÃê⁄ínãLò^ÇÊÇËëOÇ…óéâ∫ÇµÇƒÇ‡ñﬂÇÍÇÈÇÊÇ§ÅAê∂ê¨à íuÇèâä˙ïúãAà íuÇ…Ç∑ÇÈÅB
-	lastSafePosition = player->GetPosition();
-	stage = std::make_unique<Stage>(
-		device,
-		stageData,
-		tileTypeManager);
+    // ÊúÄÂàù„ÅÆÊé•Âú∞Ë®òÈå≤„Çà„ÇäÂâç„Å´ËêΩ‰∏ã„Åó„Å¶„ÇÇÊàª„Çå„Çã„Çà„ÅÜ„ÄÅÁîüÊàê‰ΩçÁΩÆ„ÇíÂàùÊúüÂæ©Â∏∞‰ΩçÁΩÆ„Å´„Åô„Çã
+    lastSafePosition = player->GetPosition();
+    stage = std::make_unique<Stage>(device, stageData, tileTypeManager);
     profile.Step("stage");
 
-	
+    // Tiled„Åã„ÇâÂ§âÊèõ„Åï„Çå„ÅüÈÖçÁΩÆ„ÇíÈ†ÜÁï™„Å´ÁîüÊàê„Åó„ÄÅEnemyManager„Å∏ÊâÄÊúâÊ®©„ÇíÊ∏°„Åô
+    for (const EnemySpawnData& spawnData : stageData.enemies)
+    {
+        if (spawnData.enemyType == EnemyType::Boss)
+        {
+            // 1„Å§„ÅÆ„Çπ„ÉÜ„Éº„Ç∏„Å´Ë§áÊï∞„ÅÆ„Éú„Çπ„ÅåË®≠ÂÆö„Åï„Çå„Å¶„ÅÑ„ÅüÂ†¥Âêà„ÅØ„ÄÅË®≠ÂÆö„Éü„Çπ„Å®„Åó„Å¶Êâ±„ÅÜ
+            if (pendingBossSpawnData.has_value())
+            {
+                throw std::runtime_error("Multiple boss spawn data entries were found.");
+            }
 
-	// TiledÇ©ÇÁïœä∑Ç≥ÇÍÇΩîzíuÇèáî‘Ç…ê∂ê¨ÇµÅAEnemyManagerÇ÷èäóLå†ÇìnÇ∑ÅB
-	for (const EnemySpawnData& spawnData : stageData.enemies)
-	{
-		if (spawnData.enemyType == EnemyType::Boss)
-		{
-			// 1Ç¬ÇÃÉXÉeÅ[ÉWÇ…ï°êîÇÃÉ{ÉXÇ™ê›íËÇ≥ÇÍÇƒÇ¢ÇΩèÍçáÇÕÅAê›íËÉ~ÉXÇ∆ÇµÇƒàµÇ§ÅB
-			if (pendingBossSpawnData.has_value())
-			{
-				throw std::runtime_error(
-					"Multiple boss spawn data entries were found.");
-			}
+            pendingBossSpawnData = spawnData;
+            continue;
+        }
 
-			pendingBossSpawnData = spawnData;
-			continue;
-		}
+        auto spawnedEnemy = EnemyFactory::CreateFromSpawnData(device, player.get(), spawnData);
 
-		auto spawnedEnemy = EnemyFactory::CreateFromSpawnData(
-			device,
-			player.get(),
-			spawnData);
+        // LoaderÈÄöÈÅéÂæå„Å´ÁîüÊàê„Åß„Åç„Å™„ÅÑÂ†¥Âêà„ÅØÂÆüË£ÖÂÅ¥„ÅÆÂØæÂøúÊºè„Çå„Å®„Åó„Å¶Êâ±„ÅÜ
+        if (!spawnedEnemy)
+        {
+            throw std::runtime_error("Failed to create enemy from stage data.");
+        }
+        else
+        {
+            // RegisterÂæå„ÅØEnemyManager„Ååshared_ptr„Çí‰øùÊåÅ„Åó„ÄÅÊõ¥Êñ∞„ÉªÊèèÁîª„ÉªÁ†¥Ê£Ñ„ÇíÁÆ°ÁêÜ„Åô„Çã
+            EnemyManager::Instance().Register(spawnedEnemy);
+        }
+    }
 
-		// Loaderí âﬂå„Ç…ê∂ê¨Ç≈Ç´Ç»Ç¢èÍçáÇÕé¿ëïë§ÇÃëŒâûòRÇÍÇ∆ÇµÇƒàµÇ§ÅB
-		if (!spawnedEnemy)
-		{
-			throw std::runtime_error("Failed to create enemy from stage data.");
-		}
-		else
-		{
-			// Registerå„ÇÕEnemyManagerÇ™shared_ptrÇï€éùÇµÅAçXêVÅEï`âÊÅEîjä¸Çä«óùÇ∑ÇÈÅB
-			EnemyManager::Instance().Register(spawnedEnemy);
-		}
-	}
+    profile.Step("enemies");
+    CollisionManager& collisionManager = CollisionManager::Instance();
 
-	profile.Step("enemies");
-    CollisionManager& collisionManager =
-		CollisionManager::Instance();
+    collisionManager.ClearTerrainAABBs();
 
-	collisionManager.ClearTerrainAABBs();
+    for (const AABB& box : stage->GetTerrainAABBs())
+    {
+        collisionManager.RegisterTerrainAABB(box);
+    }
 
-	for (const AABB& box : stage->GetTerrainAABBs())
-	{
-		collisionManager.RegisterTerrainAABB(box);
-	}
     bossGates = BossGate::FromObjects(stageData.objects);
+
     for (const auto& gate : bossGates)
     {
-        bossGateModels.push_back(ModelManager::Instance().CreateInstance(
-            device, "Data/Model/Cube/Cube.gltf"));
+        bossGateModels.push_back(
+            ModelManager::Instance().CreateInstance(device, "Data/Model/Cube/Cube.gltf"));
     }
+
     UpdateBossGates(0.0f);
     profile.Step("collision_registration");
-
 }
 
+// ÂàùÊúüÂåñÂá¶ÁêÜ
 void GameScene::Initialize()
 {
     DirectionalLight stageLight;
     LightManager::Instance().SetDirectionalLight(stageLight);
     const float screenWidth = Graphics::Instance().GetScreenWidth();
     const float screenHeight = Graphics::Instance().GetScreenHeight();
-	Camera& camera = Camera::Instance();
-	camera.SetPerspectiveFov(
-		DirectX::XMConvertToRadians(45),	// âÊäp
-		screenWidth / screenHeight,			// âÊñ ÉAÉXÉyÉNÉgî‰
-		0.1f,								// ÉjÉAÉNÉäÉbÉv
-		1000.0f								// ÉtÉ@Å[ÉNÉäÉbÉv
-	);
-	camera.SetLookAtWithShake(
-		{ 8, 3, 0 },		// éãì_
-		{ 0, 2, 0 },		// íçéãì_
-		{ 0, 1, 0 }			// è„ÉxÉNÉgÉã
-	);
+    Camera& camera = Camera::Instance();
+    camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45), // ÁîªËßí
+                             screenWidth / screenHeight,      // ÁîªÈù¢„Ç¢„Çπ„Éö„ÇØ„ÉàÊØî
+                             0.1f,                            // „Éã„Ç¢„ÇØ„É™„ÉÉ„Éó
+                             1000.0f                          // „Éï„Ç°„Éº„ÇØ„É™„ÉÉ„Éó
+    );
+    camera.SetLookAtWithShake({8, 3, 0}, // Ë¶ñÁÇπ
+                              {0, 2, 0}, // Ê≥®Ë¶ñÁÇπ
+                              {0, 1, 0}  // ‰∏ä„Éô„ÇØ„Éà„É´
+    );
 
     LoadingProfile::gameReady = true;
 
-	Audio::Instance().Play("BGM_STAGE");
+    Audio::Instance().Play("BGM_STAGE");
 }
 
+// „Éá„Çπ„Éà„É©„ÇØ„Çø
 GameScene::~GameScene()
 {
-	// EnemyWave ÇÕ Player ÇîÒèäóLÉ|ÉCÉìÉ^Ç≈éQè∆Ç∑ÇÈÇΩÇﬂÅAPlayer ÇÃîjä¸ëOÇ…âï˙Ç∑ÇÈÅB
-	EnemyManager::Instance().Clear();
+    // EnemyWave „ÅØ Player „ÇíÈùûÊâÄÊúâ„Éù„Ç§„É≥„Çø„ÅßÂèÇÁÖß„Åô„Çã„Åü„ÇÅ„ÄÅPlayer „ÅÆÁ†¥Ê£ÑÂâç„Å´Ëß£Êîæ„Åô„Çã
+    EnemyManager::Instance().Clear();
 
-	CollisionManager::Instance().ClearTerrainAABBs();
+    CollisionManager::Instance().ClearTerrainAABBs();
 }
 
-// çXêVèàóù
+// Êõ¥Êñ∞Âá¶ÁêÜ
 void GameScene::Update(float elapsedTime)
 {
     backgroundFog->Update(isPaused ? 0.0f : elapsedTime);
     backgroundCity->Update(isPaused ? 0.0f : elapsedTime);
-    if (backgroundEditor->Update(elapsedTime)) return;
-	HitStopManager::Instance().Update(elapsedTime);
 
-	float scaleElapsedTime = elapsedTime * HitStopManager::Instance().GetTimeScale();
+    if (backgroundEditor->Update(elapsedTime))
+    {
+        return;
+    }
 
-	if (!isPaused)
-	{
-		UpdateBossGates(scaleElapsedTime);
-        player->Update(scaleElapsedTime);
-        // Detect a complete crossing after movement, including a dash this frame.
+    HitStopManager::Instance().Update(elapsedTime);
+
+    float scaleElapsedTime = elapsedTime * HitStopManager::Instance().GetTimeScale();
+
+    if (!isPaused)
+    {
+        UpdateBossGates(scaleElapsedTime);
+        const bool introWasPlaying = healthGaugeUI->IsBossIntroPlaying();
+
+        if (!introWasPlaying)
+        {
+            player->Update(scaleElapsedTime);
+        }
+
         UpdateBossGates(0.0f);
 
-		// ê⁄íníÜÇÃà íuÇæÇØÇãLò^ÇµÅAãÛíÜÇ≈ÇÕç≈å„ÇÃà¿ëSÇ»ë´èÍà íuÇï€éùÇ∑ÇÈÅB
-		if (player->IsGround())
-		{
-			lastSafePosition = player->GetPosition();
-		}
+        // Êé•Âú∞‰∏≠„ÅÆ‰ΩçÁΩÆ„Å†„Åë„ÇíË®òÈå≤„Åó„ÄÅÁ©∫‰∏≠„Åß„ÅØÊúÄÂæå„ÅÆÂÆâÂÖ®„Å™Ë∂≥Â†¥‰ΩçÁΩÆ„Çí‰øùÊåÅ„Åô„Çã
+        if (player->IsGround())
+        {
+            lastSafePosition = player->GetPosition();
+        }
 
-		// à⁄ìÆÇ∆ê⁄ínîªíËÇÃçXêVå„Ç…ÅATiledÇ≈éwíËÇµÇΩóéâ∫îÕàÕÇ∆ÇÃèdÇ»ÇËÇí≤Ç◊ÇÈÅB
-		if (!player->IsClearing() && !player->IsDead()) HandleFallRespawn();
+        // ÁßªÂãï„Å®Êé•Âú∞Âà§ÂÆö„ÅÆÊõ¥Êñ∞Âæå„Å´„ÄÅTiled„ÅßÊåáÂÆö„Åó„ÅüËêΩ‰∏ãÁØÑÂõ≤„Å®„ÅÆÈáç„Å™„Çä„ÇíË™ø„Åπ„Çã
+        if (!introWasPlaying && !player->IsClearing() && !player->IsDead())
+        {
+            HandleFallRespawn();
+        }
 
-		// ÉvÉåÉCÉÑÅ[Ç™É{ÉXêÌäJénÉGÉäÉAÇ÷ì¸Ç¡ÇΩèÍçáÅAï€óØíÜÇÃÉ{ÉXÇê∂ê¨Ç∑ÇÈÅB
-		if (!player->IsClearing() && !player->IsDead()) TryStartBossEncounter();
+        // „Éó„É¨„Ç§„É§„Éº„Åå„Éú„ÇπÊà¶ÈñãÂßã„Ç®„É™„Ç¢„Å∏ÂÖ•„Å£„ÅüÂ†¥Âêà„ÄÅ‰øùÁïô‰∏≠„ÅÆ„Éú„Çπ„ÇíÁîüÊàê„Åô„Çã
+        if (!player->IsClearing() && !player->IsDead())
+        {
+            TryStartBossEncounter();
+        }
 
-		if (!player->IsDead()) EnemyManager::Instance().Update(scaleElapsedTime);
+        if (!healthGaugeUI->IsBossIntroPlaying() && !player->IsDead())
+        {
+            EnemyManager::Instance().Update(scaleElapsedTime);
+        }
 
-		healthGaugeUI->Update(*player, elapsedTime);
-	}
+        healthGaugeUI->Update(*player, elapsedTime);
 
-	if (!isPaused)
-	{
-		Camera::Instance().ShakeUpdate(scaleElapsedTime);
-	}
+        if (!healthGaugeUI->IsBossIntroPlaying())
+        {
+            if (const auto boss = introBoss.lock())
+            {
+                boss->SetActionEnable(true);
+            }
 
-	UpdateCamera(elapsedTime);
+            introBoss.reset();
+        }
+    }
+
+    if (!isPaused)
+    {
+        Camera::Instance().ShakeUpdate(scaleElapsedTime);
+    }
+
+    UpdateCamera(elapsedTime);
 }
 
+// ÊèèÁîªÂá¶ÁêÜ
 void GameScene::Render(float elapsedTime)
 {
     Graphics::Instance().Clear(0.055f, 0.075f, 0.10f, 1.0f);
+
     if (IsBackgroundEditing())
     {
         auto& graphics = Graphics::Instance();
@@ -206,400 +224,628 @@ void GameScene::Render(float elapsedTime)
         rc.renderState = graphics.GetRenderState();
         rc.camera = &Camera::Instance();
         rc.lightManager = &LightManager::Instance();
-        rc.deviceContext->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        rc.deviceContext->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Opaque), nullptr,
+                                          0xFFFFFFFF);
         backgroundEditor->Render(graphics.GetModelRenderer());
         graphics.GetModelRenderer()->Render(rc);
         backgroundFog->Render();
         return;
     }
-    backgroundCity->Render();
-	healthGaugeUI->EnqueueRender();
-	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-	RenderState* renderState = Graphics::Instance().GetRenderState();
-	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
-	ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
-	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
 
-	Camera& camera = Camera::Instance();
-	LightManager& lightManager = LightManager::Instance();
+    backgroundCity->Render();
+    healthGaugeUI->EnqueueRender();
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    RenderState* renderState = Graphics::Instance().GetRenderState();
+    PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+    ShapeRenderer* shapeRenderer = Graphics::Instance().GetShapeRenderer();
+    ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+
+    Camera& camera = Camera::Instance();
+    LightManager& lightManager = LightManager::Instance();
     const ViewVolume worldFrustum(camera.GetView(), camera.GetProjection());
-    const auto terrainVisible = [&](const AABB& box) {
+    const auto terrainVisible = [&](const AABB& box)
+    {
         return worldFrustum.Intersects(DirectX::BoundingBox(box.GetCenter(), box.GetHalfSize()));
     };
 
-	// ÉåÉìÉ_Å[ÉXÉeÅ[Égê›íË
-	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
-	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    // „É¨„É≥„ÉÄ„Éº„Çπ„ÉÜ„Éº„ÉàË®≠ÂÆö
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-	// ÉÇÉfÉãï`âÊÇÉLÉÖÅ[Ç…êœÇﬁ
-	for (const auto& stageObject : stage->GetStageObjects())
-	{
+    // „É¢„Éá„É´ÊèèÁîª„Çí„Ç≠„É•„Éº„Å´Á©ç„ÇÄ
+    for (const auto& stageObject : stage->GetStageObjects())
+    {
         AABB bounds;
-        if (stageObject->GetCollisionAABB(bounds) && !terrainVisible(bounds)) continue;
-		modelRenderer->Draw(
-			ShaderId::Model,
-			stageObject->GetModel(),
-			{ 1.0f, 1.0f, 1.0f, 1.0f },
-			1.0f);
-	}
-	for (std::size_t i = 0; i < bossGates.size(); ++i)
+
+        if (stageObject->GetCollisionAABB(bounds) && !terrainVisible(bounds))
+        {
+            continue;
+        }
+
+        modelRenderer->Draw(ShaderId::Model, stageObject->GetModel(), {1.0f, 1.0f, 1.0f, 1.0f}, 1.0f);
+    }
+
+    for (std::size_t i = 0; i < bossGates.size(); ++i)
     {
         const auto& gate = bossGates[i];
         const auto& bounds = gate.GetBounds();
         const float visibleHeight = (bounds.max.y - bounds.min.y) * (1.0f - gate.GetOpenness());
-        if (visibleHeight <= 0.0f) continue;
+
+        if (visibleHeight <= 0.0f)
+        {
+            continue;
+        }
+
         auto center = bounds.GetCenter();
         auto half = bounds.GetHalfSize();
-        // Draw only the shutter below its original top edge.
-        // The lower edge rises during opening; the part above the doorway disappears.
+
         half.y = visibleHeight * 0.5f;
         center.y = bounds.max.y - half.y;
         DirectX::XMFLOAT4X4 world;
         DirectX::XMStoreFloat4x4(&world,
-            DirectX::XMMatrixScaling(half.x * 2.0f, half.y * 2.0f, half.z * 2.0f) *
-            DirectX::XMMatrixTranslation(center.x, center.y, center.z));
+                                 DirectX::XMMatrixScaling(half.x * 2.0f, half.y * 2.0f, half.z * 2.0f) *
+                                     DirectX::XMMatrixTranslation(center.x, center.y, center.z));
         bossGateModels[i]->UpdateTransform(world);
-        modelRenderer->Draw(ShaderId::Model, bossGateModels[i],
-            { 0.25f, 0.55f, 0.65f, 1.0f }, 1.0f);
+        modelRenderer->Draw(ShaderId::Model, bossGateModels[i], {0.25f, 0.55f, 0.65f, 1.0f}, 1.0f);
     }
-    modelRenderer->Draw(ShaderId::Model, player->GetModel(), { 1,1,1,1 }, 1.0f);
-	EnemyManager::Instance().Render(modelRenderer);
 
-	player->RenderMotionTrail(modelRenderer);
+    modelRenderer->Draw(ShaderId::Model, player->GetModel(), {1, 1, 1, 1}, 1.0f);
+    EnemyManager::Instance().Render(modelRenderer);
 
-	// Ç±Ç±Ç≈ïsìßñæÉÇÉfÉã(ÉXÉeÅ[ÉWÅEÉvÉåÉCÉÑÅ[ÅEécëú)Çé¿ç€Ç…ï`âÊÇµêÿÇÈ
-	RenderContext rc;
-	rc.deviceContext = dc;
-	rc.renderState = renderState;
-	rc.camera = &camera;
-	rc.lightManager = &lightManager;
-	backgroundEditor->Render(modelRenderer);
-	modelRenderer->Render(rc);
+    player->RenderMotionTrail(modelRenderer);
+
+    // „Åì„Åì„Åß‰∏çÈÄèÊòé„É¢„Éá„É´(„Çπ„ÉÜ„Éº„Ç∏„Éª„Éó„É¨„Ç§„É§„Éº„ÉªÊÆãÂÉè)„ÇíÂÆüÈöõ„Å´ÊèèÁîª„ÅóÂàá„Çã
+    RenderContext rc;
+    rc.deviceContext = dc;
+    rc.renderState = renderState;
+    rc.camera = &camera;
+    rc.lightManager = &lightManager;
+    backgroundEditor->Render(modelRenderer);
+    modelRenderer->Render(rc);
     backgroundFog->Render();
 
-	// é¿ç€Ç…è’ìÀîªíËÇ÷ìoò^ÇµÇΩî†Çï\é¶Ç∑ÇÈÅB
-	for (const AABB& box : stage->GetTerrainAABBs())
-	{
-        if (!terrainVisible(box)) continue;
-		shapeRenderer->DrawBox(
-			box.GetCenter(),
-			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
-			box.GetHalfSize(),
-			DirectX::XMFLOAT4{ 0.0f, 0.8f, 1.0f, 1.0f }
-		);
-	}
+    // ÂÆüÈöõ„Å´Ë°ùÁ™ÅÂà§ÂÆö„Å∏ÁôªÈå≤„Åó„ÅüÁÆ±„ÇíË°®Á§∫„Åô„Çã
+    for (const AABB& box : stage->GetTerrainAABBs())
+    {
+        if (!terrainVisible(box))
+        {
+            continue;
+        }
 
-	for (const auto& stageObject : stage->GetStageObjects())
-	{
-		AABB box;
+        shapeRenderer->DrawBox(box.GetCenter(), DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f}, box.GetHalfSize(),
+                               DirectX::XMFLOAT4{0.0f, 0.8f, 1.0f, 1.0f});
+    }
 
-		if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
-		{
-			continue;
-		}
+    for (const auto& stageObject : stage->GetStageObjects())
+    {
+        AABB box;
 
-		shapeRenderer->DrawBox(
-			box.GetCenter(),
-			DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
-			box.GetHalfSize(),
-			DirectX::XMFLOAT4{ 1.0f, 0.8f, 0.0f, 1.0f }
-		);
-	}
-	// é¿ç€ÇÃìÅîªíËÇ∆ìØÇ∂ë|à¯ÉJÉvÉZÉãÇÉfÉoÉbÉOï\é¶Ç∑ÇÈÅB
-	player->DrawDebugPrimitive(shapeRenderer);
-	
-	EnemyManager::Instance().DrawPrimitive(shapeRenderer);
+        if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
+        {
+            continue;
+        }
+
+        shapeRenderer->DrawBox(box.GetCenter(), DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f}, box.GetHalfSize(),
+                               DirectX::XMFLOAT4{1.0f, 0.8f, 0.0f, 1.0f});
+    }
+
+    // ÂÆüÈöõ„ÅÆÂàÄÂà§ÂÆö„Å®Âêå„ÅòÊéÉÂºï„Ç´„Éó„Çª„É´„Çí„Éá„Éê„ÉÉ„Ç∞Ë°®Á§∫„Åô„Çã
+    player->DrawDebugPrimitive(shapeRenderer);
+
+    EnemyManager::Instance().DrawPrimitive(shapeRenderer);
 #ifdef _DEBUG
-	EnemyManager::Instance().DrawDebugPrimitive(shapeRenderer);
+    EnemyManager::Instance().DrawDebugPrimitive(shapeRenderer);
 #endif
-	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
-	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
-	dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
-	shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection());
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+    shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection());
 
-	// åïÇÃãOê’ÇÃí∏ì_ÇÉoÉbÉtÉ@Ç…êœÇﬁ
-	player->RenderTrail(primitiveRenderer);
+    // Ââ£„ÅÆËªåË∑°„ÅÆÈ†ÇÁÇπ„Çí„Éê„ÉÉ„Éï„Ç°„Å´Á©ç„ÇÄ
+    player->RenderTrail(primitiveRenderer);
 
-	// É\Å[ÉhÉgÉåÉCÉãópÉXÉeÅ[ÉgÇñæé¶
-	dc->OMSetBlendState(
-		renderState->GetBlendState(BlendState::Additive),
-		nullptr,
-		0xFFFFFFFF
-	);
-	dc->OMSetDepthStencilState(
-		renderState->GetDepthStencilState(DepthState::TestOnly),
-		0
-	);
+    // „ÇΩ„Éº„Éâ„Éà„É¨„Ç§„É´Áî®„Çπ„ÉÜ„Éº„Éà„ÇíÊòéÁ§∫
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
 
-	// modelRendererÇ…ÇÊÇÈÉXÉeÅ[ÉgïœçXÇè„èëÇ´Ç∑ÇÈ
-	dc->RSSetState(
-		renderState->GetRasterizerState(RasterizerState::SolidCullNone)
-	);
+    // modelRenderer„Å´„Çà„Çã„Çπ„ÉÜ„Éº„ÉàÂ§âÊõ¥„Çí‰∏äÊõ∏„Åç„Åô„Çã
+    dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-	primitiveRenderer->Render(
-		dc,
-		camera.GetView(),
-		camera.GetProjection(),
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP
-	);
+    primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(),
+                              D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// ÉXÉeÅ[ÉgÇñﬂÇ∑ÅiéüÇÃÉtÉåÅ[ÉÄ/å„ë±èàóùÇÃÇΩÇﬂÅj
-	dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
-	dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    // „Çπ„ÉÜ„Éº„Éà„ÇíÊàª„ÅôÔºàÊ¨°„ÅÆ„Éï„É¨„Éº„É†/ÂæåÁ∂öÂá¶ÁêÜ„ÅÆ„Åü„ÇÅÔºâ
+    dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
 }
 
-// GUIï`âÊèàóù
+// GUIÊèèÁîªÂá¶ÁêÜ
 void GameScene::DrawGUI()
 {
     backgroundFog->DrawGUI();
     backgroundCity->DrawGUI();
-    if (backgroundEditor->IsEditing()) return;
-	if (ImGui::Begin("Debug"))
-	{
-		ImGui::Checkbox(u8"ÉQÅ[ÉÄéûä‘Çí‚é~", &isPaused);
-		ImGui::Text("Enemy count: %zu", EnemyManager::Instance().GetEnemyCount());
-	}
-	ImGui::End();
 
-	player->DrawGUI();
+    if (backgroundEditor->IsEditing())
+    {
+        return;
+    }
 
-	cameraController.DrawMenuBar();
+    if (ImGui::Begin("Debug"))
+    {
+        ImGui::Checkbox(u8"„Ç≤„Éº„É†ÊôÇÈñì„ÇíÂÅúÊ≠¢", &isPaused);
+        ImGui::Text("Enemy count: %zu", EnemyManager::Instance().GetEnemyCount());
+#ifdef _DEBUG
+        const bool canWarpToStage =
+            !activeBossArena && !player->IsDead() && !player->IsClearing() && player->GetScale().x > 0.0f;
+
+        if (canWarpToStage)
+        {
+            if (ImGui::Button("Warp: late stage / first Wave"))
+            {
+                DebugWarpToLateStage(136.5f, 15.5f);
+            }
+
+            if (ImGui::Button("Warp: upper Wave"))
+            {
+                DebugWarpToLateStage(172.5f, 28.5f);
+            }
+        }
+        else
+        {
+            ImGui::TextDisabled("Stage warp unavailable during battle or respawn.");
+        }
+
+        ImGui::TextDisabled("Warp restores HP and resets Wave enemies.");
+        const bool canWarp = pendingBossSpawnData.has_value() && !activeBossArena &&
+                             !stageData.bossEncounterZones.empty() && !player->IsDead() &&
+                             !player->IsClearing() && player->GetScale().x > 0.0f;
+
+        if (canWarp)
+        {
+            if (ImGui::Button("Warp before boss"))
+            {
+                DebugWarpBeforeBoss();
+            }
+        }
+        else
+        {
+            ImGui::TextDisabled("Boss warp unavailable (before battle only)");
+        }
+
+        if (debugWarpFailed)
+        {
+            ImGui::Text("No safe ground found for the warp.");
+        }
+#endif
+    }
+
+    ImGui::End();
+
+    player->DrawGUI();
+
+    cameraController.DrawMenuBar();
 }
 
-// XYç¿ïWÇ™í∑ï˚å`ÇÃ4ã´äEÇ∑Ç◊ÇƒÇ…é˚Ç‹Ç¡ÇƒÇ¢ÇÈèÍçáÇæÇØÅAîÕàÕì‡Ç∆îªíËÇ∑ÇÈÅB
-// 2.5DÇÃã§í ÉåÅ[ÉìÇégÇ§ÇΩÇﬂÅAZç¿ïWÇÕî‰ärÇµÇ»Ç¢ÅB
-bool GameScene::IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position, const FallRespawnZoneData& zone) const
+// XYÂ∫ßÊ®ô„ÅåÈï∑ÊñπÂΩ¢„ÅÆ4Â¢ÉÁïå„Åô„Åπ„Å¶„Å´Âèé„Åæ„Å£„Å¶„ÅÑ„ÇãÂ†¥Âêà„Å†„Åë„ÄÅÁØÑÂõ≤ÂÜÖ„Å®Âà§ÂÆö„Åô„Çã
+// 2.5D„ÅÆÂÖ±ÈÄö„É¨„Éº„É≥„Çí‰Ωø„ÅÜ„Åü„ÇÅ„ÄÅZÂ∫ßÊ®ô„ÅØÊØîËºÉ„Åó„Å™„ÅÑ
+bool GameScene::IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position,
+                                        const FallRespawnZoneData& zone) const
 {
-	return position.x >= zone.minX &&
-		position.x <= zone.maxX &&
-		position.y >= zone.minY &&
-		position.y <= zone.maxY;
+    return position.x >= zone.minX && position.x <= zone.maxX && position.y >= zone.minY &&
+           position.y <= zone.maxY;
 }
 
-// ÉvÉåÉCÉÑÅ[Ç™É{ÉXëOí òHÇÃÉJÉÅÉâÉGÉäÉAì‡Ç…Ç¢ÇÈÇ©îªíËÇ∑ÇÈÅB
-// 2.5DÉQÅ[ÉÄÇ»ÇÃÇ≈Zç¿ïWÇÕîªíËÇ…égópÇµÇ»Ç¢ÅB
-bool GameScene::IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position, const BossApproachCameraZoneData& zone) const
+// „Éó„É¨„Ç§„É§„Éº„Åå„Éú„ÇπÂâçÈÄöË∑Ø„ÅÆ„Ç´„É°„É©„Ç®„É™„Ç¢ÂÜÖ„Å´„ÅÑ„Çã„ÅãÂà§ÂÆö„Åô„Çã
+// 2.5D„Ç≤„Éº„É†„Å™„ÅÆ„ÅßZÂ∫ßÊ®ô„ÅØÂà§ÂÆö„Å´‰ΩøÁî®„Åó„Å™„ÅÑ
+bool GameScene::IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position,
+                                               const BossApproachCameraZoneData& zone) const
 {
-	return position.x >= zone.minX &&
-		position.x <= zone.maxX &&
-		position.y >= zone.minY &&
-		position.y <= zone.maxY;
+    return position.x >= zone.minX && position.x <= zone.maxX && position.y >= zone.minY &&
+           position.y <= zone.maxY;
 }
 
-bool GameScene::IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position, const CameraLimitZoneData& zone) const
+bool GameScene::IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position,
+                                        const CameraLimitZoneData& zone) const
 {
-	return position.x >= zone.minX &&
-		position.x <= zone.maxX &&
-		position.y >= zone.minY &&
-		position.y <= zone.maxY;
+    return position.x >= zone.minX && position.x <= zone.maxX && position.y >= zone.minY &&
+           position.y <= zone.maxY;
 }
 
-bool GameScene::IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position, const BossEncounterZoneData& zone) const
+bool GameScene::IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position,
+                                          const BossEncounterZoneData& zone) const
 {
-	return position.x >= zone.minX &&
-		position.x <= zone.maxX &&
-		position.y >= zone.minY &&
-		position.y <= zone.maxY;
+    return position.x >= zone.minX && position.x <= zone.maxX && position.y >= zone.minY &&
+           position.y <= zone.maxY;
 }
 
-const BossApproachCameraZoneData* GameScene::FindBossApproachCameraZone(const DirectX::XMFLOAT3& position) const
+const BossApproachCameraZoneData* GameScene::FindBossApproachCameraZone(
+    const DirectX::XMFLOAT3& position) const
 {
-	for (const BossApproachCameraZoneData& zone : stageData.bossApproachCameraZones)
-	{
-		if (IsInsideBossApproachCameraZone(position, zone))
-		{
-			return &zone;
-		}
-	}
+    for (const BossApproachCameraZoneData& zone : stageData.bossApproachCameraZones)
+    {
+        if (IsInsideBossApproachCameraZone(position, zone))
+        {
+            return &zone;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 const BossEncounterZoneData* GameScene::FindBossEncounterZone(const DirectX::XMFLOAT3& position) const
 {
-	for (const BossEncounterZoneData& zone :
-		stageData.bossEncounterZones)
-	{
-		if (IsInsideBossEncounterZone(position, zone))
-		{
-			return &zone;
-		}
-	}
+    for (const BossEncounterZoneData& zone : stageData.bossEncounterZones)
+    {
+        if (IsInsideBossEncounterZone(position, zone))
+        {
+            return &zone;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 const CameraLimitZoneData* GameScene::FindCameraLimitZone(const DirectX::XMFLOAT3& position) const
 {
-	for (const CameraLimitZoneData& zone : stageData.cameraLimitZones)
-	{
-		if (IsInsideCameraLimitZone(position, zone))
-		{
-			return &zone;
-		}
-	}
+    for (const CameraLimitZoneData& zone : stageData.cameraLimitZones)
+    {
+        if (IsInsideCameraLimitZone(position, zone))
+        {
+            return &zone;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
-// ÉXÉeÅ[ÉWì‡ÇÃóéâ∫ïúãAÉGÉäÉAÇåüçıÇµÅAäYìñÇµÇΩç≈èâÇÃ1åèÇ≈ïúãAèàóùÇçsÇ§ÅB
+// „Çπ„ÉÜ„Éº„Ç∏ÂÜÖ„ÅÆËêΩ‰∏ãÂæ©Â∏∞„Ç®„É™„Ç¢„ÇíÊ§úÁ¥¢„Åó„ÄÅË©≤ÂΩì„Åó„ÅüÊúÄÂàù„ÅÆ1‰ª∂„ÅßÂæ©Â∏∞Âá¶ÁêÜ„ÇíË°å„ÅÜ
 void GameScene::HandleFallRespawn()
 {
-	// ínñ Ç…óßÇ¡ÇƒÇ¢ÇÈèÍçáÇÕóéâ∫íÜÇ≈ÇÕÇ»Ç¢ÇΩÇﬂÅAïúãAÇ≥ÇπÇ»Ç¢ÅB
-	if (player->IsGround())
-	{
-		return;
-	}
+    // Âú∞Èù¢„Å´Á´ã„Å£„Å¶„ÅÑ„ÇãÂ†¥Âêà„ÅØËêΩ‰∏ã‰∏≠„Åß„ÅØ„Å™„ÅÑ„Åü„ÇÅ„ÄÅÂæ©Â∏∞„Åï„Åõ„Å™„ÅÑ
+    if (player->IsGround())
+    {
+        return;
+    }
 
-	// ÉãÅ[ÉvíÜÇ…ìØÇ∂åªç›à íuÇåJÇËï‘ÇµéÊìæÇµÇ»Ç¢ÇÊÇ§ÅAíËêîéQè∆Ç∆ÇµÇƒï€éùÇ∑ÇÈÅB
-	const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
+    // „É´„Éº„Éó‰∏≠„Å´Âêå„ÅòÁèæÂú®‰ΩçÁΩÆ„ÇíÁπ∞„ÇäËøî„ÅóÂèñÂæó„Åó„Å™„ÅÑ„Çà„ÅÜ„ÄÅÂÆöÊï∞ÂèÇÁÖß„Å®„Åó„Å¶‰øùÊåÅ„Åô„Çã
+    const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
 
-	// TiledÇ©ÇÁì«Ç›çûÇÒÇæäeí∑ï˚å`Ç∆ÅAÉvÉåÉCÉÑÅ[ÇÃë´å≥ç¿ïWÇèáî‘Ç…î‰ärÇ∑ÇÈÅB
-	for (const FallRespawnZoneData& zone : stageData.fallRespawnZones)
-	{
-		if (!IsInsideFallRespawnZone(playerPosition, zone))
-		{
-			continue;
-		}
+    // Tiled„Åã„ÇâË™≠„ÅøËæº„Çì„Å†ÂêÑÈï∑ÊñπÂΩ¢„Å®„ÄÅ„Éó„É¨„Ç§„É§„Éº„ÅÆË∂≥ÂÖÉÂ∫ßÊ®ô„ÇíÈ†ÜÁï™„Å´ÊØîËºÉ„Åô„Çã
+    for (const FallRespawnZoneData& zone : stageData.fallRespawnZones)
+    {
+        if (!IsInsideFallRespawnZone(playerPosition, zone))
+        {
+            continue;
+        }
 
-		// ç≈å„Ç…ê⁄ínÇµÇƒÇ¢ÇΩà¿ëSÇ»à íuÇ÷ñﬂÇ∑ÅB
-		player->SetPosition(lastSafePosition);
+        // ÊúÄÂæå„Å´Êé•Âú∞„Åó„Å¶„ÅÑ„ÅüÂÆâÂÖ®„Å™‰ΩçÁΩÆ„Å∏Êàª„Åô
+        player->SetPosition(lastSafePosition);
 
-		// óéâ∫ë¨ìxÇ‚â°ï˚å¸ÇÃäµê´ÇéùÇøâzÇ≥Ç»Ç¢ÅB
-		player->SetVelocity({ 0.0f, 0.0f, 0.0f });
+        // ËêΩ‰∏ãÈÄüÂ∫¶„ÇÑÊ®™ÊñπÂêë„ÅÆÊÖ£ÊÄß„ÇíÊåÅ„Å°Ë∂ä„Åï„Å™„ÅÑ
+        player->SetVelocity({0.0f, 0.0f, 0.0f});
 
-		// ìØéûÇ…ï°êîÇÃîÕàÕÇèàóùÇ∑ÇÈïKóvÇÕÇ»Ç¢ÇΩÇﬂÅAïúãAå„ÇÕíºÇøÇ…èIóπÇ∑ÇÈÅB
-		return;
-	}
+        // ÂêåÊôÇ„Å´Ë§áÊï∞„ÅÆÁØÑÂõ≤„ÇíÂá¶ÁêÜ„Åô„ÇãÂøÖË¶Å„ÅØ„Å™„ÅÑ„Åü„ÇÅ„ÄÅÂæ©Â∏∞Âæå„ÅØÁõ¥„Å°„Å´ÁµÇ‰∫Ü„Åô„Çã
+        return;
+    }
 }
+
+#ifdef _DEBUG
+void GameScene::DebugWarpToLateStage(float targetX, float targetFloorY)
+{
+    debugWarpFailed = true;
+
+    if (activeBossArena || player->IsDead() || player->IsClearing())
+    {
+        return;
+    }
+
+    const auto body = player->GetBodyAABB();
+    const auto oldPosition = player->GetPosition();
+    const float halfWidth = (body.max.x - body.min.x) * 0.5f;
+    const float halfDepth = (body.max.z - body.min.z) * 0.5f;
+    DirectX::XMFLOAT3 destination = {};
+    float bestScore = 1000000.0f;
+
+    for (const auto& floor : stage->GetTerrainAABBs())
+    {
+        if (floor.max.x - floor.min.x < halfWidth * 2.0f + 0.02f || floor.min.z > oldPosition.z - halfDepth ||
+            floor.max.z < oldPosition.z + halfDepth || std::abs(floor.max.y - targetFloorY) > 2.0f)
+        {
+            continue;
+        }
+
+        const float x = std::clamp(targetX, floor.min.x + halfWidth + 0.01f, floor.max.x - halfWidth - 0.01f);
+
+        if (std::abs(x - targetX) > 3.0f)
+        {
+            continue;
+        }
+
+        const DirectX::XMFLOAT3 candidate = {x, floor.max.y + 0.01f, oldPosition.z};
+        const DirectX::XMFLOAT3 offset = {candidate.x - oldPosition.x, candidate.y - oldPosition.y,
+                                          candidate.z - oldPosition.z};
+        const AABB targetBody = {{body.min.x + offset.x, body.min.y + offset.y, body.min.z + offset.z},
+                                 {body.max.x + offset.x, body.max.y + offset.y, body.max.z + offset.z}};
+        TerrainSweepHit hit;
+
+        if (CollisionManager::Instance().SweepTerrain(targetBody, {0, 0, 0}, hit) ==
+            SweepStatus::InitialOverlap)
+        {
+            continue;
+        }
+
+        const float score = std::abs(x - targetX) + 2.0f * std::abs(floor.max.y - targetFloorY);
+
+        if (score < bestScore)
+        {
+            bestScore = score;
+            destination = candidate;
+        }
+    }
+
+    if (bestScore == 1000000.0f)
+    {
+        return;
+    }
+
+    player->DebugWarp(destination, 1.0f);
+    lastSafePosition = destination;
+
+    auto& enemies = EnemyManager::Instance();
+    enemies.FlushPendingEnemies();
+
+    for (const auto& wave : enemies.GetEnemiesByType<EnemyWave>())
+    {
+        enemies.Remove(wave);
+    }
+
+    for (const auto& spawn : stageData.enemies)
+    {
+        if (spawn.enemyType == EnemyType::Wave)
+        {
+            enemies.Register(
+                EnemyFactory::CreateFromSpawnData(Graphics::Instance().GetDevice(), player.get(), spawn));
+        }
+    }
+
+    enemies.FlushPendingEnemies();
+    UpdateBossGates(0.0f);
+    cameraController.SetMode(CameraController::CameraMode::Follow2D);
+    UpdateCamera(100.0f);
+    debugWarpFailed = false;
+}
+
+void GameScene::DebugWarpBeforeBoss()
+{
+    debugWarpFailed = true;
+
+    if (!pendingBossSpawnData || activeBossArena || stageData.bossEncounterZones.empty() ||
+        player->IsDead() || player->IsClearing())
+    {
+        return;
+    }
+
+    const auto& arena = stageData.bossEncounterZones.front();
+    const BossGate* entryGate = nullptr;
+    float nearestDistance = 2.0f;
+
+    for (const auto& gate : bossGates)
+    {
+        const auto& bounds = gate.GetBounds();
+
+        if (gate.IsLocked() || bounds.max.y <= arena.minY || bounds.min.y >= arena.maxY)
+        {
+            continue;
+        }
+
+        const float distance = gate.GetDirection() == BossGate::Direction::Right
+                                   ? std::abs(bounds.max.x - arena.minX)
+                                   : std::abs(bounds.min.x - arena.maxX);
+
+        if (distance < nearestDistance)
+        {
+            entryGate = &gate;
+            nearestDistance = distance;
+        }
+    }
+
+    if (!entryGate)
+    {
+        return;
+    }
+
+    const auto body = player->GetBodyAABB();
+    const float halfWidth = (body.max.x - body.min.x) * 0.5f;
+    const float facing = entryGate->GetDirection() == BossGate::Direction::Right ? 1.0f : -1.0f;
+    const auto& gateBounds = entryGate->GetBounds();
+    DirectX::XMFLOAT3 destination = {facing > 0.0f ? gateBounds.min.x - halfWidth - 0.5f
+                                                   : gateBounds.max.x + halfWidth + 0.5f,
+                                     arena.minY, player->GetPosition().z};
+
+    bool foundGround = false;
+    float groundY = arena.minY - 2.0f;
+
+    for (const auto& box : stage->GetTerrainAABBs())
+    {
+        if (destination.x - halfWidth < box.min.x || destination.x + halfWidth > box.max.x ||
+            destination.z < box.min.z || destination.z > box.max.z || box.max.y < arena.minY - 2.0f ||
+            box.max.y > arena.minY + 0.5f)
+        {
+            continue;
+        }
+
+        if (!foundGround || box.max.y > groundY)
+        {
+            groundY = box.max.y;
+            foundGround = true;
+        }
+    }
+
+    if (!foundGround)
+    {
+        return;
+    }
+
+    destination.y = groundY + 0.01f;
+
+    AABB targetBody = body;
+    const auto& oldPosition = player->GetPosition();
+    const DirectX::XMFLOAT3 offset = {destination.x - oldPosition.x, destination.y - oldPosition.y,
+                                      destination.z - oldPosition.z};
+    targetBody.min = {body.min.x + offset.x, body.min.y + offset.y, body.min.z + offset.z};
+    targetBody.max = {body.max.x + offset.x, body.max.y + offset.y, body.max.z + offset.z};
+
+    for (const auto& box : stage->GetTerrainAABBs())
+    {
+        if (targetBody.max.x > box.min.x && targetBody.min.x < box.max.x && targetBody.max.y > box.min.y &&
+            targetBody.min.y < box.max.y && targetBody.max.z > box.min.z && targetBody.min.z < box.max.z)
+        {
+            return;
+        }
+    }
+
+    player->DebugWarp(destination, facing);
+    lastSafePosition = destination;
+    UpdateBossGates(0.0f);
+    cameraController.SetMode(CameraController::CameraMode::Follow2D);
+
+    UpdateCamera(100.0f);
+    debugWarpFailed = false;
+}
+#endif
 
 void GameScene::TryStartBossEncounter()
 {
-	// ï€óØíÜÇÃÉ{ÉXÇ™Ç¢Ç»ÇØÇÍÇŒÅAñ¢îzíuÇ‹ÇΩÇÕä˘Ç…ê∂ê¨çœÇ›Ç»ÇÃÇ≈âΩÇ‡ÇµÇ»Ç¢ÅB
-	if (!pendingBossSpawnData.has_value())
-	{
-		return;
-	}
+    // ‰øùÁïô‰∏≠„ÅÆ„Éú„Çπ„Åå„ÅÑ„Å™„Åë„Çå„Å∞„ÄÅÊú™ÈÖçÁΩÆ„Åæ„Åü„ÅØÊó¢„Å´ÁîüÊàêÊ∏à„Åø„Å™„ÅÆ„Åß‰Ωï„ÇÇ„Åó„Å™„ÅÑ
+    if (!pendingBossSpawnData.has_value())
+    {
+        return;
+    }
 
-	const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
+    const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
 
-	for (const BossEncounterZoneData& zone : stageData.bossEncounterZones)
-	{
-		if (!IsInsideBossEncounterZone(playerPosition, zone) ||
+    for (const BossEncounterZoneData& zone : stageData.bossEncounterZones)
+    {
+        if (!IsInsideBossEncounterZone(playerPosition, zone) ||
             player->GetBodyAABB().min.x < zone.minX + 0.05f ||
             player->GetBodyAABB().max.x > zone.maxX - 0.05f)
-		{
-			continue;
-		}
+        {
+            continue;
+        }
 
-		auto spawnedBoss = EnemyFactory::CreateFromSpawnData(
-			Graphics::Instance().GetDevice(),
-			player.get(),
-			pendingBossSpawnData.value());
+        auto spawnedBoss = EnemyFactory::CreateFromSpawnData(Graphics::Instance().GetDevice(), player.get(),
+                                                             pendingBossSpawnData.value());
 
-		if (!spawnedBoss)
-		{
-			throw std::runtime_error(
-				"Failed to create boss from stage data.");
-		}
+        if (!spawnedBoss)
+        {
+            throw std::runtime_error("Failed to create boss from stage data.");
+        }
 
-		// Share the exact encounter bounds used by the fixed boss camera.
-		const auto boss = std::dynamic_pointer_cast<EnemyBoss>(spawnedBoss);
-		if (!boss)
-		{
-			throw std::runtime_error("Boss encounter spawned a non-boss enemy.");
-		}
-		boss->SetArenaBounds(zone.minX, zone.maxX);
-		healthGaugeUI->ShowBoss(boss);
+        const auto boss = std::dynamic_pointer_cast<EnemyBoss>(spawnedBoss);
 
-		EnemyManager::Instance().Register(spawnedBoss);
+        if (!boss)
+        {
+            throw std::runtime_error("Boss encounter spawned a non-boss enemy.");
+        }
 
-		// îzíuèÓïÒÇãÛÇ…ÇµÇƒÅAéüÇÃÉtÉåÅ[ÉÄà»ç~Ç…ìØÇ∂É{ÉXÇ™ê∂ê¨Ç≥ÇÍÇÈÇÃÇñhÇÆÅB
-		activeBossArena = zone;
+        boss->SetArenaBounds(zone.minX, zone.maxX);
+        boss->SetVelocity({0.0f, 0.0f, 0.0f});
+        boss->SetActionEnable(false);
+        introBoss = boss;
+        player->PrepareForBossIntro();
+        healthGaugeUI->ShowBoss(boss);
+
+        EnemyManager::Instance().Register(spawnedBoss);
+
+        EnemyManager::Instance().FlushPendingEnemies();
+
+        // ÈÖçÁΩÆÊÉÖÂ†±„ÇíÁ©∫„Å´„Åó„Å¶„ÄÅÊ¨°„ÅÆ„Éï„É¨„Éº„É†‰ª•Èôç„Å´Âêå„Åò„Éú„Çπ„ÅåÁîüÊàê„Åï„Çå„Çã„ÅÆ„ÇíÈò≤„Åê
+        activeBossArena = zone;
         lastSafePosition = playerPosition;
         pendingBossSpawnData.reset();
-		return;
-	}
+        return;
+    }
 }
 
-
-
+// UpdateBossGates „ÅÆÊõ¥Êñ∞Âá¶ÁêÜ
 void GameScene::UpdateBossGates(float elapsedTime)
 {
-    if (bossGates.empty()) return;
+    if (bossGates.empty())
+    {
+        return;
+    }
+
     auto& collisionManager = CollisionManager::Instance();
     collisionManager.ClearTerrainAABBs();
+
     for (const auto& box : stage->GetTerrainAABBs())
+    {
         collisionManager.RegisterTerrainAABB(box);
+    }
+
     const auto body = player->GetBodyAABB();
+
     for (auto& gate : bossGates)
     {
         const bool wasLocked = gate.IsLocked();
         gate.Update(elapsedTime, body);
-        // A fall must never restore the player to the entry side of a sealed gate.
-        if (!wasLocked && gate.IsLocked()) lastSafePosition = player->GetPosition();
-        if (gate.IsSolid()) collisionManager.RegisterTerrainAABB(gate.GetBounds());
+
+        if (!wasLocked && gate.IsLocked())
+        {
+            lastSafePosition = player->GetPosition();
+        }
+
+        if (gate.IsSolid())
+        {
+            collisionManager.RegisterTerrainAABB(gate.GetBounds());
+        }
     }
 }
 
+// „Ç´„É°„É©„ÅÆÊõ¥Êñ∞Âá¶ÁêÜ
 void GameScene::UpdateCamera(float elapsedTime)
 {
-	ImGuiIO& io = ImGui::GetIO();
-	if (!io.WantCaptureMouse && io.MouseWheel != 0.0f)
-	{
-		cameraController.Zoom(io.MouseWheel);
-	}
+    ImGuiIO& io = ImGui::GetIO();
 
-	const DirectX::XMFLOAT3& playerPosition =
-		player->GetPosition();
+    if (!io.WantCaptureMouse && io.MouseWheel != 0.0f)
+    {
+        cameraController.Zoom(io.MouseWheel);
+    }
 
-	const BossEncounterZoneData* bossEncounterZone =
-		activeBossArena ? &activeBossArena.value() : FindBossEncounterZone(playerPosition);
+    const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
 
-	const BossApproachCameraZoneData* approachCameraZone =
-		FindBossApproachCameraZone(playerPosition);
+    const BossEncounterZoneData* bossEncounterZone =
+        activeBossArena ? &activeBossArena.value() : FindBossEncounterZone(playerPosition);
 
-	const CameraLimitZoneData* cameraLimitZone =
-		FindCameraLimitZone(playerPosition);
+    const BossApproachCameraZoneData* approachCameraZone = FindBossApproachCameraZone(playerPosition);
 
-	// É{ÉXïîâÆÇÃÉJÉÅÉâÇç≈óDêÊÇ∑ÇÈÅB
-	if (bossEncounterZone != nullptr)
-	{
-		const DirectX::XMFLOAT3 fixedFocus =
-		{
-			(bossEncounterZone->minX + bossEncounterZone->maxX) * 0.5f,
-			(bossEncounterZone->minY + bossEncounterZone->maxY) * 0.5f,
-			playerPosition.z
-		};
+    // „Éú„ÇπÈÉ®Â±ã„ÅÆ„Ç´„É°„É©„ÇíÊúÄÂÑ™ÂÖà„Åô„Çã
+    if (bossEncounterZone != nullptr)
+    {
+        const DirectX::XMFLOAT3 fixedFocus = {(bossEncounterZone->minX + bossEncounterZone->maxX) * 0.5f,
+                                              (bossEncounterZone->minY + bossEncounterZone->maxY) * 0.5f,
+                                              playerPosition.z};
 
-		cameraController.UpdateFixed2D(
-			elapsedTime,
-			fixedFocus);
-	}
-	// É{ÉXïîâÆÇÃäOÇ≈í òHÉGÉäÉAì‡Ç»ÇÁÅAí òHópÉJÉÅÉâÇégópÇ∑ÇÈÅB
-	else if (approachCameraZone != nullptr)
-	{
-		const DirectX::XMFLOAT3 fixedFocus =
-		{
-			(approachCameraZone->minX + approachCameraZone->maxX) * 0.5f,
-			(approachCameraZone->minY + approachCameraZone->maxY) * 0.5f,
-			playerPosition.z
-		};
+        cameraController.UpdateFixed2D(elapsedTime, fixedFocus);
+    }
 
-		cameraController.UpdateFixed2D(
-			elapsedTime,
-			fixedFocus);
-	}
-	// Ç«ÇøÇÁÇÃêÍópÉGÉäÉAÇ…Ç‡Ç¢Ç»ÇØÇÍÇŒÅAí èÌÉJÉÅÉâÇégópÇ∑ÇÈÅB
-	else
-	{
-		cameraController.SetTarget(playerPosition);
+    // „Éú„ÇπÈÉ®Â±ã„ÅÆÂ§ñ„ÅßÈÄöË∑Ø„Ç®„É™„Ç¢ÂÜÖ„Å™„Çâ„ÄÅÈÄöË∑ØÁî®„Ç´„É°„É©„Çí‰ΩøÁî®„Åô„Çã
+    else if (approachCameraZone != nullptr)
+    {
+        const DirectX::XMFLOAT3 fixedFocus = {(approachCameraZone->minX + approachCameraZone->maxX) * 0.5f,
+                                              (approachCameraZone->minY + approachCameraZone->maxY) * 0.5f,
+                                              playerPosition.z};
 
-		cameraController.Update(
-			elapsedTime,
-			playerPosition,
-			player->GetVelocity(),
-			cameraLimitZone);
-	}
+        cameraController.UpdateFixed2D(elapsedTime, fixedFocus);
+    }
+
+    // „Å©„Å°„Çâ„ÅÆÂ∞ÇÁî®„Ç®„É™„Ç¢„Å´„ÇÇ„ÅÑ„Å™„Åë„Çå„Å∞„ÄÅÈÄöÂ∏∏„Ç´„É°„É©„Çí‰ΩøÁî®„Åô„Çã
+    else
+    {
+        cameraController.SetTarget(playerPosition);
+
+        cameraController.Update(elapsedTime, playerPosition, player->GetVelocity(),
+                                stageData.cameraLimitZones);
+    }
 }

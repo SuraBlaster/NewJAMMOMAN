@@ -1,4 +1,4 @@
-#include "LoadingProfile.h"
+﻿#include "LoadingProfile.h"
 #include "SceneTitle.h"
 #include "Audio/Audio.h"
 #include "SceneLoading.h"
@@ -11,6 +11,7 @@
 #include "TextRenderer.h"
 #include <imgui.h>
 
+// 初期化処理
 void SceneTitle::Initialize()
 {
     isTransitioning = false;
@@ -32,6 +33,7 @@ void SceneTitle::Initialize()
     UpdateDecorations(0);
 }
 
+// 終了処理
 void SceneTitle::Finalize()
 {
     Audio::Instance().Stop("BGM_TITLE");
@@ -46,22 +48,26 @@ void SceneTitle::Finalize()
 
 void SceneTitle::StartGame()
 {
-    if (isTransitioning) return;
-    // First press skips the intro; a fresh press starts the game.
+    if (isTransitioning)
+    {
+        return;
+    }
+
     if (introTimer < TitleAnimation::INTRO_END)
     {
         introTimer = TitleAnimation::INTRO_END;
         return;
     }
+
     isTransitioning = true;
     transitionTimer = 2.0f;
     titlePlayer->BeginStart();
 }
 
+// 更新処理
 void SceneTitle::Update(float elapsedTime)
 {
-    // Model loading can be included in the first/next frame's elapsed time.
-    // Start at zero and limit catch-up so the visible intro never jumps ahead.
+
     const float dt = firstUpdate ? 0.0f : (std::clamp)(elapsedTime, 0.0f, 0.1f);
     const bool acceptInput = !firstUpdate;
     firstUpdate = false;
@@ -70,35 +76,52 @@ void SceneTitle::Update(float elapsedTime)
 #endif
         introTimer = (std::min)(introTimer + dt, TitleAnimation::INTRO_END);
     blinkTimer = std::fmod(blinkTimer + dt, 1.0f);
-    if (LoadingProfile::Automatic() && acceptInput && !isTransitioning) StartGame();
-    if (acceptInput) UpdateInput();
+
+    if (LoadingProfile::Automatic() && acceptInput && !isTransitioning)
+    {
+        StartGame();
+    }
+
+    if (acceptInput)
+    {
+        UpdateInput();
+    }
+
     UpdateTransition(dt);
+
     if (introTimer >= TitleAnimation::X_END)
+    {
         UpdateDecorations(dt);
+    }
 }
 
+// UpdateDecorations の更新処理
 void SceneTitle::UpdateDecorations(float elapsedTime)
 {
     using namespace DirectX;
-    // Spin around the local north axis, then tilt that axis clockwise on screen.
+
     earthSpin = std::fmod(earthSpin + XMConvertToRadians(4.0f) * elapsedTime, XM_2PI);
-    const XMMATRIX world = XMMatrixScaling(0.00225f, 0.00225f, 0.00225f)
-        * XMMatrixRotationY(earthSpin)
-        * XMMatrixRotationZ(XMConvertToRadians(-45.0f))
-        * XMMatrixTranslation(-6.0f, -19.0f, 5.0f);
+    const XMMATRIX world = XMMatrixScaling(0.00225f, 0.00225f, 0.00225f) * XMMatrixRotationY(earthSpin) *
+                           XMMatrixRotationZ(XMConvertToRadians(-45.0f)) *
+                           XMMatrixTranslation(-6.0f, -19.0f, 5.0f);
     XMFLOAT4X4 transform;
     XMStoreFloat4x4(&transform, world);
     earth->UpdateTransform(transform);
     titlePlayer->Update(elapsedTime);
 }
 
+// RenderDecorations の描画処理
 void SceneTitle::RenderDecorations()
 {
-    if (introTimer < TitleAnimation::X_END) return;
+    if (introTimer < TitleAnimation::X_END)
+    {
+        return;
+    }
+
     auto& graphics = Graphics::Instance();
     auto& camera = Camera::Instance();
     camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45),
-        graphics.GetScreenWidth() / graphics.GetScreenHeight(), 0.1f, 1000.0f);
+                             graphics.GetScreenWidth() / graphics.GetScreenHeight(), 0.1f, 1000.0f);
     camera.SetLookAt({0, 0, -20}, {0, 0, 0}, {0, 1, 0});
 
     auto* renderer = graphics.GetModelRenderer();
@@ -112,41 +135,55 @@ void SceneTitle::RenderDecorations()
     renderer->Render(context);
 }
 
+// UpdateInput の更新処理
 void SceneTitle::UpdateInput()
 {
     const auto& io = ImGui::GetIO();
     bool keyPressed = false;
+
     if (!io.WantCaptureKeyboard)
     {
         for (int key = 0; key < IM_ARRAYSIZE(io.KeysDown); ++key)
+        {
             keyPressed |= ImGui::IsKeyPressed(key, false);
+        }
     }
-    // InputManager::Update runs once per frame in Framework. Use press edges so
-    // holding a button after skipping the intro does not also start the game.
+
     constexpr InputButton START_BUTTONS =
         InputManager::BTN_A | InputManager::BTN_B | InputManager::BTN_X | InputManager::BTN_Y |
-        InputManager::BTN_START | InputManager::BTN_BACK |
-        InputManager::BTN_UP | InputManager::BTN_RIGHT | InputManager::BTN_DOWN | InputManager::BTN_LEFT |
-        InputManager::BTN_LEFT_THUMB | InputManager::BTN_RIGHT_THUMB |
-        InputManager::BTN_LEFT_SHOULDER | InputManager::BTN_RIGHT_SHOULDER |
+        InputManager::BTN_START | InputManager::BTN_BACK | InputManager::BTN_UP | InputManager::BTN_RIGHT |
+        InputManager::BTN_DOWN | InputManager::BTN_LEFT | InputManager::BTN_LEFT_THUMB |
+        InputManager::BTN_RIGHT_THUMB | InputManager::BTN_LEFT_SHOULDER | InputManager::BTN_RIGHT_SHOULDER |
         InputManager::BTN_LEFT_TRIGGER | InputManager::BTN_RIGHT_TRIGGER;
     const bool padPressed = (InputManager::Instance().GetButtonDown() & START_BUTTONS) != 0;
+
     if (padPressed || keyPressed)
+    {
         StartGame();
+    }
 }
 
+// UpdateTransition の更新処理
 void SceneTitle::UpdateTransition(float elapsedTime)
 {
-    if (!isTransitioning) return;
-    transitionTimer -= elapsedTime;
-    if (transitionTimer > 0.0f) return;
+    if (!isTransitioning)
+    {
+        return;
+    }
 
-    SceneManager::Instance().ChangeScene([]() {
-        return std::make_shared<SceneLoading>(
-            []() { return std::make_shared<GameScene>(); }, true);
-    });
+    transitionTimer -= elapsedTime;
+
+    if (transitionTimer > 0.0f)
+    {
+        return;
+    }
+
+    SceneManager::Instance().ChangeScene(
+        []()
+        { return std::make_shared<SceneLoading>([]() { return std::make_shared<GameScene>(); }, true); });
 }
 
+// 描画処理
 void SceneTitle::Render(float elapsedTime)
 {
     auto& graphics = Graphics::Instance();
@@ -170,26 +207,36 @@ void SceneTitle::Render(float elapsedTime)
     RenderImages(dc, animation);
 
     if (animation.impactAlpha > 0)
-        whiteSprite->Render(dc, 0, 0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(),
-            0, 1, 1, 1, animation.impactAlpha * 0.22f);
+    {
+        whiteSprite->Render(dc, 0, 0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(), 0, 1, 1, 1,
+                            animation.impactAlpha * 0.22f);
+    }
 }
 
+// RenderTriangleLines の描画処理
 void SceneTitle::RenderTriangleLines(ID3D11DeviceContext* dc, const TitleAnimation::State& animation)
 {
-    if (animation.lineAlpha <= 0) return;
+    if (animation.lineAlpha <= 0)
+    {
+        return;
+    }
 
-    // During the turn, the wire becomes a red face before handing off to the PNG.
-    const float fill = TitleAnimation::Progress(introTimer, TitleAnimation::HOLD_END,
-        TitleAnimation::HOLD_END + 0.3f);
+    const float fill =
+        TitleAnimation::Progress(introTimer, TitleAnimation::HOLD_END, TitleAnimation::HOLD_END + 0.3f);
+
     if (fill > 0)
     {
         auto& graphics = Graphics::Instance();
         auto* renderer = graphics.GetPrimitiveRenderer();
+
         for (const auto& point : animation.vertices)
-            renderer->AddVertex({
-                2 * (screenOffsetX + point.x * screenScale) / graphics.GetScreenWidth() - 1,
-                1 - 2 * (screenOffsetY + point.y * screenScale) / graphics.GetScreenHeight(), 0},
-                {1.0f, 0.0f, 0.0f, fill * animation.lineAlpha});
+        {
+            renderer->AddVertex({2 * (screenOffsetX + point.x * screenScale) / graphics.GetScreenWidth() - 1,
+                                 1 - 2 * (screenOffsetY + point.y * screenScale) / graphics.GetScreenHeight(),
+                                 0},
+                                {1.0f, 0.0f, 0.0f, fill * animation.lineAlpha});
+        }
+
         DirectX::XMFLOAT4X4 identity;
         DirectX::XMStoreFloat4x4(&identity, DirectX::XMMatrixIdentity());
         renderer->Render(dc, identity, identity, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -198,96 +245,110 @@ void SceneTitle::RenderTriangleLines(ID3D11DeviceContext* dc, const TitleAnimati
     for (int edge = 0; edge < 3; ++edge)
     {
         const auto line = TitleAnimation::VisibleEdge(animation, edge);
-        if (!line.visible) continue;
+
+        if (!line.visible)
+        {
+            continue;
+        }
 
         const float alpha = animation.lineAlpha;
         RenderLine(dc, line.from, line.to, 2, {1.0f, 0.0f, 0.0f, alpha});
     }
 }
 
-void SceneTitle::RenderLine(ID3D11DeviceContext* dc, TitleAnimation::Point from,
-    TitleAnimation::Point to, float thickness, const DirectX::XMFLOAT4& color)
+// RenderLine の描画処理
+void SceneTitle::RenderLine(ID3D11DeviceContext* dc, TitleAnimation::Point from, TitleAnimation::Point to,
+                            float thickness, const DirectX::XMFLOAT4& color)
 {
-    // A thin white sprite rotated around its center becomes a line segment.
+
     const float length = TitleAnimation::Length(from, to);
-    if (length <= 0) return;
+
+    if (length <= 0)
+    {
+        return;
+    }
+
     const float angle = DirectX::XMConvertToDegrees(std::atan2(to.y - from.y, to.x - from.x));
     const float centerX = (from.x + to.x) * 0.5f;
     const float centerY = (from.y + to.y) * 0.5f;
 
-    whiteSprite->Render(dc,
-        screenOffsetX + (centerX - length * 0.5f) * screenScale,
-        screenOffsetY + (centerY - thickness * 0.5f) * screenScale, 0,
-        length * screenScale, thickness * screenScale, angle,
-        color.x, color.y, color.z, color.w);
+    whiteSprite->Render(dc, screenOffsetX + (centerX - length * 0.5f) * screenScale,
+                        screenOffsetY + (centerY - thickness * 0.5f) * screenScale, 0, length * screenScale,
+                        thickness * screenScale, angle, color.x, color.y, color.z, color.w);
 }
 
+// RenderImages の描画処理
 void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::State& animation)
 {
     namespace Anim = TitleAnimation;
     const float scale = screenScale;
 
     if (animation.triangleAlpha > 0)
-        triangle->Render(dc,
-            screenOffsetX + Anim::TRIANGLE_ORIGIN.x * scale,
-            screenOffsetY + Anim::TRIANGLE_ORIGIN.y * scale, 0,
-            Anim::TRIANGLE_WIDTH * scale, Anim::TRIANGLE_HEIGHT * scale,
-            0, 1, 1, 1, animation.triangleAlpha);
+    {
+        triangle->Render(dc, screenOffsetX + Anim::TRIANGLE_ORIGIN.x * scale,
+                         screenOffsetY + Anim::TRIANGLE_ORIGIN.y * scale, 0, Anim::TRIANGLE_WIDTH * scale,
+                         Anim::TRIANGLE_HEIGHT * scale, 0, 1, 1, 1, animation.triangleAlpha);
+    }
 
     if (animation.logoProgress > 0)
     {
-        logo->Render(dc,
-            screenOffsetX + 190 * scale,
-            screenOffsetY + (190 + (1 - animation.logoProgress) * 24) * scale, 0,
-            750 * scale, (750 * 276.0f / 1782) * scale,
-            0, 1, 1, 1, animation.logoProgress);
+        logo->Render(dc, screenOffsetX + 190 * scale,
+                     screenOffsetY + (190 + (1 - animation.logoProgress) * 24) * scale, 0, 750 * scale,
+                     (750 * 276.0f / 1782) * scale, 0, 1, 1, 1, animation.logoProgress);
     }
 
     if (animation.xAlpha > 0)
     {
-        // BGM�ݒ�: X�̕����̔z�u�A�j���[�V�����������������x�������[�v�Đ�����B
+
         if (!titleBgmStarted && introTimer >= Anim::X_END)
         {
             Audio::Instance().Play("BGM_TITLE", true);
             titleBgmStarted = true;
         }
+
         const float height = 240 * animation.xScale;
         const float width = height * 760.0f / 1056;
-        // Crop the transparent margins using Sprite::Render's source rectangle.
-        xMark->Render(dc,
-            screenOffsetX + (1050 - width * 0.5f) * scale,
-            screenOffsetY + (255 - height * 0.5f) * scale, 0,
-            width * scale, height * scale,
-            744, 701, 760, 1056, 0,
-            1, 1, 1, animation.xAlpha);
+
+        xMark->Render(dc, screenOffsetX + (1050 - width * 0.5f) * scale,
+                      screenOffsetY + (255 - height * 0.5f) * scale, 0, width * scale, height * scale, 744,
+                      701, 760, 1056, 0, 1, 1, 1, animation.xAlpha);
     }
 }
 
+// デバッグ画面の描画処理
 void SceneTitle::DrawGUI()
 {
     if (introTimer >= TitleAnimation::INTRO_END && !isTransitioning && blinkTimer < 0.5f)
-        TextRenderer::DrawCentered(screenOffsetX + 640 * screenScale,
-            screenOffsetY + 600 * screenScale, "Press Any Button", 32 * screenScale);
+    {
+        TextRenderer::DrawCentered(screenOffsetX + 640 * screenScale, screenOffsetY + 600 * screenScale,
+                                   "Press Any Button", 32 * screenScale);
+    }
 #ifdef _DEBUG
     DrawDebugGUI();
 #endif
 }
 
 #ifdef _DEBUG
+
+// DrawDebugGUI の描画処理
 void SceneTitle::DrawDebugGUI()
 {
     auto* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + 12, viewport->Pos.y + viewport->Size.y - 145), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + 12, viewport->Pos.y + viewport->Size.y - 145),
+                            ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(320, 130), ImGuiCond_Once);
+
     if (ImGui::Begin("Title animation"))
     {
         ImGui::Checkbox("Pause intro", &introPaused);
+
         if (ImGui::SliderFloat("Time", &introTimer, 0, TitleAnimation::INTRO_END, "%.2f s"))
         {
             introPaused = true;
             isTransitioning = false;
             titlePlayer->Reset();
         }
+
         if (ImGui::Button("Replay intro"))
         {
             introTimer = blinkTimer = 0;
@@ -297,6 +358,7 @@ void SceneTitle::DrawDebugGUI()
             UpdateDecorations(0);
         }
     }
+
     ImGui::End();
 }
 #endif

@@ -1,15 +1,22 @@
-#pragma once
+﻿#pragma once
 #include "Character.h"
 class ModelRenderer;
 
-// Loading-screen presentation only; no combat or collision dependencies.
 class LoadingBoss : public Character
 {
-public:
+  public:
+
+    // コンストラクタ
     LoadingBoss();
+
+    // 更新処理
     void Update(float elapsedTime) override;
+
+    // 描画処理
     void Render(ModelRenderer* renderer);
-private:
+
+  private:
+
     float attackTimer = 1.0f;
     bool attacking = false;
 };

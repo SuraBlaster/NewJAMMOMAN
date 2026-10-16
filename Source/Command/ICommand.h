@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 
 class ICommand
 {
-public:
+  public:
+
+    // デストラクタ
     virtual ~ICommand() = default;
     virtual void Execute() = 0;
     virtual void Undo() = 0;

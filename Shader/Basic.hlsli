@@ -2,6 +2,6 @@
 
 struct VsOutput
 {
-	float4 vertex	: SV_POSITION;
-	float2 texcoord	: TEXCOORD;
+    float4 vertex : SV_POSITION;
+    float2 texcoord : TEXCOORD;
 };

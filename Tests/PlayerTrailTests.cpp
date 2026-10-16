@@ -1,4 +1,4 @@
-#include "PlayerTrail.h"
+﻿#include "PlayerTrail.h"
 #include <cassert>
 #include <cstdio>
 
@@ -24,7 +24,6 @@ int main()
     trail.FadeSword(1.0f);
     assert(Equal(trail.GetPreviousRoot(), rootB));
 
-    // GPU-free model dependency: this test checks snapshot timing and data.
     Model model(nullptr, "test", 60.0f);
     const DirectX::XMFLOAT3 rotation{0, 1, 0}, scale{1, 1, 1};
     trail.RecordMotion(0.01f, model, rootA, rotation, scale);
@@ -35,8 +34,12 @@ int main()
     assert(snapshot.trailModel && snapshot.trailModel.get() != &model);
     trail.RecordMotion(0.01f, model, rootB, rotation, scale);
     assert(trail.GetMotionSnapshots().size() == 1);
+
     for (int i = 0; i < 4; ++i)
+    {
         trail.RecordMotion(0.06f, model, {float(i), 0, 0}, rotation, scale);
+    }
+
     assert(trail.GetMotionSnapshots().size() == 3);
     assert(trail.GetMotionSnapshots().front().position.x == 1);
     assert(trail.GetMotionSnapshots().back().position.x == 3);

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <memory>
 #include "Scene.h"
@@ -6,49 +6,55 @@
 #include "FreeCameraController.h"
 #include "Model.h"
 
-// ƒ‚ƒfƒ‹ƒrƒ…[ƒAƒV[ƒ“
+// ãƒ¢ãƒ‡ãƒ«ãƒ“ãƒ¥ãƒ¼ã‚¢ã‚·ãƒ¼ãƒ³
 class ModelViewerScene : public Scene
 {
-public:
-	ModelViewerScene();
-	~ModelViewerScene() override = default;
+  public:
 
-	// XVˆ—
-	void Update(float elapsedTime) override;
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ModelViewerScene();
 
-	// •`‰æˆ—
-	void Render(float elapsedTime) override;
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~ModelViewerScene() override = default;
 
-	// GUI•`‰æˆ—
-	void DrawGUI() override;
+    // æ›´æ–°å‡¦ç†
+    void Update(float elapsedTime) override;
 
-private:
-	// ƒƒjƒ…[GUI•`‰æ
-	void DrawMenuGUI();
+    // æç”»å‡¦ç†
+    void Render(float elapsedTime) override;
 
-	// ƒqƒGƒ‰ƒ‹ƒL[GUI•`‰æ
-	void DrawHierarchyGUI();
+    // GUIæç”»å‡¦ç†
+    void DrawGUI() override;
 
-	// ƒvƒƒpƒeƒBGUI•`‰æ
-	void DrawPropertyGUI();
+  private:
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“GUI•`‰æ
-	void DrawAnimationGUI();
+    // ãƒ¡ãƒ‹ãƒ¥ãƒ¼GUIæç”»
+    void DrawMenuGUI();
 
-	// ƒ}ƒeƒŠƒAƒ‹GUI•`‰æ
-	void DrawMaterialGUI();
+    // ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼GUIæç”»
+    void DrawHierarchyGUI();
 
-private:
-	FreeCameraController				cameraController;
-	std::shared_ptr<Model>				model;
-	Model::Node*						selectionNode = nullptr;
-	std::vector<Model::NodePose>		nodePoses;
-	bool								animationPlaying = false;
-	bool								animationLoop = false;
-	float								animationSamplingRate = 60;
-	float								animationBlendSeconds = 0;
-	float								animationSpeed = 1.0f;
-	float								currentAnimationSeconds = 0;
-	int									currentAnimationIndex = -1;
-	int									shaderId;
+    // ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£GUIæç”»
+    void DrawPropertyGUI();
+
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³GUIæç”»
+    void DrawAnimationGUI();
+
+    // ãƒãƒ†ãƒªã‚¢ãƒ«GUIæç”»
+    void DrawMaterialGUI();
+
+  private:
+
+    FreeCameraController cameraController;
+    std::shared_ptr<Model> model;
+    Model::Node* selectionNode = nullptr;
+    std::vector<Model::NodePose> nodePoses;
+    bool animationPlaying = false;
+    bool animationLoop = false;
+    float animationSamplingRate = 60;
+    float animationBlendSeconds = 0;
+    float animationSpeed = 1.0f;
+    float currentAnimationSeconds = 0;
+    int currentAnimationIndex = -1;
+    int shaderId;
 };

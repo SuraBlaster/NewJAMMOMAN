@@ -1,16 +1,22 @@
-#include "CommandManager.h"
+﻿#include "CommandManager.h"
 
 void CommandManager::Execute(std::unique_ptr<ICommand> command)
 {
     command->Execute();
     undoStack.push(std::move(command));
+
     while (!redoStack.empty())
+    {
         redoStack.pop();
+    }
 }
 
 void CommandManager::Undo()
 {
-    if (undoStack.empty()) return;
+    if (undoStack.empty())
+    {
+        return;
+    }
 
     auto cmd = std::move(undoStack.top());
     undoStack.pop();
@@ -20,7 +26,10 @@ void CommandManager::Undo()
 
 void CommandManager::Redo()
 {
-    if (redoStack.empty()) return;
+    if (redoStack.empty())
+    {
+        return;
+    }
 
     auto cmd = std::move(redoStack.top());
     redoStack.pop();
@@ -30,6 +39,13 @@ void CommandManager::Redo()
 
 void CommandManager::Clear()
 {
-    while (!undoStack.empty()) undoStack.pop();
-    while (!redoStack.empty()) redoStack.pop();
+    while (!undoStack.empty())
+    {
+        undoStack.pop();
+    }
+
+    while (!redoStack.empty())
+    {
+        redoStack.pop();
+    }
 }

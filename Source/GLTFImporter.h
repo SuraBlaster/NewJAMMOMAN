@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <map>
 #include <filesystem>
@@ -8,50 +8,52 @@
 
 class GLTFImporter
 {
-private:
-	using MeshList = std::vector<Model::Mesh>;
-	using MaterialList = std::vector<Model::Material>;
-	using NodeList = std::vector<Model::Node>;
-	using AnimationList = std::vector<Model::Animation>;
+  private:
 
-public:
-	GLTFImporter(const char* filename);
+    using MeshList = std::vector<Model::Mesh>;
+    using MaterialList = std::vector<Model::Material>;
+    using NodeList = std::vector<Model::Node>;
+    using AnimationList = std::vector<Model::Animation>;
 
-	// ƒm[ƒhƒf[ƒ^‚ğ“Ç‚İ‚İ
-	void LoadNodes(NodeList& nodes);
+  public:
 
-	// ƒƒbƒVƒ…ƒf[ƒ^‚ğ“Ç‚İ‚İ
-	void LoadMeshes(MeshList& meshes, const NodeList& nodes);
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    GLTFImporter(const char* filename);
 
-	// ƒ}ƒeƒŠƒAƒ‹ƒf[ƒ^‚ğ“Ç‚İ‚İ
-	void LoadMaterials(MaterialList& materials, ID3D11Device* device = nullptr);
+    // ãƒãƒ¼ãƒ‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿
+    void LoadNodes(NodeList& nodes);
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^‚ğ“Ç‚İ‚İ
-	void LoadAnimations(AnimationList& animations, const NodeList& nodes, float sampleRate = 60);
+    // ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿
+    void LoadMeshes(MeshList& meshes, const NodeList& nodes);
 
-private:
-	// gltfVector3 ¨ XMFLOAT3
-	static DirectX::XMFLOAT3 gltfVector3ToXMFLOAT3(const std::vector<double>& gltfValue);
+    // ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿
+    void LoadMaterials(MaterialList& materials, ID3D11Device* device = nullptr);
 
-	// gltfQuaternion ¨ XMFLOAT4
-	static DirectX::XMFLOAT4 gltfQuaternionToXMFLOAT4(const std::vector<double>& gltfValue);
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã¿
+    void LoadAnimations(AnimationList& animations, const NodeList& nodes, float sampleRate = 60);
 
-	// gltfMatrix ¨ XMFLOAT4X4
-	static DirectX::XMFLOAT4X4 gltfMatrixToXMFLOAT4X4(const std::vector<double>& gltfValue);
+  private:
 
-	// À•WŒn•ÏŠ·
-	static void ConvertPositionAxisSystem(DirectX::XMFLOAT3& v);
-	static void ConvertPositionAxisSystem(DirectX::XMFLOAT4& v);
-	static void ConvertRotationAxisSystem(DirectX::XMFLOAT4& q);
-	static void ConvertMatrixAxisSystem(DirectX::XMFLOAT4X4& m);
-	static void ConvertNodeAxisSystem(Model::Node& node);
-	static void ConvertMeshAxisSystem(Model::Mesh& mesh);
-	static void ConvertAnimationAxisSystem(Model::Animation& animation);
+    static DirectX::XMFLOAT3 gltfVector3ToXMFLOAT3(const std::vector<double>& gltfValue);
 
-	// ƒ^ƒ“ƒWƒFƒ“ƒgŒvZ
-	static void ComputeTangents(std::vector<Model::Vertex>& vertices, const std::vector<uint32_t>& indices);
+    static DirectX::XMFLOAT4 gltfQuaternionToXMFLOAT4(const std::vector<double>& gltfValue);
 
-private:
-	std::filesystem::path			filepath;
-	tinygltf::Model					gltfModel;
+    static DirectX::XMFLOAT4X4 gltfMatrixToXMFLOAT4X4(const std::vector<double>& gltfValue);
+
+    // åº§æ¨™ç³»å¤‰æ›
+    static void ConvertPositionAxisSystem(DirectX::XMFLOAT3& v);
+    static void ConvertPositionAxisSystem(DirectX::XMFLOAT4& v);
+    static void ConvertRotationAxisSystem(DirectX::XMFLOAT4& q);
+    static void ConvertMatrixAxisSystem(DirectX::XMFLOAT4X4& m);
+    static void ConvertNodeAxisSystem(Model::Node& node);
+    static void ConvertMeshAxisSystem(Model::Mesh& mesh);
+    static void ConvertAnimationAxisSystem(Model::Animation& animation);
+
+    // ã‚¿ãƒ³ã‚¸ã‚§ãƒ³ãƒˆè¨ˆç®—
+    static void ComputeTangents(std::vector<Model::Vertex>& vertices, const std::vector<uint32_t>& indices);
+
+  private:
+
+    std::filesystem::path filepath;
+    tinygltf::Model gltfModel;
 };

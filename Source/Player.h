@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include "Character.h"
@@ -11,272 +11,403 @@ class Enemy;
 
 class Player final : public Character
 {
-public:
-	Player(ID3D11Device* device);
-	~Player() override;
-	bool IsClearing() const { return currentState == StateId::Clear || nextState == StateId::Clear; }
+  public:
 
-	void Update(float elapsedTime) override;
+    // コンストラクタ
+    Player(ID3D11Device* device);
 
-	void DrawGUI();
+    // デストラクタ
+    ~Player() override;
 
-	void RenderTrail(class PrimitiveRenderer* primitiveRenderer);
-	void RenderMotionTrail(class ModelRenderer* modelRenderer) const;
-	void DrawDebugPrimitive(class ShapeRenderer* shapeRenderer) const;
+    bool IsClearing() const
+    {
+        return currentState == StateId::Clear || nextState == StateId::Clear;
+    }
 
-	void SetBladeActive(bool active);
-	void SetTrailActive(bool active);
+    // 更新処理
+    void Update(float elapsedTime) override;
 
-	AABB GetBodyAABB() const;
+    // デバッグ画面の描画処理
+    void DrawGUI();
+    void PrepareForBossIntro();
+#ifdef _DEBUG
+    void DebugWarp(const DirectX::XMFLOAT3& destination, float facingDirection);
+#endif
 
-private:
-	void OnDamaged()override;
-	void OnDead() override;
-	void UpdateVelocity(float elapsedTime);
-	void UpdateStateMachine(float elapsedTime);
-	void UpdateUpperBody(float elapsedTime);
-	void UpdateDash();
-	void UpdateMotionTrail(float elapsedTime);
-	void UpdateSwordTrail(float elapsedTime);
-	void CheckSwordCollision(
-		const DirectX::XMFLOAT3& bladeRoot,
-		const DirectX::XMFLOAT3& bladeTip,
-		const DirectX::XMFLOAT3& previousRoot,
-		const DirectX::XMFLOAT3& previousTip);
+    // RenderTrail の描画処理
+    void RenderTrail(class PrimitiveRenderer* primitiveRenderer);
 
-	bool InputMove();
-	bool InputJump();
-	bool InputShot();
-	bool InputDash();
-	bool InputTowardWall();
-	bool InputAwayFromWall();
-	void HoldJump();
-	void GravityChange(float elapsedTime);
+    // RenderMotionTrail の描画処理
+    void RenderMotionTrail(class ModelRenderer* modelRenderer) const;
 
-	/// <summary>
-	/// True�͑O�ɕǂ����݂���
-	/// </summary>
-	/// <returns></returns>
-	bool WallJudgement(float elapsedTime);
+    // 当たり判定などのデバッグ描画処理
+    void DrawDebugPrimitive(class ShapeRenderer* shapeRenderer) const;
 
-	void MoveAndCollide(float elapsedTime);
+    void SetBladeActive(bool active);
+    void SetTrailActive(bool active);
 
-private:
-	float							gravity = 10.0f;
-	float							acceleration = 50.0f;
-	float							deceleration = 20.0f;
-	float							moveSpeed = 6.0f;
-	float							jumpSpeed = 10.5f;
-	float							cutJumpVelocity = 2.0f;
-	float							airControl = 0.3f;
-	float							inputMoveX = 0.0f;
-	float							inputMoveZ = 0.0f;
+    AABB GetBodyAABB() const;
 
-	AnimationLayerMask				upperBodyMask;
-	float							upperBodyWeight = 0.0f;
-	bool							isUpperBodyActive = false;
+  private:
 
-	// �_�b�V���֘A
-	float dashTimer = 0.0f;
-	const float DASH_DURATION = 0.8f;
-	const float DASH_SPEED = 10.0f;
-	bool isDashJump = false;
+    void OnDamaged() override;
+    void OnDead() override;
 
-	// �U���R���{
-	int comboStep = 0;
-	bool hasNextComboInput = false;
+    // 移動速度の更新処理
+    void UpdateVelocity(float elapsedTime);
 
-	// �󒆍U���t���O
-	bool isAirAttack = false;
+    // 状態遷移と現在の状態の更新処理
+    void UpdateStateMachine(float elapsedTime);
 
-	// �ǂ��܂�t���O
-	bool wallClimb = false;
+    // UpdateUpperBody の更新処理
+    void UpdateUpperBody(float elapsedTime);
 
-	// �ǂ̖@��
-	DirectX::XMFLOAT3 wallNormal = {};
+    // UpdateDash の更新処理
+    void UpdateDash();
 
-	// �ǃL�b�N
-	float wallKickLockTimer = 0.0f;
-	float wallKickLockDuration = 0.2f;
+    // 残像の更新処理
+    void UpdateMotionTrail(float elapsedTime);
 
-	// �\�[�h�g���C��
-	static constexpr float SWORD_COLLISION_RADIUS = 0.12f;
-	static constexpr int SWORD_SWEEP_STEPS = 4;
-	bool isBladeActive = false;
-	bool isTrailActive = false;
-	bool prevBladeActive = false;
-	bool prevTrailActive = false;
-	std::unordered_set<const Enemy*> swordHitEnemies;
-	DirectX::XMFLOAT3 debugBladeRoot = { 0, 0, 0 };
-	DirectX::XMFLOAT3 debugBladeTip = { 0, 0, 0 };
-	DirectX::XMFLOAT3 debugPreviousBladeRoot = { 0, 0, 0 };
-	DirectX::XMFLOAT3 debugPreviousBladeTip = { 0, 0, 0 };
-	bool hasSwordCollisionDebugData = false;
-	bool showSwordCollision = false;
+    // 剣の軌跡と当たり判定の更新処理
+    void UpdateSwordTrail(float elapsedTime);
+    void CheckSwordCollision(const DirectX::XMFLOAT3& bladeRoot, const DirectX::XMFLOAT3& bladeTip,
+                             const DirectX::XMFLOAT3& previousRoot, const DirectX::XMFLOAT3& previousTip);
 
-	// ���@AABB�֘A
-	float bodyHalfWidth = 0.4f;
-	float bodyHalfDepth = 0.4f;
-	float bodyHeight = 1.4f;
+    bool InputMove();
+    bool InputJump();
+    bool InputShot();
+    bool InputDash();
+    bool InputTowardWall();
+    bool InputAwayFromWall();
+    void HoldJump();
+    void GravityChange(float elapsedTime);
 
-	bool showBodyAabb = true;
+    /// Trueは前に壁が存在する
 
-	// �J�n���_�̂߂荞�݂��m�F���邽�߂̃t���O�B
-	bool hasBodyOverlap = false;
+    bool WallJudgement(float elapsedTime);
 
-	std::shared_ptr<Effect> spawnEffect;
-	std::shared_ptr<Effect> slashEffect;
-	std::shared_ptr<Effect> explosionEffect;
-	std::shared_ptr<Effect> damagedEffect;
-	Effekseer::Handle spawnHandle = -1;
-	Effekseer::Handle slashHandle = -1;
-	Effekseer::Handle explosionHandle = -1;
-	Effekseer::Handle damagedHandle = -1;
+    void MoveAndCollide(float elapsedTime);
 
-private:
-	enum class StateId
-	{
-		None = 0,
-		Idle,
-		Move,
-		Attack,
-		Jump,
-		JumpFall,
-		Dash,
-		WallSlide,
-		WallKick,
-		Clear,
-		Damage,
-		Death,
-		Spawn,
-		EnumCount
-	};
+  private:
 
+    float gravity = 10.0f;
+    float acceleration = 50.0f;
+    float deceleration = 20.0f;
+    float moveSpeed = 6.0f;
+    float jumpSpeed = 10.5f;
+    float cutJumpVelocity = 2.0f;
+    float airControl = 0.3f;
+    float inputMoveX = 0.0f;
+    float inputMoveZ = 0.0f;
 
-	std::string debugStateNames [static_cast<int>(StateId::EnumCount)] =
-	{
-		"None",
-		"Idle",
-		"Move",
-		"Attack",
-		"Jump",
-		"JumpFall",
-		"Dash",
-		"WallSlide",
-		"WallKick",
-		"Clear",
-		"Damage",
-		"Death",
-		"Spawn"
-	};
+    AnimationLayerMask upperBodyMask;
+    float upperBodyWeight = 0.0f;
+    bool isUpperBodyActive = false;
 
-	void SetState(StateId stateId);
+    // ダッシュ関連
+    float dashTimer = 0.0f;
+    const float DASH_DURATION = 0.8f;
+    const float DASH_SPEED = 10.0f;
+    bool isDashJump = false;
 
-	PlayerTrail trail;
+    // 攻撃コンボ
+    int comboStep = 0;
+    bool hasNextComboInput = false;
 
-public:
-	using TrailData = PlayerTrail::MotionSnapshot;
-	const std::deque<TrailData>& GetTrails() const { return trail.GetMotionSnapshots(); }
-public:
-	class State
-	{
-	public:
-		State(Player* owner) : owner(owner) {}
-		virtual ~State() = default;
+    // 空中攻撃フラグ
+    bool isAirAttack = false;
 
-	public:
-		virtual void OnEnter() {}
-		virtual void OnExit() {}
-		virtual void OnUpdate(float elapsedTime) {}
+    // 壁つかまりフラグ
+    bool wallClimb = false;
 
-	protected:
-		Player* owner;
-	};
+    // 壁の法線
+    DirectX::XMFLOAT3 wallNormal = {};
 
-	class IdleState : public State
-	{
-	public:
-		IdleState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    // 壁キック
+    float wallKickLockTimer = 0.0f;
+    float wallKickLockDuration = 0.2f;
 
-	class MoveState : public State
-	{
-	public:
-		MoveState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    // ソードトレイル
+    static constexpr float SWORD_COLLISION_RADIUS = 0.12f;
+    static constexpr int SWORD_SWEEP_STEPS = 4;
+    bool isBladeActive = false;
+    bool isTrailActive = false;
+    bool prevBladeActive = false;
+    bool prevTrailActive = false;
+    std::unordered_set<const Enemy*> swordHitEnemies;
+    DirectX::XMFLOAT3 debugBladeRoot = {0, 0, 0};
+    DirectX::XMFLOAT3 debugBladeTip = {0, 0, 0};
+    DirectX::XMFLOAT3 debugPreviousBladeRoot = {0, 0, 0};
+    DirectX::XMFLOAT3 debugPreviousBladeTip = {0, 0, 0};
+    bool hasSwordCollisionDebugData = false;
+    bool showSwordCollision = false;
 
-	class AttackState : public State
-	{
-	public:
-		AttackState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    // 自機AABB関連
+    float bodyHalfWidth = 0.4f;
+    float bodyHalfDepth = 0.4f;
+    float bodyHeight = 1.4f;
 
-	class JumpState : public State
-	{
-	public:
-		JumpState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    bool showBodyAabb = true;
 
-	class DashState : public State
-	{
-	public:
-		DashState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-		void OnExit()override;
-	};
+    // 開始時点のめり込みを確認するためのフラグ
+    bool hasBodyOverlap = false;
 
-	class JumpFallState : public State
-	{
-	public:
-		JumpFallState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    std::shared_ptr<Effect> spawnEffect;
+    std::shared_ptr<Effect> slashEffect;
+    std::shared_ptr<Effect> explosionEffect;
+    std::shared_ptr<Effect> damagedEffect;
+    Effekseer::Handle spawnHandle = -1;
+    Effekseer::Handle slashHandle = -1;
+    Effekseer::Handle explosionHandle = -1;
+    Effekseer::Handle damagedHandle = -1;
 
-	class WallSlideState : public State
-	{
-	public:
-		WallSlideState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-		void OnExit() override;
-	private:
-		float kickPower = 5.0f;
-	};
+  private:
 
-	class WallKickState : public State
-	{
-	public:
-		WallKickState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    enum class StateId
+    {
+        None = 0,
+        Idle,
+        Move,
+        Attack,
+        Jump,
+        JumpFall,
+        Dash,
+        WallSlide,
+        WallKick,
+        Clear,
+        Damage,
+        Death,
+        Spawn,
+        EnumCount
+    };
 
-	class DamageState : public State
-	{
-	public:
-		DamageState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	};
+    std::string debugStateNames[static_cast<int>(StateId::EnumCount)] = {
+        "None",      "Idle",     "Move",  "Attack", "Jump",  "JumpFall", "Dash",
+        "WallSlide", "WallKick", "Clear", "Damage", "Death", "Spawn"};
+
+    void SetState(StateId stateId);
+
+    PlayerTrail trail;
+
+  public:
+
+    using TrailData = PlayerTrail::MotionSnapshot;
+
+    const std::deque<TrailData>& GetTrails() const
+    {
+        return trail.GetMotionSnapshots();
+    }
+
+  public:
+
+    class State
+    {
+      public:
+
+        // コンストラクタ
+        State(Player* owner) : owner(owner)
+        {
+        }
+
+        // デストラクタ
+        virtual ~State() = default;
+
+      public:
+
+        // 状態に入るときの処理
+        virtual void OnEnter()
+        {
+        }
+
+        // 状態を抜けるときの処理
+        virtual void OnExit()
+        {
+        }
+
+        // 現在の状態の更新処理
+        virtual void OnUpdate(float elapsedTime)
+        {
+        }
+
+      protected:
+
+        Player* owner;
+    };
+
+    class IdleState : public State
+    {
+      public:
+
+        // コンストラクタ
+        IdleState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class MoveState : public State
+    {
+      public:
+
+        // コンストラクタ
+        MoveState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class AttackState : public State
+    {
+      public:
+
+        // コンストラクタ
+        AttackState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class JumpState : public State
+    {
+      public:
+
+        // コンストラクタ
+        JumpState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class DashState : public State
+    {
+      public:
+
+        // コンストラクタ
+        DashState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+
+        // 状態を抜けるときの処理
+        void OnExit() override;
+    };
+
+    class JumpFallState : public State
+    {
+      public:
+
+        // コンストラクタ
+        JumpFallState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class WallSlideState : public State
+    {
+      public:
+
+        // コンストラクタ
+        WallSlideState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+
+        // 状態を抜けるときの処理
+        void OnExit() override;
+
+      private:
+
+        float kickPower = 5.0f;
+    };
+
+    class WallKickState : public State
+    {
+      public:
+
+        // コンストラクタ
+        WallKickState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
+
+    class DamageState : public State
+    {
+      public:
+
+        // コンストラクタ
+        DamageState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+    };
 
     class DeathState : public State
     {
-    public:
-        DeathState(Player* owner) : State(owner) {}
+      public:
+
+        // コンストラクタ
+        DeathState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
         void OnEnter() override;
+
+        // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
+
+        // 状態を抜けるときの処理
         void OnExit() override;
-    private:
+
+      private:
+
         static constexpr float RETRY_DELAY = 3.0f;
         static constexpr float EFFECT_SCALE = 0.2f;
         static constexpr float VIBRATION_POWER = 1.0f;
@@ -287,14 +418,27 @@ public:
         std::unique_ptr<Effect> deathEffect;
         Effekseer::Handle deathHandle = -1;
     };
+
     class ClearState : public State
     {
-    public:
-        ClearState(Player* owner) : State(owner) {}
+      public:
+
+        // コンストラクタ
+        ClearState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
         void OnEnter() override;
+
+        // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
+
+        // 状態を抜けるときの処理
         void OnExit() override;
-    private:
+
+      private:
+
         static constexpr float CLEAR_AUDIO_TIME = 5.0f;
         static constexpr float EXIT_EFFECT_TIME = 11.0f;
         static constexpr float SCENE_CHANGE_TIME = 13.0f;
@@ -305,20 +449,32 @@ public:
         std::unique_ptr<Effect> exitEffect;
         Effekseer::Handle exitHandle = -1;
     };
-	class SpawnState : public State
-	{
-	public:
-		SpawnState(Player* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	private:
-		float spawnTimer = 0.0f;
-		static constexpr float SPAWN_ANIM_START_TIME = 0.5f;
-		static constexpr float SPAWN_END_TIME = 1.0f;
-		bool hasSpawned = false;;
-	};
 
-	StateId	currentState = StateId::None;
-	StateId	nextState = StateId::None;
-	std::unique_ptr<State> states[static_cast<size_t>(StateId::EnumCount)];
+    class SpawnState : public State
+    {
+      public:
+
+        // コンストラクタ
+        SpawnState(Player* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+
+      private:
+
+        float spawnTimer = 0.0f;
+        static constexpr float SPAWN_ANIM_START_TIME = 0.5f;
+        static constexpr float SPAWN_END_TIME = 1.0f;
+        bool hasSpawned = false;
+        ;
+    };
+
+    StateId currentState = StateId::None;
+    StateId nextState = StateId::None;
+    std::unique_ptr<State> states[static_cast<size_t>(StateId::EnumCount)];
 };

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <windows.h>
 #include "HighResolutionTimer.h"
@@ -7,28 +7,36 @@
 
 class Framework
 {
-public:
-	Framework(HWND hWnd);
-	~Framework();
+  public:
 
-private:
-	void Update(float elapsedTime);
-	void Render(float elapsedTime);
+    // コンストラクタ
+    Framework(HWND hWnd);
 
-	template<class T>
-	void ChangeSceneButtonGUI(const char* name);
+    // デストラクタ
+    ~Framework();
 
-	void SceneSelectGUI();
+  private:
 
-	void CalculateFrameStats();
+    // 更新処理
+    void Update(float elapsedTime);
 
-public:
-	int Run();
-	LRESULT CALLBACK HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    // 描画処理
+    void Render(float elapsedTime);
 
-private:
-	std::unique_ptr<Audio> audio;
-	const HWND				hWnd;
-	HighResolutionTimer		timer;
+    template <class T> void ChangeSceneButtonGUI(const char* name);
+
+    void SceneSelectGUI();
+
+    void CalculateFrameStats();
+
+  public:
+
+    int Run();
+    LRESULT CALLBACK HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+  private:
+
+    std::unique_ptr<Audio> audio;
+    const HWND hWnd;
+    HighResolutionTimer timer;
 };
-

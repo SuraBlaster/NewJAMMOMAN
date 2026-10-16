@@ -1,46 +1,58 @@
-#pragma once
+﻿#pragma once
 
 #include <d3d11.h>
 
 #include "Enemy.h"
+#include "EnemyActivation.h"
 
 class Player;
 
-// Rises from below and moves horizontally with a wave motion.
 class EnemyWave final : public Enemy
 {
-public:
-	enum class Direction
-	{
-		Left,
-		Right
-	};
+  public:
 
-	EnemyWave(ID3D11Device* device, Player* player);
-	~EnemyWave() override = default;
+    enum class Direction
+    {
+        Left,
+        Right
+    };
 
-	void Update(float elapsedTime) override;
+    // コンストラクタ
+    EnemyWave(ID3D11Device* device, Player* player);
 
-	void SetDirection(Direction value);
-	void SetWave(float speed, float amplitude)
-	{
-		waveSpeed = speed;
-		waveAmplitude = amplitude;
-	}
+    // デストラクタ
+    ~EnemyWave() override = default;
 
-private:
-	void UpdateAttacking(float elapsedTime);
-	void CollideWithPlayer();
-	bool IsOutOfRange() const;
-	void OnDead() override { Destroy(); }
+    // 更新処理
+    void Update(float elapsedTime) override;
 
-	Player* player = nullptr; // Non-owning; GameScene owns Player.
-	Direction direction = Direction::Right;
-	float targetY = 0.0f;
-	bool targetYInitialized = false;
-	float riseSpeed = 3.0f;
-	float moveSpeed = 3.0f;
-	float waveSpeed = 4.0f;
-	float waveAmplitude = 0.5f;
-	float waveTime = 0.0f;
+    void SetDirection(Direction value);
+
+    void SetWave(float speed, float amplitude)
+    {
+        waveSpeed = speed;
+        waveAmplitude = amplitude;
+    }
+
+  private:
+
+    // UpdateAttacking の更新処理
+    void UpdateAttacking(float elapsedTime);
+    void CollideWithPlayer();
+    bool IsOutOfRange() const;
+
+    void OnDead() override
+    {
+        Destroy();
+    }
+
+    Player* player = nullptr;
+    Direction direction = Direction::Right;
+    float targetY = 0.0f;
+    EnemyActivation activation;
+    bool placementInitialized = false;
+    float moveSpeed = 1.5f;
+    float waveSpeed = 4.0f;
+    float waveAmplitude = 0.5f;
+    float waveTime = 0.0f;
 };

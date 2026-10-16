@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <memory>
 #include <d3d11.h>
 #include <wrl.h>
@@ -10,13 +10,20 @@ class Player;
 
 class HealthGaugeUI
 {
-public:
+  public:
+
+    // コンストラクタ
     explicit HealthGaugeUI(ID3D11Device* device);
     void ShowBoss(const std::shared_ptr<EnemyBoss>& boss);
+
+    // 更新処理
     void Update(const Player& player, float elapsedTime);
     void EnqueueRender();
+    bool IsBossIntroPlaying() const;
 
-private:
+  private:
+
+    // 描画処理
     void Render();
     std::unique_ptr<Sprite> playerGauge;
     std::unique_ptr<Sprite> bossGauge;

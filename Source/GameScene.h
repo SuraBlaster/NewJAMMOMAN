@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <memory>
 #include <DirectXMath.h>
@@ -17,87 +17,101 @@
 
 class GameScene : public Scene
 {
-public:
-	GameScene();
-	~GameScene() override;
+  public:
+
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    GameScene();
+
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~GameScene() override;
+
+    // åˆæœŸåŒ–å‡¦ç†
     void Initialize() override;
 
-	// XVˆ—
-	void Update(float elapsedTime) override;
+    // æ›´æ–°å‡¦ç†
+    void Update(float elapsedTime) override;
 
-	// •`‰æˆ—
-	void Render(float elapsedTime) override;
+    // æç”»å‡¦ç†
+    void Render(float elapsedTime) override;
 
-	// GUI•`‰æˆ—
-	void DrawGUI() override;
-    bool IsBackgroundEditing() const override { return backgroundEditor && backgroundEditor->IsEditing(); }
+    // GUIæç”»å‡¦ç†
+    void DrawGUI() override;
 
-private:
-	// 1‚Â‚Ì—‰º•œ‹AƒGƒŠƒA‚ÆXYÀ•W‚ğ”äŠr‚µA”ÍˆÍ“à‚É‚¢‚é‚©‚ğ•Ô‚·B
-	bool IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position, const FallRespawnZoneData& zone) const;
+    bool IsBackgroundEditing() const override
+    {
+        return backgroundEditor && backgroundEditor->IsEditing();
+    }
 
-	bool IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position,const BossEncounterZoneData& zone) const;
+  private:
 
-	// ƒvƒŒƒCƒ„[‚ÌXYÀ•W‚ªƒ{ƒX‘O’Ê˜H‚ÌƒJƒƒ‰ƒGƒŠƒA“à‚É‚ ‚é‚©”»’è‚·‚éB
-	bool IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position, const BossApproachCameraZoneData& zone) const;
+    // 1ã¤ã®è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã¨XYåº§æ¨™ã‚’æ¯”è¼ƒã—ã€ç¯„å›²å†…ã«ã„ã‚‹ã‹ã‚’è¿”ã™
+    bool IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position, const FallRespawnZoneData& zone) const;
 
-	bool IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position, const CameraLimitZoneData& zone) const;
+    bool IsInsideBossEncounterZone(const DirectX::XMFLOAT3& position,
+                                   const BossEncounterZoneData& zone) const;
 
-	// ƒvƒŒƒCƒ„[‚ª“ü‚Á‚Ä‚¢‚éƒ{ƒX‘O’Ê˜H‚ÌƒJƒƒ‰ƒGƒŠƒA‚ğ•Ô‚·B
-	// ‚Ç‚ÌƒGƒŠƒA‚É‚à“ü‚Á‚Ä‚¢‚È‚¢ê‡‚Ínullptr‚ğ•Ô‚·B
-	const BossApproachCameraZoneData* FindBossApproachCameraZone(const DirectX::XMFLOAT3& position) const;
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®XYåº§æ¨™ãŒãƒœã‚¹å‰é€šè·¯ã®ã‚«ãƒ¡ãƒ©ã‚¨ãƒªã‚¢å†…ã«ã‚ã‚‹ã‹åˆ¤å®šã™ã‚‹
+    bool IsInsideBossApproachCameraZone(const DirectX::XMFLOAT3& position,
+                                        const BossApproachCameraZoneData& zone) const;
 
-	// ƒvƒŒƒCƒ„[‚ª“ü‚Á‚Ä‚¢‚éƒ{ƒXíƒGƒŠƒA‚ğ•Ô‚·B
-	// ‚Ç‚ÌƒGƒŠƒA‚É‚à“ü‚Á‚Ä‚¢‚È‚¢ê‡‚Ínullptr‚ğ•Ô‚·B
-	const BossEncounterZoneData* FindBossEncounterZone(const DirectX::XMFLOAT3& position) const;
+    bool IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position, const CameraLimitZoneData& zone) const;
 
-	// ƒvƒŒƒCƒ„[‚ª“ü‚Á‚Ä‚¢‚éƒGƒŠƒA‚ğ•Ô‚·B
-	const CameraLimitZoneData* FindCameraLimitZone(const DirectX::XMFLOAT3& position) const;
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå…¥ã£ã¦ã„ã‚‹ãƒœã‚¹å‰é€šè·¯ã®ã‚«ãƒ¡ãƒ©ã‚¨ãƒªã‚¢ã‚’è¿”ã™
+    // ã©ã®ã‚¨ãƒªã‚¢ã«ã‚‚å…¥ã£ã¦ã„ãªã„å ´åˆã¯nullptrã‚’è¿”ã™
+    const BossApproachCameraZoneData* FindBossApproachCameraZone(const DirectX::XMFLOAT3& position) const;
 
-	// ‹ó’†‚ÌƒvƒŒƒCƒ„[‚ª—‰º•œ‹AƒGƒŠƒA‚Ö“ü‚Á‚½ê‡AÅŒã‚ÌˆÀ‘SˆÊ’u‚Ö–ß‚·B
-	void HandleFallRespawn();
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå…¥ã£ã¦ã„ã‚‹ãƒœã‚¹æˆ¦ã‚¨ãƒªã‚¢ã‚’è¿”ã™
+    // ã©ã®ã‚¨ãƒªã‚¢ã«ã‚‚å…¥ã£ã¦ã„ãªã„å ´åˆã¯nullptrã‚’è¿”ã™
+    const BossEncounterZoneData* FindBossEncounterZone(const DirectX::XMFLOAT3& position) const;
 
-	void TryStartBossEncounter();
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒå…¥ã£ã¦ã„ã‚‹ã‚¨ãƒªã‚¢ã‚’è¿”ã™
+    const CameraLimitZoneData* FindCameraLimitZone(const DirectX::XMFLOAT3& position) const;
+
+    // ç©ºä¸­ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒè½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã¸å…¥ã£ãŸå ´åˆã€æœ€å¾Œã®å®‰å…¨ä½ç½®ã¸æˆ»ã™
+    void HandleFallRespawn();
+
+    void TryStartBossEncounter();
+
+    // UpdateBossGates ã®æ›´æ–°å‡¦ç†
     void UpdateBossGates(float elapsedTime);
-	void UpdateCamera(float elapsedTime);
+#ifdef _DEBUG
+    void DebugWarpBeforeBoss();
+    void DebugWarpToLateStage(float targetX, float targetFloorY);
+    bool debugWarpFailed = false;
+#endif
 
-private:
-	TileTypeManager tileTypeManager;
-	StageData stageData;
-	std::optional<EnemySpawnData> pendingBossSpawnData;
+    // ã‚«ãƒ¡ãƒ©ã®æ›´æ–°å‡¦ç†
+    void UpdateCamera(float elapsedTime);
+
+  private:
+
+    TileTypeManager tileTypeManager;
+    StageData stageData;
+    std::optional<EnemySpawnData> pendingBossSpawnData;
     std::optional<BossEncounterZoneData> activeBossArena;
+    std::weak_ptr<EnemyBoss> introBoss;
     std::vector<BossGate> bossGates;
     std::vector<std::shared_ptr<Model>> bossGateModels;
-	std::unique_ptr<Player> player;
-	std::unique_ptr<Stage> stage;
-	std::unique_ptr<BackgroundEditor> backgroundEditor;
+    std::unique_ptr<Player> player;
+    std::unique_ptr<Stage> stage;
+    std::unique_ptr<BackgroundEditor> backgroundEditor;
     std::unique_ptr<BackgroundFog> backgroundFog;
     std::unique_ptr<BackgroundCity> backgroundCity;
-	CameraController cameraController;
-	bool isPaused = false;
-	std::unique_ptr<HealthGaugeUI> healthGaugeUI;
+    CameraController cameraController;
+    bool isPaused = false;
+    std::unique_ptr<HealthGaugeUI> healthGaugeUI;
 
-	std::array<AABB, 3> testTerrainBoxes = {
-		// °Fã–Ê‚ªY=0
-		AABB{
-			{ -6.0f, -1.0f, -2.0f },
-			{  6.0f,  0.0f,  2.0f }
-		},
+    std::array<AABB, 3> testTerrainBoxes = {// åºŠï¼šä¸Šé¢ãŒY=0
+                                            AABB{{-6.0f, -1.0f, -2.0f}, {6.0f, 0.0f, 2.0f}},
 
-		// ‰E‚Ì•ÇF¶–Ê‚ªX=3
-		AABB{
-			{ 3.0f, 0.0f, -2.0f },
-			{ 4.0f, 4.0f,  2.0f }
-		},
+                                            // å³ã®å£ï¼šå·¦é¢ãŒX=3
+                                            AABB{{3.0f, 0.0f, -2.0f}, {4.0f, 4.0f, 2.0f}},
 
-		// “VˆäF‰º–Ê‚ªY=2.4
-		AABB{
-			{ -3.0f, 2.4f, -2.0f },
-			{  3.0f, 3.4f,  2.0f }
-		}
-	};
+                                            // å¤©äº•ï¼šä¸‹é¢ãŒY=2.4
+                                            AABB{{-3.0f, 2.4f, -2.0f}, {3.0f, 3.4f, 2.0f}}};
 
-private:
-	// ƒvƒŒƒCƒ„[‚ªÅŒã‚ÉÚ’n‚µ‚Ä‚¢‚½ˆÊ’uB—‰º‚Ì•œ‹Aæ‚Æ‚µ‚Äg—p‚·‚éB
-	DirectX::XMFLOAT3 lastSafePosition = {};
+  private:
+
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæœ€å¾Œã«æ¥åœ°ã—ã¦ã„ãŸä½ç½®ã€‚è½ä¸‹æ™‚ã®å¾©å¸°å…ˆã¨ã—ã¦ä½¿ç”¨ã™ã‚‹
+    DirectX::XMFLOAT3 lastSafePosition = {};
 };

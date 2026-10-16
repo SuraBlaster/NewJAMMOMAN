@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include <vector>
@@ -10,53 +10,81 @@ class ShapeRenderer;
 
 class EnemyManager
 {
-public:
-	static EnemyManager& Instance()
-	{
-		static EnemyManager instance;
-		return instance;
-	}
+  public:
 
-	EnemyManager(const EnemyManager&) = delete;
-	EnemyManager& operator=(const EnemyManager&) = delete;
+    static EnemyManager& Instance()
+    {
+        static EnemyManager instance;
+        return instance;
+    }
 
-	void Update(float elapsedTime);
-	void Render(ModelRenderer* modelRenderer) const;
-	void DrawPrimitive(ShapeRenderer* shapeRenderer) const;
-	void DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const;
+    // コンストラクタ
+    EnemyManager(const EnemyManager&) = delete;
+    EnemyManager& operator=(const EnemyManager&) = delete;
 
-	void Register(const std::shared_ptr<Enemy>& enemy);
-	void Remove(const std::shared_ptr<Enemy>& enemy);
-	void Clear();
+    // 更新処理
+    void Update(float elapsedTime);
+    void FlushPendingEnemies();
 
-	size_t GetEnemyCount() const { return enemies.size(); }
-	const std::shared_ptr<Enemy>& GetEnemy(size_t index) const { return enemies.at(index); }
+    // 描画処理
+    void Render(ModelRenderer* modelRenderer) const;
 
-	template<typename T>
-	std::shared_ptr<T> GetEnemyByType() const
-	{
-		for (const auto& enemy : enemies)
-		{
-			if (auto casted = std::dynamic_pointer_cast<T>(enemy)) return casted;
-		}
-		return nullptr;
-	}
+    // DrawPrimitive の描画処理
+    void DrawPrimitive(ShapeRenderer* shapeRenderer) const;
 
-	template<typename T>
-	std::vector<std::shared_ptr<T>> GetEnemiesByType() const
-	{
-		std::vector<std::shared_ptr<T>> result;
-		for (const auto& enemy : enemies)
-		{
-			if (auto casted = std::dynamic_pointer_cast<T>(enemy)) result.push_back(casted);
-		}
-		return result;
-	}
+    // 当たり判定などのデバッグ描画処理
+    void DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const;
 
-private:
-	EnemyManager() = default;
-	~EnemyManager() = default;
+    void Register(const std::shared_ptr<Enemy>& enemy);
+    void Remove(const std::shared_ptr<Enemy>& enemy);
+    void Clear();
 
-	std::vector<std::shared_ptr<Enemy>> enemies;
-	std::vector<std::shared_ptr<Enemy>> pendingEnemies;
+    size_t GetEnemyCount() const
+    {
+        return enemies.size();
+    }
+
+    const std::shared_ptr<Enemy>& GetEnemy(size_t index) const
+    {
+        return enemies.at(index);
+    }
+
+    template <typename T> std::shared_ptr<T> GetEnemyByType() const
+    {
+        for (const auto& enemy : enemies)
+        {
+            if (auto casted = std::dynamic_pointer_cast<T>(enemy))
+            {
+                return casted;
+            }
+        }
+
+        return nullptr;
+    }
+
+    template <typename T> std::vector<std::shared_ptr<T>> GetEnemiesByType() const
+    {
+        std::vector<std::shared_ptr<T>> result;
+
+        for (const auto& enemy : enemies)
+        {
+            if (auto casted = std::dynamic_pointer_cast<T>(enemy))
+            {
+                result.push_back(casted);
+            }
+        }
+
+        return result;
+    }
+
+  private:
+
+    // コンストラクタ
+    EnemyManager() = default;
+
+    // デストラクタ
+    ~EnemyManager() = default;
+
+    std::vector<std::shared_ptr<Enemy>> enemies;
+    std::vector<std::shared_ptr<Enemy>> pendingEnemies;
 };

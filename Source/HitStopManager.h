@@ -1,15 +1,16 @@
-#pragma once
+ï»¿#pragma once
 
 class HitStopManager
 {
-public:
+  public:
+
     static HitStopManager& Instance()
     {
         static HitStopManager instance;
         return instance;
     }
 
-    // ƒqƒbƒgƒXƒgƒbƒv‚ÌŠJŽn
+    // ãƒ’ãƒƒãƒˆã‚¹ãƒˆãƒƒãƒ—ã®é–‹å§‹
     void Request(float duration, float scale = 0.05f)
     {
         if (duration > timer)
@@ -19,11 +20,13 @@ public:
         }
     }
 
+    // æ›´æ–°å‡¦ç†
     void Update(float rawDeltaTime)
     {
         if (timer > 0.0f)
         {
             timer -= rawDeltaTime;
+
             if (timer <= 0.0f)
             {
                 timer = 0.0f;
@@ -32,13 +35,15 @@ public:
         }
     }
 
-    // Œ»Ý‚Ìƒ^ƒCƒ€ƒXƒP[ƒ‹‚ðŽæ“¾i’ÊíŽž‚Í 1.0fj
+    // ç¾åœ¨ã®ã‚¿ã‚¤ãƒ ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å–å¾—ï¼ˆé€šå¸¸æ™‚ã¯ 1.0fï¼‰
     float GetTimeScale() const
     {
         return (timer > 0.0f) ? slowScale : 1.0f;
     }
 
-private:
+  private:
+
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
     HitStopManager() = default;
     float timer = 0.0f;
     float slowScale = 1.0f;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <d3d11.h>
 #include <vector>
@@ -10,19 +10,33 @@ class Player;
 
 class EnemyHover final : public Enemy
 {
-public:
-	EnemyHover(ID3D11Device* device, Player* player);
-	void Update(float elapsedTime) override;
-	void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
+  public:
 
-private:
-	void FireRadialProjectiles();
-	void UpdateProjectiles(float elapsedTime);
-	void OnDead() override { Destroy(); }
+    // コンストラクタ
+    EnemyHover(ID3D11Device* device, Player* player);
 
-	Player* player = nullptr;
-	std::vector<EnemyProjectile> projectiles;
-	float attackTimer = 2.0f;
-	float hoverTime = 0.0f;
-	float baseY = 0.0f;
+    // 更新処理
+    void Update(float elapsedTime) override;
+
+    // DrawPrimitive の描画処理
+    void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
+
+  private:
+
+    void FireRadialProjectiles();
+
+    // UpdateProjectiles の更新処理
+    void UpdateProjectiles(float elapsedTime);
+
+    void OnDead() override
+    {
+        Destroy();
+    }
+
+    Player* player = nullptr;
+    std::vector<EnemyProjectile> projectiles;
+    std::shared_ptr<Effect> projectileEffect;
+    float attackTimer = 2.0f;
+    float hoverTime = 0.0f;
+    float baseY = 0.0f;
 };

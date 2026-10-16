@@ -7,6 +7,7 @@
 int main()
 {
     assert(!TextRenderer::Initialize("Data/Font/ArialUni.ttf"));
+
     for (int run = 0; run < 2; ++run)
     {
         ImGui::CreateContext();
@@ -32,7 +33,7 @@ int main()
         TextRenderer::DrawCentered(640, 100, "Text", 32, red);
         const float centered = draw->VtxBuffer[previous].pos.x;
         const float textWidth = ImGui::GetFont()->CalcTextSizeA(32, FLT_MAX, 0, "Text").x;
-        // ImGui snaps glyph positions to whole pixels.
+
         assert(std::abs(centered - left - (540 - textWidth / 2)) <= 1.0f);
         assert(draw->VtxBuffer[0].col == IM_COL32(255, 0, 0, 255));
         TextRenderer::Draw(100, 200, u8"日本語\nゲームスタート", 24);
@@ -47,5 +48,6 @@ int main()
         TextRenderer::Finalize();
         ImGui::DestroyContext();
     }
+
     puts("TextRenderer: font loading, Japanese, alignment, color, lifecycle PASS");
 }

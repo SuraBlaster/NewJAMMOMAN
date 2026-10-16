@@ -1,0 +1,35 @@
+{
+  "columns": 0,
+  "grid": {
+    "orientation": "orthogonal",
+    "width": 1,
+    "height": 1
+  },
+  "name": "WalkerPlacements",
+  "objectalignment": "bottom",
+  "tilecount": 1,
+  "tileheight": 40,
+  "tilewidth": 32,
+  "tiles": [
+    {
+      "id": 0,
+      "image": "EnemyPlacementIcons/Walker.png",
+      "imagewidth": 32,
+      "imageheight": 40,
+      "properties": [
+        {
+          "name": "enemyType",
+          "type": "string",
+          "value": "Walker"
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "value": "Left"
+        }
+      ]
+    }
+  ],
+  "type": "tileset",
+  "version": "1.10"
+}

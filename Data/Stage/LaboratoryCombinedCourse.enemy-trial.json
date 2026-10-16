@@ -1,0 +1,35 @@
+{
+  "placements": [
+    {
+      "name": "Trial_Mage_01_TutorialExit",
+      "type": "Mage",
+      "x": 61,
+      "y": -0.5
+    },
+    {
+      "name": "Trial_Hover_01_MiddleEntry",
+      "type": "Hover",
+      "x": 88,
+      "y": 12
+    },
+    {
+      "name": "Trial_Mage_02_MiddleLanding",
+      "type": "Mage",
+      "x": 117,
+      "y": 2.5
+    },
+    {
+      "name": "Trial_Hover_02_FinalPlatforms",
+      "type": "Hover",
+      "x": 154,
+      "y": 23
+    },
+    {
+      "name": "Trial_Mage_03_FinalLowPassage",
+      "type": "Mage",
+      "x": 208,
+      "y": 15.5
+    }
+  ],
+  "coordinates": "Game world units; Tiled uses x*32 and -y*32"
+}

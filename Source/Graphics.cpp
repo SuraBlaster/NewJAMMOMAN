@@ -1,154 +1,137 @@
-#include "Misc.h"
+ï»¿#include "Misc.h"
 #include "Graphics.h"
 
-// ‰Šú‰»
+// åˆæœŸåŒ–
 void Graphics::Initialize(HWND hWnd)
 {
-	this->hWnd = hWnd;
-	// ‰æ–Ê‚ÌƒTƒCƒY‚ğæ“¾‚·‚éB
-	RECT rc;
-	GetClientRect(hWnd, &rc);
-	UINT screenWidth = rc.right - rc.left;
-	UINT screenHeight = rc.bottom - rc.top;
+    this->hWnd = hWnd;
+    // ç”»é¢ã®ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
+    RECT rc;
+    GetClientRect(hWnd, &rc);
+    UINT screenWidth = rc.right - rc.left;
+    UINT screenHeight = rc.bottom - rc.top;
 
-	this->screenWidth = static_cast<float>(screenWidth);
-	this->screenHeight = static_cast<float>(screenHeight);
+    this->screenWidth = static_cast<float>(screenWidth);
+    this->screenHeight = static_cast<float>(screenHeight);
 
-	HRESULT hr = S_OK;
+    HRESULT hr = S_OK;
 
-	// ƒfƒoƒCƒX•ƒXƒƒbƒvƒ`ƒF[ƒ“‚Ì¶¬
-	{
-		UINT createDeviceFlags = 0;
+    // ãƒ‡ãƒã‚¤ã‚¹ï¼†ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã®ç”Ÿæˆ
+    {
+        UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
-		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+        createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-		D3D_FEATURE_LEVEL featureLevels[] =
-		{
-			D3D_FEATURE_LEVEL_11_0,
-			D3D_FEATURE_LEVEL_10_1,
-			D3D_FEATURE_LEVEL_10_0,
-			D3D_FEATURE_LEVEL_9_3,
-			D3D_FEATURE_LEVEL_9_2,
-			D3D_FEATURE_LEVEL_9_1,
-		};
+        D3D_FEATURE_LEVEL featureLevels[] = {
+            D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
+            D3D_FEATURE_LEVEL_9_3,  D3D_FEATURE_LEVEL_9_2,  D3D_FEATURE_LEVEL_9_1,
+        };
 
-		// ƒXƒƒbƒvƒ`ƒF[ƒ“‚ğì¬‚·‚é‚½‚ß‚Ìİ’èƒIƒvƒVƒ‡ƒ“
-		DXGI_SWAP_CHAIN_DESC swapchainDesc;
-		{
-			swapchainDesc.BufferDesc.Width = screenWidth;
-			swapchainDesc.BufferDesc.Height = screenHeight;
-			swapchainDesc.BufferDesc.RefreshRate.Numerator = 60;
-			swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
-			swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-			swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-			swapchainDesc.SampleDesc.Count = 1;
-			swapchainDesc.SampleDesc.Quality = 0;
-			swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapchainDesc.BufferCount = 2;
-			swapchainDesc.OutputWindow = hWnd;
-			swapchainDesc.Windowed = TRUE;
-			swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapchainDesc.Flags = 0;
-		}
+        // ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã‚’ä½œæˆã™ã‚‹ãŸã‚ã®è¨­å®šã‚ªãƒ—ã‚·ãƒ§ãƒ³
+        DXGI_SWAP_CHAIN_DESC swapchainDesc;
+        {
+            swapchainDesc.BufferDesc.Width = screenWidth;
+            swapchainDesc.BufferDesc.Height = screenHeight;
+            swapchainDesc.BufferDesc.RefreshRate.Numerator = 60;
+            swapchainDesc.BufferDesc.RefreshRate.Denominator = 1;
+            swapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            swapchainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+            swapchainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+            swapchainDesc.SampleDesc.Count = 1;
+            swapchainDesc.SampleDesc.Quality = 0;
+            swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            swapchainDesc.BufferCount = 2;
+            swapchainDesc.OutputWindow = hWnd;
+            swapchainDesc.Windowed = TRUE;
+            swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            swapchainDesc.Flags = 0;
+        }
 
-		D3D_FEATURE_LEVEL featureLevel;
+        D3D_FEATURE_LEVEL featureLevel;
 
-		// ƒfƒoƒCƒX•ƒXƒƒbƒvƒ`ƒF[ƒ“‚Ì¶¬
-		hr = D3D11CreateDeviceAndSwapChain(
-			nullptr,
-			D3D_DRIVER_TYPE_HARDWARE,
-			nullptr,
-			createDeviceFlags,
-			featureLevels,
-			ARRAYSIZE(featureLevels),
-			D3D11_SDK_VERSION,
-			&swapchainDesc,
-			swapchain.GetAddressOf(),
-			device.GetAddressOf(),
-			&featureLevel,
-			immediateContext.GetAddressOf()
-		);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+        // ãƒ‡ãƒã‚¤ã‚¹ï¼†ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã®ç”Ÿæˆ
+        hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags,
+                                           featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION,
+                                           &swapchainDesc, swapchain.GetAddressOf(), device.GetAddressOf(),
+                                           &featureLevel, immediateContext.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[‚Ì¶¬
-	{
-		// ƒXƒƒbƒvƒ`ƒF[ƒ“‚©‚çƒoƒbƒNƒoƒbƒtƒ@ƒeƒNƒXƒ`ƒƒ‚ğæ“¾‚·‚éB
-		// ¦ƒXƒƒbƒvƒ`ƒF[ƒ“‚É“à•ï‚³‚ê‚Ä‚¢‚éƒoƒbƒNƒoƒbƒtƒ@ƒeƒNƒXƒ`ƒƒ‚Í'F'‚ğ‘‚«‚ŞƒeƒNƒXƒ`ƒƒB
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
-		hr = swapchain->GetBuffer(
-			0,
-			__uuidof(ID3D11Texture2D),
-			reinterpret_cast<void**>(texture2d.GetAddressOf()));
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ã®ç”Ÿæˆ
+    {
+        // ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã‹ã‚‰ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’å–å¾—ã™ã‚‹
+        // â€»ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ã«å†…åŒ…ã•ã‚Œã¦ã„ã‚‹ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¯'è‰²'ã‚’æ›¸ãè¾¼ã‚€ãƒ†ã‚¯ã‚¹ãƒãƒ£
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        hr = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+                                  reinterpret_cast<void**>(texture2d.GetAddressOf()));
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		// ƒoƒbƒNƒoƒbƒtƒ@ƒeƒNƒXƒ`ƒƒ‚Ö‚Ì‘‚«‚İ‚Ì‘‹Œû‚Æ‚È‚éƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgƒrƒ…[‚ğ¶¬‚·‚éB
-		hr = device->CreateRenderTargetView(texture2d.Get(), nullptr, renderTargetView.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+        // ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¸ã®æ›¸ãè¾¼ã¿ã®çª“å£ã¨ãªã‚‹ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ“ãƒ¥ãƒ¼ã‚’ç”Ÿæˆã™ã‚‹
+        hr = device->CreateRenderTargetView(texture2d.Get(), nullptr, renderTargetView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// [“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[‚Ì¶¬
-	{
-		// [“xƒXƒeƒ“ƒVƒ‹î•ñ‚ğ‘‚«‚Ş‚½‚ß‚ÌƒeƒNƒXƒ`ƒƒ‚ğì¬‚·‚éB
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
-		D3D11_TEXTURE2D_DESC texture2dDesc;
-		texture2dDesc.Width = screenWidth;
-		texture2dDesc.Height = screenHeight;
-		texture2dDesc.MipLevels = 1;
-		texture2dDesc.ArraySize = 1;
-		texture2dDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		texture2dDesc.SampleDesc.Count = 1;
-		texture2dDesc.SampleDesc.Quality = 0;
-		texture2dDesc.Usage = D3D11_USAGE_DEFAULT;
-		texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		texture2dDesc.CPUAccessFlags = 0;
-		texture2dDesc.MiscFlags = 0;
-		hr = device->CreateTexture2D(&texture2dDesc, nullptr, texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ã®ç”Ÿæˆ
+    {
+        // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«æƒ…å ±ã‚’æ›¸ãè¾¼ã‚€ãŸã‚ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œæˆã™ã‚‹
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        D3D11_TEXTURE2D_DESC texture2dDesc;
+        texture2dDesc.Width = screenWidth;
+        texture2dDesc.Height = screenHeight;
+        texture2dDesc.MipLevels = 1;
+        texture2dDesc.ArraySize = 1;
+        texture2dDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        texture2dDesc.SampleDesc.Count = 1;
+        texture2dDesc.SampleDesc.Quality = 0;
+        texture2dDesc.Usage = D3D11_USAGE_DEFAULT;
+        texture2dDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        texture2dDesc.CPUAccessFlags = 0;
+        texture2dDesc.MiscFlags = 0;
+        hr = device->CreateTexture2D(&texture2dDesc, nullptr, texture2d.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		// [“xƒXƒeƒ“ƒVƒ‹ƒeƒNƒXƒ`ƒƒ‚Ö‚Ì‘‚«‚İ‚É‘‹Œû‚É‚È‚é[“xƒXƒeƒ“ƒVƒ‹ƒrƒ…[‚ğì¬‚·‚éB
-		hr = device->CreateDepthStencilView(texture2d.Get(), nullptr, depthStencilView.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+        // æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ†ã‚¯ã‚¹ãƒãƒ£ã¸ã®æ›¸ãè¾¼ã¿ã«çª“å£ã«ãªã‚‹æ·±åº¦ã‚¹ãƒ†ãƒ³ã‚·ãƒ«ãƒ“ãƒ¥ãƒ¼ã‚’ä½œæˆã™ã‚‹
+        hr = device->CreateDepthStencilView(texture2d.Get(), nullptr, depthStencilView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// ƒrƒ…[ƒ|[ƒg
-	{
-		viewport.Width = static_cast<float>(screenWidth);
-		viewport.Height = static_cast<float>(screenHeight);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = 0.0f;
-		viewport.TopLeftY = 0.0f;
-	}
+    // ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆ
+    {
+        viewport.Width = static_cast<float>(screenWidth);
+        viewport.Height = static_cast<float>(screenHeight);
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+        viewport.TopLeftX = 0.0f;
+        viewport.TopLeftY = 0.0f;
+    }
 
-	// ƒŒƒ“ƒ_[ƒXƒe[ƒg¶¬
-	renderState = std::make_unique<RenderState>(device.Get());
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆç”Ÿæˆ
+    renderState = std::make_unique<RenderState>(device.Get());
 
-	// ƒŒƒ“ƒ_ƒ‰¶¬
-	primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
-	shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
-	modelRenderer = std::make_unique<ModelRenderer>(device.Get());
-
+    // ãƒ¬ãƒ³ãƒ€ãƒ©ç”Ÿæˆ
+    primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
+    shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
+    modelRenderer = std::make_unique<ModelRenderer>(device.Get());
 }
 
-// ƒNƒŠƒA
+// ã‚¯ãƒªã‚¢
 void Graphics::Clear(float r, float g, float b, float a)
 {
-	float color[4]{ r, g, b, a };
-	immediateContext->ClearRenderTargetView(renderTargetView.Get(), color);
-	immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    float color[4]{r, g, b, a};
+    immediateContext->ClearRenderTargetView(renderTargetView.Get(), color);
+    immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+                                            1.0f, 0);
 }
 
-// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgİ’è
+// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆè¨­å®š
 void Graphics::SetRenderTargets()
 {
-	immediateContext->RSSetViewports(1, &viewport);
-	immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+    immediateContext->RSSetViewports(1, &viewport);
+    immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 }
 
-// ‰æ–Ê•\¦
+// ç”»é¢è¡¨ç¤º
 void Graphics::Present(UINT syncInterval)
 {
-	swapchain->Present(syncInterval, 0);
+    swapchain->Present(syncInterval, 0);
 }

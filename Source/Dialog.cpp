@@ -1,144 +1,159 @@
-#include "Dialog.h"
+ï»¿#include "Dialog.h"
 
 static char pathBuffer[MAX_PATH];
 
-// [ƒtƒ@ƒCƒ‹‚ğŠJ‚­]ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚ğ•\¦
-DialogResult Dialog::OpenFileName(char* filepath, int size, const char* filter, const char* title, HWND hWnd, bool multiSelect)
+// [ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã]ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’è¡¨ç¤º
+DialogResult Dialog::OpenFileName(char* filepath, int size, const char* filter, const char* title, HWND hWnd,
+                                  bool multiSelect)
 {
-	// ‰ŠúƒpƒXİ’è
-	char dirname[MAX_PATH];
-	if (filepath[0] != '0')
-	{
-		// ƒfƒBƒŒƒNƒgƒŠƒpƒXæ“¾
-		::_splitpath_s(filepath, nullptr, 0, dirname, MAX_PATH, nullptr, 0, nullptr, 0);
-	}
-	else
-	{
-		filepath[0] = dirname[0] = '\0';
-	}
-	if ((dirname[0] == '\0'))
-	{
-		strcpy_s(dirname, MAX_PATH, pathBuffer);
-	}
-	// lpstrInitialDir ‚Í \ ‚Å‚È‚¢‚Æó‚¯•t‚¯‚È‚¢
-	for (char* p = dirname; *p != '\0'; p++)
-	{
-		if (*p == '/')
-			* p = '\\';
-	}
+    // åˆæœŸãƒ‘ã‚¹è¨­å®š
+    char dirname[MAX_PATH];
 
-	if (filter == nullptr)
-	{
-		filter = "All Files\0*.*\0\0";
-	}
+    if (filepath[0] != '0')
+    {
+        // ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹å–å¾—
+        ::_splitpath_s(filepath, nullptr, 0, dirname, MAX_PATH, nullptr, 0, nullptr, 0);
+    }
+    else
+    {
+        filepath[0] = dirname[0] = '\0';
+    }
 
-	// \‘¢‘ÌƒZƒbƒg
-	OPENFILENAMEA	ofn;
-	memset(&ofn, 0, sizeof(OPENFILENAMEA));
-	ofn.lStructSize = sizeof(OPENFILENAMEA);
-	ofn.hwndOwner = hWnd;
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = filepath;
-	ofn.nMaxFile = size;
-	ofn.lpstrTitle = title;
-	ofn.lpstrInitialDir = (dirname[0] != '\0') ? dirname : nullptr;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-	if (multiSelect)
-	{
-		ofn.Flags |= OFN_ALLOWMULTISELECT | OFN_EXPLORER;
-	}
+    if ((dirname[0] == '\0'))
+    {
+        strcpy_s(dirname, MAX_PATH, pathBuffer);
+    }
 
-	// ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠæ“¾
-	char currentDir[MAX_PATH];
-	if (!::GetCurrentDirectoryA(MAX_PATH, currentDir))
-	{
-		currentDir[0] = '\0';
-	}
+    // lpstrInitialDir ã¯ \ ã§ãªã„ã¨å—ã‘ä»˜ã‘ãªã„
+    for (char* p = dirname; *p != '\0'; p++)
+    {
+        if (*p == '/')
+        {
+            *p = '\\';
+        }
+    }
 
-	// ƒ_ƒCƒAƒƒOƒI[ƒvƒ“
-	if (::GetOpenFileNameA(&ofn) == FALSE)
-	{
-		return DialogResult::Cancel;
-	}
+    if (filter == nullptr)
+    {
+        filter = "All Files\0*.*\0\0";
+    }
 
-	// ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ•œ‹A
-	if (currentDir[0] != '\0')
-	{
-		::SetCurrentDirectoryA(currentDir);
-	}
+    // æ§‹é€ ä½“ã‚»ãƒƒãƒˆ
+    OPENFILENAMEA ofn;
+    memset(&ofn, 0, sizeof(OPENFILENAMEA));
+    ofn.lStructSize = sizeof(OPENFILENAMEA);
+    ofn.hwndOwner = hWnd;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = filepath;
+    ofn.nMaxFile = size;
+    ofn.lpstrTitle = title;
+    ofn.lpstrInitialDir = (dirname[0] != '\0') ? dirname : nullptr;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
-	// ÅIƒpƒX‚ğ‹L‰¯
-	strcpy_s(pathBuffer, MAX_PATH, filepath);
+    if (multiSelect)
+    {
+        ofn.Flags |= OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+    }
 
-	return DialogResult::OK;
+    // ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå–å¾—
+    char currentDir[MAX_PATH];
+
+    if (!::GetCurrentDirectoryA(MAX_PATH, currentDir))
+    {
+        currentDir[0] = '\0';
+    }
+
+    // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚ªãƒ¼ãƒ—ãƒ³
+    if (::GetOpenFileNameA(&ofn) == FALSE)
+    {
+        return DialogResult::Cancel;
+    }
+
+    // ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå¾©å¸°
+    if (currentDir[0] != '\0')
+    {
+        ::SetCurrentDirectoryA(currentDir);
+    }
+
+    // æœ€çµ‚ãƒ‘ã‚¹ã‚’è¨˜æ†¶
+    strcpy_s(pathBuffer, MAX_PATH, filepath);
+
+    return DialogResult::OK;
 }
 
-// [ƒtƒ@ƒCƒ‹‚ğ•Û‘¶]ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚ğ•\¦
-DialogResult Dialog::SaveFileName(char* filepath, int size, const char* filter, const char* title, const char* ext, HWND hWnd)
+// [ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¿å­˜]ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’è¡¨ç¤º
+DialogResult Dialog::SaveFileName(char* filepath, int size, const char* filter, const char* title,
+                                  const char* ext, HWND hWnd)
 {
-	// ‰ŠúƒpƒXİ’è
-	char dirname[MAX_PATH];
-	if (filepath[0] != '0')
-	{
-		// ƒfƒBƒŒƒNƒgƒŠƒpƒXæ“¾
-		::_splitpath_s(filepath, nullptr, 0, dirname, MAX_PATH, nullptr, 0, nullptr, 0);
-	}
-	else
-	{
-		filepath[0] = dirname[0] = '\0';
-	}
-	if ((dirname[0] == '\0'))
-	{
-		strcpy_s(dirname, MAX_PATH, pathBuffer);
-	}
-	// lpstrInitialDir ‚Í \ ‚Å‚È‚¢‚Æó‚¯•t‚¯‚È‚¢
-	for (char* p = dirname; *p != '\0'; p++)
-	{
-		if (*p == '/')
-			* p = '\\';
-	}
+    // åˆæœŸãƒ‘ã‚¹è¨­å®š
+    char dirname[MAX_PATH];
 
-	if (filter == nullptr)
-	{
-		filter = "All Files\0*.*\0\0";
-	}
+    if (filepath[0] != '0')
+    {
+        // ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹å–å¾—
+        ::_splitpath_s(filepath, nullptr, 0, dirname, MAX_PATH, nullptr, 0, nullptr, 0);
+    }
+    else
+    {
+        filepath[0] = dirname[0] = '\0';
+    }
 
-	// \‘¢‘ÌƒZƒbƒg
-	OPENFILENAMEA	ofn;
-	memset(&ofn, 0, sizeof(OPENFILENAMEA));
-	ofn.lStructSize = sizeof(OPENFILENAMEA);
-	ofn.hwndOwner = hWnd;
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFile = filepath;
-	ofn.nMaxFile = size;
-	ofn.lpstrTitle = title;
-	ofn.lpstrInitialDir = (dirname[0] != '\0') ? dirname : nullptr;
-	ofn.lpstrDefExt = ext;
-	ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+    if ((dirname[0] == '\0'))
+    {
+        strcpy_s(dirname, MAX_PATH, pathBuffer);
+    }
 
-	// ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠæ“¾
-	char currentDir[MAX_PATH];
-	if (!::GetCurrentDirectoryA(MAX_PATH, currentDir))
-	{
-		currentDir[0] = '\0';
-	}
+    // lpstrInitialDir ã¯ \ ã§ãªã„ã¨å—ã‘ä»˜ã‘ãªã„
+    for (char* p = dirname; *p != '\0'; p++)
+    {
+        if (*p == '/')
+        {
+            *p = '\\';
+        }
+    }
 
-	// ƒ_ƒCƒAƒƒOƒI[ƒvƒ“
-	if (::GetSaveFileNameA(&ofn) == FALSE)
-	{
-		return DialogResult::Cancel;
-	}
+    if (filter == nullptr)
+    {
+        filter = "All Files\0*.*\0\0";
+    }
 
-	// ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ•œ‹A
-	if (currentDir[0] != '\0')
-	{
-		::SetCurrentDirectoryA(currentDir);
-	}
+    // æ§‹é€ ä½“ã‚»ãƒƒãƒˆ
+    OPENFILENAMEA ofn;
+    memset(&ofn, 0, sizeof(OPENFILENAMEA));
+    ofn.lStructSize = sizeof(OPENFILENAMEA);
+    ofn.hwndOwner = hWnd;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = filepath;
+    ofn.nMaxFile = size;
+    ofn.lpstrTitle = title;
+    ofn.lpstrInitialDir = (dirname[0] != '\0') ? dirname : nullptr;
+    ofn.lpstrDefExt = ext;
+    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-	// ÅIƒpƒX‚ğ‹L‰¯
-	strcpy_s(pathBuffer, MAX_PATH, filepath);
+    // ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå–å¾—
+    char currentDir[MAX_PATH];
 
-	return DialogResult::OK;
+    if (!::GetCurrentDirectoryA(MAX_PATH, currentDir))
+    {
+        currentDir[0] = '\0';
+    }
+
+    // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚ªãƒ¼ãƒ—ãƒ³
+    if (::GetSaveFileNameA(&ofn) == FALSE)
+    {
+        return DialogResult::Cancel;
+    }
+
+    // ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå¾©å¸°
+    if (currentDir[0] != '\0')
+    {
+        ::SetCurrentDirectoryA(currentDir);
+    }
+
+    // æœ€çµ‚ãƒ‘ã‚¹ã‚’è¨˜æ†¶
+    strcpy_s(pathBuffer, MAX_PATH, filepath);
+
+    return DialogResult::OK;
 }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <d3d11.h>
 #include <vector>
@@ -10,17 +10,33 @@ class Player;
 
 class EnemyMage final : public Enemy
 {
-public:
-	EnemyMage(ID3D11Device* device, Player* player);
-	void Update(float elapsedTime) override;
-	void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
+  public:
 
-private:
-	void FireProjectile();
-	void UpdateProjectiles(float elapsedTime);
-	void OnDead() override { Destroy(); }
+    // コンストラクタ
+    EnemyMage(ID3D11Device* device, Player* player);
 
-	Player* player = nullptr;
-	std::vector<EnemyProjectile> projectiles;
-	float attackTimer = 1.5f;
+    // 更新処理
+    void Update(float elapsedTime) override;
+    void SetDirection(float direction);
+
+    // DrawPrimitive の描画処理
+    void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
+
+  private:
+
+    void FireProjectile();
+
+    // UpdateProjectiles の更新処理
+    void UpdateProjectiles(float elapsedTime);
+
+    void OnDead() override
+    {
+        Destroy();
+    }
+
+    Player* player = nullptr;
+    std::vector<EnemyProjectile> projectiles;
+    std::shared_ptr<Effect> projectileEffect;
+    float attackTimer = 1.5f;
+    float facingDirection = -1.0f;
 };

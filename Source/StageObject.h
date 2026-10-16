@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <memory>
 #include <Model.h>
 #include <CollisionManager.h>
@@ -8,13 +8,22 @@
 
 class StageObject
 {
-public:
-    StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData, const TileInfo& tileInfo, float positionZ, std::shared_ptr<Model> collisionModel = nullptr);
+  public:
+
+    // コンストラクタ
+    StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData,
+                const TileInfo& tileInfo, float positionZ, std::shared_ptr<Model> collisionModel = nullptr);
+
+    // デストラクタ
     ~StageObject();
 
+    // 変換行列の更新処理
     void UpdateTransform();
 
-    const std::shared_ptr<Model>& GetModel() const { return model; }
+    const std::shared_ptr<Model>& GetModel() const
+    {
+        return model;
+    }
 
     bool GetCollisionAABB(AABB& outBox) const
     {
@@ -26,10 +35,13 @@ public:
         outBox = collisionAABB;
         return true;
     }
-private:
+
+  private:
+
     void BuildCollisionAABB();
 
-private:
+  private:
+
     std::shared_ptr<Model> model;
     std::shared_ptr<Model> collisionModel;
     CollisionMesh collisionMesh;

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -7,40 +7,46 @@
 
 using json = nlohmann::json;
 
-// TileTypes.json‚Ì’è‹`1Œ‚ğAƒQ[ƒ€“à‚Åˆµ‚¢‚â‚·‚¢Œ`‚É‚µ‚½ƒf[ƒ^
+// TileTypes.jsonã®å®šç¾©1ä»¶ã‚’ã€ã‚²ãƒ¼ãƒ å†…ã§æ‰±ã„ã‚„ã™ã„å½¢ã«ã—ãŸãƒ‡ãƒ¼ã‚¿
 struct TileInfo
 {
-    int typeId = 0;                                      // ƒ^ƒCƒ‹í—Ş‚ğ¯•Ê‚·‚éˆêˆÓ‚ÌID
-    std::string name = "NONE";                           // ƒfƒoƒbƒO•\¦‚È‚Ç‚Åg‚¤–¼‘O
-    std::string category = "";                          // GroundAWall‚È‚Ç‚Ì•ª—Ş
-    std::string modelPath = "";                         // Data/ModelˆÈ‰º‚É‚ ‚éƒ‚ƒfƒ‹‚Ì‘Š‘ÎƒpƒX
-    bool collision = true;                              // “–‚½‚è”»’è‚ğì¬‚·‚é‚©
-    DirectX::XMFLOAT3 defaultScale{ 1.0f,1.0f,1.0f };   // ”z’uƒf[ƒ^‚Éw’è‚ª‚È‚¢ê‡‚Ì”{—¦
+    int typeId = 0;                                   // ã‚¿ã‚¤ãƒ«ç¨®é¡ã‚’è­˜åˆ¥ã™ã‚‹ä¸€æ„ã®ID
+    std::string name = "NONE";                        // ãƒ‡ãƒãƒƒã‚°è¡¨ç¤ºãªã©ã§ä½¿ã†åå‰
+    std::string category = "";                        // Groundã€Wallãªã©ã®åˆ†é¡
+    std::string modelPath = "";                       // Data/Modelä»¥ä¸‹ã«ã‚ã‚‹ãƒ¢ãƒ‡ãƒ«ã®ç›¸å¯¾ãƒ‘ã‚¹
+    bool collision = true;                            // å½“ãŸã‚Šåˆ¤å®šã‚’ä½œæˆã™ã‚‹ã‹
+    DirectX::XMFLOAT3 defaultScale{1.0f, 1.0f, 1.0f}; // é…ç½®ãƒ‡ãƒ¼ã‚¿ã«æŒ‡å®šãŒãªã„å ´åˆã®å€ç‡
 };
 
-// ƒ^ƒCƒ‹’è‹`ƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İAŒŸØAtypeId‚É‚æ‚éŒŸõ‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+// ã‚¿ã‚¤ãƒ«å®šç¾©ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ã€æ¤œè¨¼ã€typeIdã«ã‚ˆã‚‹æ¤œç´¢ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class TileTypeManager
 {
-private:
-    // typeId‚ğƒL[‚É‚µ‚ÄA‘Î‰‚·‚éƒ^ƒCƒ‹’è‹`‚ğ•Û‚·‚é
+  private:
+
+    // typeIdã‚’ã‚­ãƒ¼ã«ã—ã¦ã€å¯¾å¿œã™ã‚‹ã‚¿ã‚¤ãƒ«å®šç¾©ã‚’ä¿æŒã™ã‚‹
     std::unordered_map<int, TileInfo> idToInfoMap;
 
-    // definitions”z—ñ‚Ì1Œ‚É‚Â‚¢‚ÄA•K{€–ÚEŒ^E’l‚ğŒŸØ‚·‚é
+    // definitionsé…åˆ—ã®1ä»¶ã«ã¤ã„ã¦ã€å¿…é ˆé …ç›®ãƒ»å‹ãƒ»å€¤ã‚’æ¤œè¨¼ã™ã‚‹
     bool DefinitionsVerification(const json& item);
 
-    // ƒ‚ƒfƒ‹ƒpƒX‚ªƒvƒƒWƒFƒNƒg“à‚ÌˆÀ‘S‚ÈÀİƒtƒ@ƒCƒ‹‚ğw‚·‚©ŒŸØ‚·‚é
+    // ãƒ¢ãƒ‡ãƒ«ãƒ‘ã‚¹ãŒãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆå†…ã®å®‰å…¨ãªå®Ÿåœ¨ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æŒ‡ã™ã‹æ¤œè¨¼ã™ã‚‹
     bool ValidateModelPath(const std::string& modelPath);
-public:
-    // JSON‚ğŒŸØ‚µ‚Ä“Ç‚İ‚ŞB¬Œ÷‚ÍtrueA¸”s‚ÍŠù‘¶‚Ì’è‹`‚ğ•ÏX‚¹‚¸false‚ğ•Ô‚·
+
+  public:
+
+    // JSONã‚’æ¤œè¨¼ã—ã¦èª­ã¿è¾¼ã‚€ã€‚æˆåŠŸæ™‚ã¯trueã€å¤±æ•—æ™‚ã¯æ—¢å­˜ã®å®šç¾©ã‚’å¤‰æ›´ã›ãšfalseã‚’è¿”ã™
     bool LoadDefinitions(const std::string& jsonPath);
 
-    // typeId‚É‘Î‰‚·‚é’è‹`‚ğ•Ô‚·B–¢“o˜^‚Ìê‡‚Ínullptr‚ğ•Ô‚·
-    const TileInfo* GetTileInfo(int id) const {
+    // typeIdã«å¯¾å¿œã™ã‚‹å®šç¾©ã‚’è¿”ã™ã€‚æœªç™»éŒ²ã®å ´åˆã¯nullptrã‚’è¿”ã™
+    const TileInfo* GetTileInfo(int id) const
+    {
         auto it = idToInfoMap.find(id);
-        if (it != idToInfoMap.end()) {
+
+        if (it != idToInfoMap.end())
+        {
             return &(it->second);
         }
-        return nullptr; // –¢’è‹`‚ÌID‚Ìê‡
+
+        return nullptr; // æœªå®šç¾©ã®IDã®å ´åˆ
     }
 };
-

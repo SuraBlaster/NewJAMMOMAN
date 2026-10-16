@@ -5,15 +5,15 @@ cbuffer CbMesh : register(b0)
 {
     float4 cbMaterialColor;
     float3 cbEmissive;
-    float  cbMetalness;
-    float  cbSmoothness;
+    float cbMetalness;
+    float cbSmoothness;
     float3 cbPadding;
 };
 
 cbuffer CbTransparency : register(b9)
 {
     float4 cbTransparencyColor;
-    float  cbTransparencyAlpha;
+    float cbTransparencyAlpha;
     float3 cbTransparencyPadding;
 };
 
@@ -21,7 +21,7 @@ Texture2D albedoMap : register(t0);
 Texture2D normalMap : register(t1);
 Texture2D metalnessSmoothnessMap : register(t2);
 Texture2D emissiveMap : register(t3);
-SamplerState linearSampler	: register(s0);
+SamplerState linearSampler : register(s0);
 
 float4 main(VsOutput pin) : SV_TARGET
 {
@@ -30,7 +30,7 @@ float4 main(VsOutput pin) : SV_TARGET
     float finalAlpha = albedo.a * cbTransparencyColor.a * cbTransparencyAlpha;
     clip(albedo.a - 0.01f);
 
-    // –@üZo
+    // æ³•ç·šç®—å‡º
     float sigma = pin.tangent.w;
     float3 n = normalize(pin.normal);
     float3 t = normalize(pin.tangent.xyz);
@@ -40,32 +40,31 @@ float4 main(VsOutput pin) : SV_TARGET
 
     float3 normal = normalize(tangentNormal.x * t + tangentNormal.y * b + tangentNormal.z * n);
 
-    // ‚È‚º‚©nan‚É‚È‚éê‡‚ª‚ ‚éBtangent ‚ª•s³‚Èƒf[ƒ^‚Ìê‡‚ª‚ ‚éH
+    // ãªãœã‹nanã«ãªã‚‹å ´åˆãŒã‚ã‚‹ã€‚tangent ãŒä¸æ­£ãªãƒ‡ãƒ¼ã‚¿ã®å ´åˆãŒã‚ã‚‹ï¼Ÿ
     if (isnan(normal.x) || isnan(normal.y) || isnan(normal.z))
     {
         normal = float3(0, 1, 0);
     }
 
-
-    // PBRƒpƒ‰ƒ[ƒ^æ“¾
+    // PBRãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å–å¾—
     float4 metalnessSmoothness = metalnessSmoothnessMap.Sample(linearSampler, pin.texcoord);
     float metalness = metalnessSmoothness.r * cbMetalness;
     float smoothness = metalnessSmoothness.a * cbSmoothness;
-    
+
     float3 viewDirection = normalize(cbCameraPosition.xyz - pin.position);
 
-    // ”¼‹…ƒ‰ƒCƒg
+    // åŠçƒãƒ©ã‚¤ãƒˆ
     float hemisphereLightFactor = dot(normal, float3(0, 1, 0)) * 0.5f + 0.5f;
     float3 ambient = lerp(cbGroundColor.rgb, cbSkyColor.rgb, hemisphereLightFactor) * cbHemisphereWeight;
-    // ƒfƒBƒŒƒNƒVƒ‡ƒiƒ‹ƒ‰ƒCƒg
-    float3 color = BRDF(albedo.rgb, metalness, smoothness, normal, viewDirection, -cbLightDirection.xyz, cbLightColor.rgb, ambient);
+    // ãƒ‡ã‚£ãƒ¬ã‚¯ã‚·ãƒ§ãƒŠãƒ«ãƒ©ã‚¤ãƒˆ
+    float3 color = BRDF(albedo.rgb, metalness, smoothness, normal, viewDirection, -cbLightDirection.xyz,
+                        cbLightColor.rgb, ambient);
 
-    
-    // ƒGƒ~ƒbƒVƒu
+    // ã‚¨ãƒŸãƒƒã‚·ãƒ–
     float3 emissive = emissiveMap.Sample(linearSampler, pin.texcoord).rgb;
     color.rgb += emissive * cbEmissive;
 
     color.rgb *= cbTransparencyColor.rgb;
-       
+
     return float4(color, albedo.a);
 }

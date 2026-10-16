@@ -1,82 +1,68 @@
-#include "Misc.h"
+Ôªø#include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "BasicShader.h"
 
+// „Ç≥„É≥„Çπ„Éà„É©„ÇØ„Çø
 BasicShader::BasicShader(ID3D11Device* device)
 {
-	// í∏ì_ÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadVertexShader(
-		device,
-		"Data/Shader/BasicVS.cso",
-		Model::INPUT_ELEMENT_DESCS.data(),
-		static_cast<UINT>(Model::INPUT_ELEMENT_DESCS.size()),
-		inputLayout.GetAddressOf(),
-		vertexShader.GetAddressOf());
+    // È†ÇÁÇπ„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadVertexShader(device, "Data/Shader/BasicVS.cso", Model::INPUT_ELEMENT_DESCS.data(),
+                                       static_cast<UINT>(Model::INPUT_ELEMENT_DESCS.size()),
+                                       inputLayout.GetAddressOf(), vertexShader.GetAddressOf());
 
-	// ÉsÉNÉZÉãÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadPixelShader(
-		device,
-		"Data/Shader/BasicPS.cso",
-		pixelShader.GetAddressOf());
+    // „Éî„ÇØ„Çª„É´„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadPixelShader(device, "Data/Shader/BasicPS.cso", pixelShader.GetAddressOf());
 
-	// ÉÅÉbÉVÉÖópíËêîÉoÉbÉtÉ@
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbMesh),
-		meshConstantBuffer.GetAddressOf());
+    // „É°„ÉÉ„Ç∑„É•Áî®ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°
+    GpuResourceUtils::CreateConstantBuffer(device, sizeof(CbMesh), meshConstantBuffer.GetAddressOf());
 }
 
-// äJénèàóù
+// ÈñãÂßãÂá¶ÁêÜ
 void BasicShader::Begin(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ÉVÉFÅ[É_Å[ê›íË
-	dc->IASetInputLayout(inputLayout.Get());
-	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
-	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
+    // „Ç∑„Çß„Éº„ÉÄ„ÉºË®≠ÂÆö
+    dc->IASetInputLayout(inputLayout.Get());
+    dc->VSSetShader(vertexShader.Get(), nullptr, 0);
+    dc->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-	// íËêîÉoÉbÉtÉ@ê›íË
-	ID3D11Buffer* cbs[] =
-	{
-		meshConstantBuffer.Get(), 
-	};
-	dc->PSSetConstantBuffers(0, _countof(cbs), cbs);
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆö
+    ID3D11Buffer* cbs[] = {
+        meshConstantBuffer.Get(),
+    };
+    dc->PSSetConstantBuffers(0, _countof(cbs), cbs);
 }
 
-// çXêVèàóù
+// Êõ¥Êñ∞Âá¶ÁêÜ
 void BasicShader::Update(const RenderContext& rc, const Model::Mesh& mesh)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ÉÅÉbÉVÉÖópíËêîÉoÉbÉtÉ@çXêV
-	/*CbMesh cbMesh{};
-	cbMesh.materialColor = mesh.material->baseColor;
-	dc->UpdateSubresource(meshConstantBuffer.Get(), 0, 0, &cbMesh, 0, 0);*/
+    // „É°„ÉÉ„Ç∑„É•Áî®ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Êõ¥Êñ∞
 
-	// ÉVÉFÅ[É_Å[ÉäÉ\Å[ÉXÉrÉÖÅ[ê›íË
-	ID3D11ShaderResourceView* srvs[] =
-	{
-		mesh.material->baseMap.Get(),
-	};
-	dc->PSSetShaderResources(0, _countof(srvs), srvs);
+    // „Ç∑„Çß„Éº„ÉÄ„Éº„É™„ÇΩ„Éº„Çπ„Éì„É•„ÉºË®≠ÂÆö
+    ID3D11ShaderResourceView* srvs[] = {
+        mesh.material->baseMap.Get(),
+    };
+    dc->PSSetShaderResources(0, _countof(srvs), srvs);
 }
 
-// ï`âÊèIóπ
+// ÊèèÁîªÁµÇ‰∫Ü
 void BasicShader::End(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ÉVÉFÅ[É_Å[ê›íËâèú
-	dc->VSSetShader(nullptr, nullptr, 0);
-	dc->PSSetShader(nullptr, nullptr, 0);
-	dc->IASetInputLayout(nullptr);
+    // „Ç∑„Çß„Éº„ÉÄ„ÉºË®≠ÂÆöËß£Èô§
+    dc->VSSetShader(nullptr, nullptr, 0);
+    dc->PSSetShader(nullptr, nullptr, 0);
+    dc->IASetInputLayout(nullptr);
 
-	// íËêîÉoÉbÉtÉ@ê›íËâèú
-	ID3D11Buffer* cbs[] = { nullptr };
-	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆöËß£Èô§
+    ID3D11Buffer* cbs[] = {nullptr};
+    dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
 
-	// ÉVÉFÅ[É_Å[ÉäÉ\Å[ÉXÉrÉÖÅ[ê›íËâèú
-	ID3D11ShaderResourceView* srvs[] = { nullptr };
-	dc->PSSetShaderResources(0, _countof(srvs), srvs);
+    // „Ç∑„Çß„Éº„ÉÄ„Éº„É™„ÇΩ„Éº„Çπ„Éì„É•„ÉºË®≠ÂÆöËß£Èô§
+    ID3D11ShaderResourceView* srvs[] = {nullptr};
+    dc->PSSetShaderResources(0, _countof(srvs), srvs);
 }

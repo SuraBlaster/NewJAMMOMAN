@@ -1,18 +1,17 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 #include "StageData.h"
 
-// Load‚Ìˆø”‚Å‚ÍQÆ‚Æ‚µ‚Äˆµ‚¤‚¾‚¯‚È‚Ì‚ÅAƒwƒbƒ_[‚ÌˆË‘¶‚ğŒ¸‚ç‚·‚½‚ß‘O•ûéŒ¾‚·‚é
+// Loadã®å¼•æ•°ã§ã¯å‚ç…§ã¨ã—ã¦æ‰±ã†ã ã‘ãªã®ã§ã€ãƒ˜ãƒƒãƒ€ãƒ¼ã®ä¾å­˜ã‚’æ¸›ã‚‰ã™ãŸã‚å‰æ–¹å®£è¨€ã™ã‚‹
 class TileTypeManager;
 
-// ƒXƒe[ƒWJSON‚ğŒŸØ‚µA•`‰æˆ—‚ÉˆË‘¶‚µ‚È‚¢StageData‚Ö•ÏŠ·‚·‚éƒNƒ‰ƒX
+// ã‚¹ãƒ†ãƒ¼ã‚¸JSONã‚’æ¤œè¨¼ã—ã€æç”»å‡¦ç†ã«ä¾å­˜ã—ãªã„StageDataã¸å¤‰æ›ã™ã‚‹ã‚¯ãƒ©ã‚¹
 class StageLoader
 {
-public:
-    // ƒXƒe[ƒWJSON‚ğ“Ç‚İ‚ŞB
-    // ¬Œ÷‚ÍoutputStageData‚ğV‚µ‚¢“à—e‚ÖXV‚µ‚ÄtrueA¸”s‚Í•ÏX‚¹‚¸false‚ğ•Ô‚·B
-    static bool Load(
-        const std::string& jsonPath,
-        const TileTypeManager& tileTypeManager,
-        StageData& outputStageData);
+  public:
+
+    // ã‚¹ãƒ†ãƒ¼ã‚¸JSONã‚’èª­ã¿è¾¼ã‚€
+    // æˆåŠŸæ™‚ã¯outputStageDataã‚’æ–°ã—ã„å†…å®¹ã¸æ›´æ–°ã—ã¦trueã€å¤±æ•—æ™‚ã¯å¤‰æ›´ã›ãšfalseã‚’è¿”ã™
+    static bool Load(const std::string& jsonPath, const TileTypeManager& tileTypeManager,
+                     StageData& outputStageData);
 };

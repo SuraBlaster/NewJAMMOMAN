@@ -1,19 +1,30 @@
-#pragma once
+﻿#pragma once
 #include "Character.h"
 class ModelRenderer;
 
-// Title-only idle -> delayed jump; no gameplay collision or input dependencies.
 class TitlePlayer : public Character
 {
-public:
+  public:
+
+    // コンストラクタ
     TitlePlayer();
+
+    // 更新処理
     void Update(float elapsedTime) override;
+
+    // 描画処理
     void Render(ModelRenderer* renderer);
     void BeginStart();
     void Reset();
 
-private:
-    enum class State { Idle, WaitingToJump, Jump };
+  private:
+
+    enum class State
+    {
+        Idle,
+        WaitingToJump,
+        Jump
+    };
     State state = State::Idle;
     float timer = 0;
     static constexpr float GROUND_Y = -5.3f;

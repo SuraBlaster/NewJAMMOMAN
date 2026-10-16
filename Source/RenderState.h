@@ -1,87 +1,94 @@
-#pragma once
+ï»¿#pragma once
 
 #include <wrl.h>
 #include <d3d11.h>
 
-// ƒTƒ“ƒvƒ‰ƒXƒe[ƒg
+// ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆ
 enum class SamplerState
 {
-	PointWrap,
-	PointClamp,
-	LinearWrap,
-	LinearClamp,
+    PointWrap,
+    PointClamp,
+    LinearWrap,
+    LinearClamp,
 
-	EnumCount
+    EnumCount
 };
 
-// ƒfƒvƒXƒXƒe[ƒg
+// ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ¼ãƒˆ
 enum class DepthState
 {
-	TestAndWrite,
-	TestOnly,
-	WriteOnly,
-	NoTestNoWrite,
+    TestAndWrite,
+    TestOnly,
+    WriteOnly,
+    NoTestNoWrite,
 
-	EnumCount
+    EnumCount
 };
 
-// ƒuƒŒƒ“ƒhƒXƒe[ƒg
+// ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆ
 enum class BlendState
 {
-	Opaque,
-	Transparency,
-	Additive,
-	Subtraction,
-	Multiply,
+    Opaque,
+    Transparency,
+    Additive,
+    Subtraction,
+    Multiply,
 
-	EnumCount
+    EnumCount
 };
 
-// ƒ‰ƒXƒ^ƒ‰ƒCƒUƒXƒe[ƒg
+// ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ã‚¹ãƒ†ãƒ¼ãƒˆ
 enum class RasterizerState
 {
-	SolidCullNone,
-	SolidCullBack,
-	WireCullNone,
-	WireCullBack,
+    SolidCullNone,
+    SolidCullBack,
+    WireCullNone,
+    WireCullBack,
 
-	EnumCount
+    EnumCount
 };
 
-// ƒŒƒ“ƒ_[ƒXƒe[ƒg
+// ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆ
 class RenderState
 {
-public:
-	RenderState(ID3D11Device* device);
-	~RenderState() = default;
+  public:
 
-	// ƒTƒ“ƒvƒ‰ƒXƒe[ƒgæ“¾
-	ID3D11SamplerState* GetSamplerState(SamplerState state) const
-	{
-		return samplerStates[static_cast<int>(state)].Get();
-	}
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    RenderState(ID3D11Device* device);
 
-	// ƒfƒvƒXƒXƒe[ƒgæ“¾
-	ID3D11DepthStencilState* GetDepthStencilState(DepthState state) const
-	{
-		return depthStencilStates[static_cast<int>(state)].Get();
-	}
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~RenderState() = default;
 
-	// ƒuƒŒƒ“ƒhƒXƒe[ƒgæ“¾
-	ID3D11BlendState* GetBlendState(BlendState state) const
-	{
-		return blendStates[static_cast<int>(state)].Get();
-	}
+    // ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
+    ID3D11SamplerState* GetSamplerState(SamplerState state) const
+    {
+        return samplerStates[static_cast<int>(state)].Get();
+    }
 
-	// ƒ‰ƒXƒ^ƒ‰ƒCƒU[ƒXƒe[ƒgæ“¾
-	ID3D11RasterizerState* GetRasterizerState(RasterizerState state) const
-	{
-		return rasterizerStates[static_cast<int>(state)].Get();
-	}
+    // ãƒ‡ãƒ—ã‚¹ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
+    ID3D11DepthStencilState* GetDepthStencilState(DepthState state) const
+    {
+        return depthStencilStates[static_cast<int>(state)].Get();
+    }
 
-private:
-	Microsoft::WRL::ComPtr<ID3D11SamplerState>		samplerStates[static_cast<int>(SamplerState::EnumCount)];
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilStates[static_cast<int>(DepthState::EnumCount)];
-	Microsoft::WRL::ComPtr<ID3D11BlendState>		blendStates[static_cast<int>(BlendState::EnumCount)];
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	rasterizerStates[static_cast<int>(RasterizerState::EnumCount)];
+    // ãƒ–ãƒ¬ãƒ³ãƒ‰ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
+    ID3D11BlendState* GetBlendState(BlendState state) const
+    {
+        return blendStates[static_cast<int>(state)].Get();
+    }
+
+    // ãƒ©ã‚¹ã‚¿ãƒ©ã‚¤ã‚¶ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
+    ID3D11RasterizerState* GetRasterizerState(RasterizerState state) const
+    {
+        return rasterizerStates[static_cast<int>(state)].Get();
+    }
+
+  private:
+
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerStates[static_cast<int>(SamplerState::EnumCount)];
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState>
+        depthStencilStates[static_cast<int>(DepthState::EnumCount)];
+    Microsoft::WRL::ComPtr<ID3D11BlendState> blendStates[static_cast<int>(BlendState::EnumCount)];
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState>
+        rasterizerStates[static_cast<int>(RasterizerState::EnumCount)];
 };

@@ -1,22 +1,34 @@
-#include "Graphics.h"
+﻿#include "Graphics.h"
 #include "EffectManager.h"
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
 
+// 初期化処理
 void EffectManager::Initialize()
 {
-    if (effekseerManager.Get() != nullptr) return;
+    if (effekseerManager.Get() != nullptr)
+    {
+        return;
+    }
+
     auto& graphics = Graphics::Instance();
+
     if (!graphics.GetDevice() || !graphics.GetDeviceContext())
+    {
         throw std::runtime_error("Initialize Graphics before EffectManager");
-    effekseerRenderer = EffekseerRendererDX11::Renderer::Create(graphics.GetDevice(), graphics.GetDeviceContext(), 2048);
+    }
+
+    effekseerRenderer =
+        EffekseerRendererDX11::Renderer::Create(graphics.GetDevice(), graphics.GetDeviceContext(), 2048);
     effekseerManager = Effekseer::Manager::Create(2048);
+
     if (effekseerRenderer.Get() == nullptr || effekseerManager.Get() == nullptr)
     {
         Finalize();
         throw std::runtime_error("Effekseer initialization failed");
     }
+
     effekseerRenderer->SetRestorationOfStatesFlag(true);
     effekseerManager->SetSpriteRenderer(effekseerRenderer->CreateSpriteRenderer());
     effekseerManager->SetRibbonRenderer(effekseerRenderer->CreateRibbonRenderer());
@@ -30,25 +42,40 @@ void EffectManager::Initialize()
     time = 0.0f;
 }
 
+// 終了処理
 void EffectManager::Finalize()
 {
-    if (effekseerManager.Get() != nullptr) effekseerManager->StopAllEffects();
+    if (effekseerManager.Get() != nullptr)
+    {
+        effekseerManager->StopAllEffects();
+    }
+
     effekseerManager.Reset();
     effekseerRenderer.Reset();
     time = 0.0f;
 }
 
+// 更新処理
 void EffectManager::Update(float elapsedTime)
 {
-    if (effekseerManager.Get() == nullptr || !std::isfinite(elapsedTime) || elapsedTime < 0.0f) return;
+    if (effekseerManager.Get() == nullptr || !std::isfinite(elapsedTime) || elapsedTime < 0.0f)
+    {
+        return;
+    }
+
     time += elapsedTime;
     effekseerRenderer->SetTime(time);
     effekseerManager->Update(elapsedTime * 60.0f);
 }
 
+// 描画処理
 void EffectManager::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
 {
-    if (effekseerManager.Get() == nullptr || effekseerRenderer.Get() == nullptr) return;
+    if (effekseerManager.Get() == nullptr || effekseerRenderer.Get() == nullptr)
+    {
+        return;
+    }
+
     Effekseer::Matrix44 cameraMatrix, projectionMatrix;
     static_assert(sizeof(cameraMatrix) == sizeof(view), "Matrix size mismatch");
     std::memcpy(&cameraMatrix, &view, sizeof(view));
@@ -56,10 +83,10 @@ void EffectManager::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLO
     effekseerRenderer->SetCameraMatrix(cameraMatrix);
     effekseerRenderer->SetProjectionMatrix(projectionMatrix);
     effekseerRenderer->ResetRenderState();
+
     if (effekseerRenderer->BeginRendering())
     {
         effekseerManager->Draw();
         effekseerRenderer->EndRendering();
     }
 }
-

@@ -135,6 +135,12 @@
     <ClInclude Include="Source\Audio\AudioSource.h">
       <Filter>Source\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="Source\CameraBoundsRegion.h">
+      <Filter>Source\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CameraSectionState.h">
+      <Filter>Source\Camera</Filter>
+    </ClInclude>
     <ClInclude Include="Source\CameraController.h">
       <Filter>Source\Camera</Filter>
     </ClInclude>
@@ -151,6 +157,15 @@
       <Filter>Source\Character</Filter>
     </ClInclude>
     <ClInclude Include="Source\EnemyEgg.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyVisibility.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyWalkerPatrol.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyWalker.h">
       <Filter>Source\Character</Filter>
     </ClInclude>
     <ClInclude Include="Source\EnemyVacuum.h">
@@ -419,6 +434,9 @@
       <Filter>Source\Character</Filter>
     </ClCompile>
     <ClCompile Include="Source\EnemyEgg.cpp">
+      <Filter>Source\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyWalker.cpp">
       <Filter>Source\Character</Filter>
     </ClCompile>
     <ClCompile Include="Source\EnemyVacuum.cpp">

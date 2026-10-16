@@ -1,11 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include <vector>
 #include <string>
 
-
-
-// ƒXƒe[ƒWJSON‚ÌenemyType•¶š—ñ‚ğAƒQ[ƒ€“à‚ÅˆÀ‘S‚Éˆµ‚¤‚½‚ß‚Ì“Gí•ÊB
-// Unknown‚Í–¢İ’è‚Ü‚½‚Í•s³‚Èó‘Ô‚ğ•\‚µAÀÛ‚Ì“G¶¬‚É‚Íg—p‚µ‚È‚¢B
+// ã‚¹ãƒ†ãƒ¼ã‚¸JSONã®enemyTypeæ–‡å­—åˆ—ã‚’ã€ã‚²ãƒ¼ãƒ å†…ã§å®‰å…¨ã«æ‰±ã†ãŸã‚ã®æ•µç¨®åˆ¥
+// Unknownã¯æœªè¨­å®šã¾ãŸã¯ä¸æ­£ãªçŠ¶æ…‹ã‚’è¡¨ã—ã€å®Ÿéš›ã®æ•µç”Ÿæˆã«ã¯ä½¿ç”¨ã—ãªã„
 enum class EnemyType
 {
     Unknown,
@@ -17,82 +15,84 @@ enum class EnemyType
     Fly,
     Egg,
     Boss,
-    Vacuum
+    Vacuum,
+    Walker
 };
 
-// Tiledã‚Åw’è‚µ‚½“G‚Ì‰Šú•ûŒüBŒ»İ‚ÍEnemyWave‚ÌˆÚ“®•ûŒü‚Ég—p‚·‚éB
+// Tiledä¸Šã§æŒ‡å®šã—ãŸæ•µã®åˆæœŸæ–¹å‘ã€‚ç¾åœ¨ã¯EnemyWaveã®ç§»å‹•æ–¹å‘ã«ä½¿ç”¨ã™ã‚‹
 enum class EnemySpawnDirection
 {
     Left,
     Right
 };
 
-// enemies”z—ñ‚Ì1Œ‚É‘Î‰‚·‚éA“G1‘Ì•ª‚ÌŒŸØÏ‚İ”z’uƒf[ƒ^B
-// ZÀ•W‚Í2.5D‚Ì‹¤’ÊƒŒ[ƒ“‚Æ‚µ‚ÄA“G¶¬‚ÉƒvƒŒƒCƒ„[ˆÊ’u‚©‚ç•â‚¤B
+// enemiesé…åˆ—ã®1ä»¶ã«å¯¾å¿œã™ã‚‹ã€æ•µ1ä½“åˆ†ã®æ¤œè¨¼æ¸ˆã¿é…ç½®ãƒ‡ãƒ¼ã‚¿
+// Zåº§æ¨™ã¯2.5Dã®å…±é€šãƒ¬ãƒ¼ãƒ³ã¨ã—ã¦ã€æ•µç”Ÿæˆæ™‚ã«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä½ç½®ã‹ã‚‰è£œã†
 struct EnemySpawnData
 {
-    EnemyType enemyType = EnemyType::Unknown;                         // ¶¬‚·‚é“G‚Ìí—Ş
-    float positionX = 0.0f;                                          // ƒQ[ƒ€À•WŒn‚Å‚ÌXˆÊ’u
-    float positionY = 0.0f;                                          // ƒQ[ƒ€À•WŒn‚Å‚ÌYˆÊ’u
-    EnemySpawnDirection enemySpawnDirection = EnemySpawnDirection::Right; // È—ª‚Í‰EŒü‚«
+    EnemyType enemyType = EnemyType::Unknown;                             // ç”Ÿæˆã™ã‚‹æ•µã®ç¨®é¡
+    float positionX = 0.0f;                                               // ã‚²ãƒ¼ãƒ åº§æ¨™ç³»ã§ã®Xä½ç½®
+    float positionY = 0.0f;                                               // ã‚²ãƒ¼ãƒ åº§æ¨™ç³»ã§ã®Yä½ç½®
+    EnemySpawnDirection enemySpawnDirection = EnemySpawnDirection::Right; // çœç•¥æ™‚ã¯å³å‘ã
 };
 
-// fallRespawnZones”z—ñ‚Ì1Œ‚ğ•\‚·AŒŸØÏ‚İ‚Ì’·•ûŒ`”ÍˆÍB
-// 2.5DƒXƒe[ƒWã‚Ì¶E‰EE‰ºEã‚Ì‹«ŠE‚ğƒQ[ƒ€À•W‚Å•Û‚·‚éB
+// fallRespawnZonesé…åˆ—ã®1ä»¶ã‚’è¡¨ã™ã€æ¤œè¨¼æ¸ˆã¿ã®é•·æ–¹å½¢ç¯„å›²
+// 2.5Dã‚¹ãƒ†ãƒ¼ã‚¸ä¸Šã®å·¦ãƒ»å³ãƒ»ä¸‹ãƒ»ä¸Šã®å¢ƒç•Œã‚’ã‚²ãƒ¼ãƒ åº§æ¨™ã§ä¿æŒã™ã‚‹
 struct FallRespawnZoneData
 {
-    float minX = 0.0f; // —‰º•œ‹AƒGƒŠƒA‚Ì¶’[
-    float maxX = 0.0f; // —‰º•œ‹AƒGƒŠƒA‚Ì‰E’[
-    float minY = 0.0f; // —‰º•œ‹AƒGƒŠƒA‚Ì‰º’[
-    float maxY = 0.0f; // —‰º•œ‹AƒGƒŠƒA‚Ìã’[
+    float minX = 0.0f; // è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã®å·¦ç«¯
+    float maxX = 0.0f; // è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã®å³ç«¯
+    float minY = 0.0f; // è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã®ä¸‹ç«¯
+    float maxY = 0.0f; // è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ã®ä¸Šç«¯
 };
 
 struct BossEncounterZoneData
 {
-    float minX = 0.0f; // ¶’[
-    float maxX = 0.0f; // ‰E’[
-    float minY = 0.0f; // ‰º’[
-    float maxY = 0.0f; // ã’[
+    float minX = 0.0f; // å·¦ç«¯
+    float maxX = 0.0f; // å³ç«¯
+    float minY = 0.0f; // ä¸‹ç«¯
+    float maxY = 0.0f; // ä¸Šç«¯
 };
 
 struct BossApproachCameraZoneData
 {
-    float minX = 0.0f; // ¶’[
-    float maxX = 0.0f; // ‰E’[
-    float minY = 0.0f; // ‰º’[
-    float maxY = 0.0f; // ã’[
+    float minX = 0.0f; // å·¦ç«¯
+    float maxX = 0.0f; // å³ç«¯
+    float minY = 0.0f; // ä¸‹ç«¯
+    float maxY = 0.0f; // ä¸Šç«¯
 };
 
 struct CameraLimitZoneData
 {
-    float minX = 0.0f; // ¶’[
-    float maxX = 0.0f; // ‰E’[
-    float minY = 0.0f; // ‰º’[
-    float maxY = 0.0f; // ã’[
+    std::string cameraSection;
+    bool isSectionTrigger = false;
+    float minX = 0.0f; // å·¦ç«¯
+    float maxX = 0.0f; // å³ç«¯
+    float minY = 0.0f; // ä¸‹ç«¯
+    float maxY = 0.0f; // ä¸Šç«¯
 };
 
-// ƒXƒe[ƒWJSON‚Ìobjects”z—ñ‚ÉŠÜ‚Ü‚ê‚éA”z’u1Œ•ª‚Ì“Ç‚İ‚İƒf[ƒ^
-// DirectX‚âModel‚É‚ÍˆË‘¶‚¹‚¸Aƒtƒ@ƒCƒ‹‚©‚ç“¾‚½’l‚¾‚¯‚ğ•Û‚·‚é
+// ã‚¹ãƒ†ãƒ¼ã‚¸JSONã®objectsé…åˆ—ã«å«ã¾ã‚Œã‚‹ã€é…ç½®1ä»¶åˆ†ã®èª­ã¿è¾¼ã¿ãƒ‡ãƒ¼ã‚¿
+// DirectXã‚„Modelã«ã¯ä¾å­˜ã›ãšã€ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰å¾—ãŸå€¤ã ã‘ã‚’ä¿æŒã™ã‚‹
 struct StageObjectData
 {
-    int typeId = 0;                    // TileTypes.json‚Ì’è‹`‚Æ‘Î‰•t‚¯‚éID
-    float positionX = 0.0f;            // ƒQ[ƒ€À•WŒn‚Å‚ÌXˆÊ’u
-    float positionY = 0.0f;            // ƒQ[ƒ€À•WŒn‚Å‚ÌYˆÊ’uBZ‚ÍÀs‚ÉƒQ[ƒ€‘¤‚ÅŒÅ’è‚·‚é
-    float rotationDegrees = 0.0f;      // ‰æ–Ê•½–Êã‚Ì‰ñ“]Šp“xi“x”–@j
-    float scaleX = 1.0f;               // ƒ^ƒCƒ‹’è‹`‚ÌdefaultScale‚ÖŠ|‚¯‚éX”{—¦
-    float scaleY = 1.0f;               // ƒ^ƒCƒ‹’è‹`‚ÌdefaultScale‚ÖŠ|‚¯‚éY”{—¦
+    int typeId = 0;               // TileTypes.jsonã®å®šç¾©ã¨å¯¾å¿œä»˜ã‘ã‚‹ID
+    float positionX = 0.0f;       // ã‚²ãƒ¼ãƒ åº§æ¨™ç³»ã§ã®Xä½ç½®
+    float positionY = 0.0f;       // ã‚²ãƒ¼ãƒ åº§æ¨™ç³»ã§ã®Yä½ç½®ã€‚Zã¯å®Ÿè¡Œæ™‚ã«ã‚²ãƒ¼ãƒ å´ã§å›ºå®šã™ã‚‹
+    float rotationDegrees = 0.0f; // ç”»é¢å¹³é¢ä¸Šã®å›è»¢è§’åº¦ï¼ˆåº¦æ•°æ³•ï¼‰
+    float scaleX = 1.0f;          // ã‚¿ã‚¤ãƒ«å®šç¾©ã®defaultScaleã¸æ›ã‘ã‚‹Xå€ç‡
+    float scaleY = 1.0f;          // ã‚¿ã‚¤ãƒ«å®šç¾©ã®defaultScaleã¸æ›ã‘ã‚‹Yå€ç‡
 };
 
-// ƒXƒe[ƒWJSON‘S‘Ì‚ğ•\‚·“Ç‚İ‚İƒf[ƒ^
+// ã‚¹ãƒ†ãƒ¼ã‚¸JSONå…¨ä½“ã‚’è¡¨ã™èª­ã¿è¾¼ã¿ãƒ‡ãƒ¼ã‚¿
 struct StageData
 {
-    int formatVersion = 0;                     // “Ç‚İ‚ñ‚¾ƒXƒe[ƒWŒ`®‚Ìƒo[ƒWƒ‡ƒ“
-    std::string stageName;                     // ƒXƒe[ƒW‚Ì¯•ÊE•\¦‚Ég—p‚·‚é–¼‘O
-    std::vector<StageObjectData> objects;       // ƒXƒe[ƒW‚É”z’u‚³‚ê‚½ƒIƒuƒWƒFƒNƒgˆê——
-    std::vector<EnemySpawnData> enemies;         // Tiled‚©‚ç“Ç‚İ‚ñ‚¾“G‚Ì‰Šú”z’uˆê——
-    std::vector<FallRespawnZoneData> fallRespawnZones; // Tiled‚Åw’è‚µ‚½—‰º•œ‹AƒGƒŠƒAˆê——
+    int formatVersion = 0;                             // èª­ã¿è¾¼ã‚“ã ã‚¹ãƒ†ãƒ¼ã‚¸å½¢å¼ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³
+    std::string stageName;                             // ã‚¹ãƒ†ãƒ¼ã‚¸ã®è­˜åˆ¥ãƒ»è¡¨ç¤ºã«ä½¿ç”¨ã™ã‚‹åå‰
+    std::vector<StageObjectData> objects;              // ã‚¹ãƒ†ãƒ¼ã‚¸ã«é…ç½®ã•ã‚ŒãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä¸€è¦§
+    std::vector<EnemySpawnData> enemies;               // Tiledã‹ã‚‰èª­ã¿è¾¼ã‚“ã æ•µã®åˆæœŸé…ç½®ä¸€è¦§
+    std::vector<FallRespawnZoneData> fallRespawnZones; // Tiledã§æŒ‡å®šã—ãŸè½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ä¸€è¦§
     std::vector<BossEncounterZoneData> bossEncounterZones;
     std::vector<BossApproachCameraZoneData> bossApproachCameraZones;
     std::vector<CameraLimitZoneData> cameraLimitZones;
 };
-    

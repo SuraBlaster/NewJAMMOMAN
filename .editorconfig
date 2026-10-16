@@ -1,0 +1,13 @@
+root = true
+
+[Source/**.{cpp,h,hpp,inl}]
+charset = utf-8-bom
+
+[Shader/**.{hlsl,hlsli}]
+charset = utf-8
+
+[Tests/**.{cpp,h,hpp,inl}]
+charset = utf-8-bom
+
+[Tools/StageConverter/Source/**.{cpp,h,hpp,inl}]
+charset = utf-8-bom

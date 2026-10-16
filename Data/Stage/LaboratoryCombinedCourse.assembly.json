@@ -1,0 +1,29 @@
+{
+  "sources": {
+    "early": "LaboratoryEarlyMiddleV2.tmj",
+    "final": "LaboratoryFinalCourseV4.tmj",
+    "boss": "ConvertedStage.stage.json"
+  },
+  "transforms": {
+    "early": {
+      "x": -14,
+      "y": 32
+    },
+    "final": {
+      "x": 123,
+      "y": 16
+    },
+    "boss": {
+      "x": 31,
+      "y": -9
+    }
+  },
+  "bridge": {
+    "minX": 235,
+    "maxX": 240,
+    "minY": 23,
+    "maxY": 24
+  },
+  "terrain": 1890,
+  "gates": 6
+}

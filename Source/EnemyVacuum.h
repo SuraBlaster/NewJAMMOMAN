@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <d3d11.h>
 #include "Enemy.h"
@@ -7,69 +7,121 @@ class Player;
 
 class EnemyVacuum final : public Enemy
 {
-public:
-	EnemyVacuum(ID3D11Device* device, Player* player);
-	void Update(float elapsedTime) override;
-	void SetDirection(float direction) { moveDirection = direction < 0.0f ? -1.0f : 1.0f; }
+  public:
 
-	enum class StateId
-	{
-		None,
-		Move,
-		Pursuit,
-		EnumCount,
-	};
-	StateId GetState() const { return currentState; }
+    // コンストラクタ
+    EnemyVacuum(ID3D11Device* device, Player* player);
 
-	class State
-	{
-	public:
-		explicit State(EnemyVacuum* owner) : owner(owner) {}
-		virtual ~State() = default;
-		virtual void OnEnter() = 0;
-		virtual void OnUpdate(float elapsedTime) = 0;
+    // 更新処理
+    void Update(float elapsedTime) override;
 
-	protected:
-		EnemyVacuum* owner;
-	};
+    void SetDirection(float direction)
+    {
+        moveDirection = direction < 0.0f ? -1.0f : 1.0f;
+    }
 
-	class MoveState final : public State
-	{
-	public:
-		explicit MoveState(EnemyVacuum* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	private:
-		const float NORMAL_ROTATION_SPEED = 10.0f;
-	};
+    enum class StateId
+    {
+        None,
+        Move,
+        Pursuit,
+        EnumCount,
+    };
 
-	class PursuitState final : public State
-	{
-	public:
-		explicit PursuitState(EnemyVacuum* owner) : State(owner) {}
-		void OnEnter() override;
-		void OnUpdate(float elapsedTime) override;
-	private:
-		const float PURSUIT_ROTATION_SPEED = 20.0f;
-	};
+    StateId GetState() const
+    {
+        return currentState;
+    }
 
-private:
-	void SetState(StateId stateId);
-	void UpdateStateMachine(float elapsedTime);
-	float GetPlayerDistance() const;
-	void UpdateWallCollision(float elapsedTime);
-	void OnDead() override { Destroy(); }
+    class State
+    {
+      public:
 
-	Player* player = nullptr;
-	StateId currentState = StateId::None;
-	StateId nextState = StateId::None;
-	std::unique_ptr<State> states[static_cast<size_t>(StateId::EnumCount)];
-	float moveSpeed = 1.5f;
-	float moveDirection = -1.0f;
-	float wallTurnTimer = 0.0f;
-	float pursuitSpeed = 3.0f;
-	float pursuitStartDistance = 5.0f;
-	float pursuitEndDistance = 7.0f;
+        // コンストラクタ
+        explicit State(EnemyVacuum* owner) : owner(owner)
+        {
+        }
 
-	float rotationSpeed = 0.0f;
+        // デストラクタ
+        virtual ~State() = default;
+
+        // 状態に入るときの処理
+        virtual void OnEnter() = 0;
+
+        // 現在の状態の更新処理
+        virtual void OnUpdate(float elapsedTime) = 0;
+
+      protected:
+
+        EnemyVacuum* owner;
+    };
+
+    class MoveState final : public State
+    {
+      public:
+
+        // コンストラクタ
+        explicit MoveState(EnemyVacuum* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+
+      private:
+
+        const float NORMAL_ROTATION_SPEED = 10.0f;
+    };
+
+    class PursuitState final : public State
+    {
+      public:
+
+        // コンストラクタ
+        explicit PursuitState(EnemyVacuum* owner) : State(owner)
+        {
+        }
+
+        // 状態に入るときの処理
+        void OnEnter() override;
+
+        // 現在の状態の更新処理
+        void OnUpdate(float elapsedTime) override;
+
+      private:
+
+        const float PURSUIT_ROTATION_SPEED = 20.0f;
+    };
+
+  private:
+
+    void SetState(StateId stateId);
+
+    // 状態遷移と現在の状態の更新処理
+    void UpdateStateMachine(float elapsedTime);
+    float GetPlayerDistance() const;
+
+    // UpdateWallCollision の更新処理
+    void UpdateWallCollision(float elapsedTime);
+
+    void OnDead() override
+    {
+        Destroy();
+    }
+
+    Player* player = nullptr;
+    StateId currentState = StateId::None;
+    StateId nextState = StateId::None;
+    std::unique_ptr<State> states[static_cast<size_t>(StateId::EnumCount)];
+    float moveSpeed = 1.5f;
+    float moveDirection = -1.0f;
+    float wallTurnTimer = 0.0f;
+    float pursuitSpeed = 3.0f;
+    float pursuitStartDistance = 5.0f;
+    float pursuitEndDistance = 7.0f;
+
+    float rotationSpeed = 0.0f;
 };

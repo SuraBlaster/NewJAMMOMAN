@@ -1,139 +1,132 @@
-#include <imgui_impl_win32.h>
+Ôªø#include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
 #include <ImGuizmo.h>
 #include "ImGuiRenderer.h"
 #include "TextRenderer.h"
 #include <stdexcept>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam,
+                                                             LPARAM lParam);
 
-// èâä˙âª
+// ÂàùÊúüÂåñ
 void ImGuiRenderer::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* dc)
 {
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
 
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-	//io.ConfigViewportsNoAutoMerge = true;
-	//io.ConfigViewportsNoTaskBarIcon = true;
-	//io.ConfigViewportsNoDefaultParent = true;
-	//io.ConfigDockingAlwaysTabBar = true;
-	//io.ConfigDockingTransparentPayload = true;
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
 #if 1
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI
+    io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+    io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 #endif
 
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
+    ImGui::StyleColorsDark();
 
-	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-	ImGuiStyle& style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
+    ImGuiStyle& style = ImGui::GetStyle();
 
-	// Setup Platform/Renderer backends
-	ImGui_ImplWin32_Init(hWnd);
-	ImGui_ImplDX11_Init(device, dc);
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
 
-    // Keep Japanese editor/UI text independent of the game's display font.
-    io.FontDefault = io.Fonts->AddFontFromFileTTF(
-        "Data/Font/ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+    ImGui_ImplWin32_Init(hWnd);
+    ImGui_ImplDX11_Init(device, dc);
+
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("Data/Font/ArialUni.ttf", 18.0f, nullptr,
+                                                  io.Fonts->GetGlyphRangesJapanese());
+
     if (!io.FontDefault)
+    {
         throw std::runtime_error("Failed to initialize Japanese ImGui font.");
+    }
 
-    // TextRenderer uses its own ImFont explicitly; changing it does not affect UI.
     if (!TextRenderer::Initialize("Data/Font/Oxanium-ExtraBold.ttf", 18.0f))
+    {
         throw std::runtime_error("Failed to initialize TextRenderer.");
+    }
 }
 
-// èIóπâª
+// ÁµÇ‰∫ÜÂåñ
 void ImGuiRenderer::Finalize()
 {
-	TextRenderer::Finalize();
-	ImGui_ImplDX11_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+    TextRenderer::Finalize();
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
 
-// ÉtÉåÅ[ÉÄäJénèàóù
+// „Éï„É¨„Éº„É†ÈñãÂßãÂá¶ÁêÜ
 void ImGuiRenderer::NewFrame()
 {
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
 
-	ImGui::NewFrame();
+    ImGui::NewFrame();
 
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	ImVec2 size = ImGui::GetIO().DisplaySize;
-	ImGuizmo::BeginFrame();
-	ImGuizmo::SetOrthographic(false);
-	ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    ImVec2 size = ImGui::GetIO().DisplaySize;
+    ImGuizmo::BeginFrame();
+    ImGuizmo::SetOrthographic(false);
+    ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
 
 #if 0
-	// Docking
-	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None
-		| ImGuiWindowFlags_NoTitleBar
-		| ImGuiWindowFlags_NoResize
-		| ImGuiWindowFlags_NoMove
-		| ImGuiWindowFlags_NoSavedSettings
-		| ImGuiWindowFlags_NoBringToFrontOnFocus
-		| ImGuiWindowFlags_NoNavFocus
-		| ImGuiWindowFlags_NoBackground
-		;
-	const ImGuiDockNodeFlags docspaceFlags = ImGuiDockNodeFlags_None
-		//| ImGuiDockNodeFlags_KeepAliveOnly
-		| ImGuiDockNodeFlags_PassthruCentralNode
-		;
 
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize(viewport->Size);
+    const ImGuiWindowFlags windowFlags =
+        ImGuiWindowFlags_None | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+    const ImGuiDockNodeFlags docspaceFlags = ImGuiDockNodeFlags_None
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                                             | ImGuiDockNodeFlags_PassthruCentralNode;
 
-	bool dockOpen = true;
-	if (ImGui::Begin("MainDockspace", &dockOpen, windowFlags))
-	{
-		ImGui::PopStyleVar(3);
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
 
-		ImGuiID dockspaceId = ImGui::GetID("MyDockspace");
-		ImGui::DockSpace(dockspaceId, ImVec2(0, 0), docspaceFlags);
-	}
-	ImGui::End();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    bool dockOpen = true;
+
+    if (ImGui::Begin("MainDockspace", &dockOpen, windowFlags))
+    {
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockspaceId = ImGui::GetID("MyDockspace");
+        ImGui::DockSpace(dockspaceId, ImVec2(0, 0), docspaceFlags);
+    }
+
+    ImGui::End();
 #endif
 }
 
-// ï`âÊ
+// ÊèèÁîª
 void ImGuiRenderer::Render(ID3D11DeviceContext* context)
 {
-	// Rendering
-	ImGui::Render();
 
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    ImGui::Render();
 
-	// Update and Render additional Platform Windows
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-	}
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
 }
 
-// WIN32ÉÅÉbÉZÅ[ÉWÉnÉìÉhÉâÅ[
+// WIN32„É°„ÉÉ„Çª„Éº„Ç∏„Éè„É≥„Éâ„É©„Éº
 LRESULT ImGuiRenderer::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	return ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
+    return ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 }

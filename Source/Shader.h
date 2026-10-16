@@ -1,20 +1,28 @@
-#pragma once
+ï»¿#pragma once
 
 #include "RenderContext.h"
 #include "Model.h"
 
 class Shader
 {
-public:
-	Shader() {}
-	virtual ~Shader() {}
+  public:
 
-	// ŠJnˆ—
-	virtual void Begin(const RenderContext& rc) = 0;
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Shader()
+    {
+    }
 
-	// XVˆ—
-	virtual void Update(const RenderContext& rc, const Model::Mesh& mesh) = 0;
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    virtual ~Shader()
+    {
+    }
 
-	// I—¹ˆ—
-	virtual void End(const RenderContext& rc) = 0;
+    // é–‹å§‹å‡¦ç†
+    virtual void Begin(const RenderContext& rc) = 0;
+
+    // æ›´æ–°å‡¦ç†
+    virtual void Update(const RenderContext& rc, const Model::Mesh& mesh) = 0;
+
+    // çµ‚äº†å‡¦ç†
+    virtual void End(const RenderContext& rc) = 0;
 };

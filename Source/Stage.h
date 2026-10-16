@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -10,24 +10,33 @@
 
 class Stage
 {
-public:
-	Stage(ID3D11Device* device, const StageData& stageData, const TileTypeManager& tileTypeManager);
-	~Stage() = default;
+  public:
 
-	const std::vector<std::unique_ptr<StageObject>>& GetStageObjects() const { return stageObjects; }
+    // コンストラクタ
+    Stage(ID3D11Device* device, const StageData& stageData, const TileTypeManager& tileTypeManager);
 
-	const std::vector<AABB>& GetTerrainAABBs() const
-	{
-		return terrainBoxes;
-	}
+    // デストラクタ
+    ~Stage() = default;
 
-private:
-	void BuildTerrainAABBs();
+    const std::vector<std::unique_ptr<StageObject>>& GetStageObjects() const
+    {
+        return stageObjects;
+    }
 
-private:
-	std::unordered_map<std::string, std::shared_ptr<Model>> modelPrototypeCache;
+    const std::vector<AABB>& GetTerrainAABBs() const
+    {
+        return terrainBoxes;
+    }
 
-	std::vector<std::unique_ptr<StageObject>> stageObjects;
+  private:
 
-	std::vector<AABB> terrainBoxes;
+    void BuildTerrainAABBs();
+
+  private:
+
+    std::unordered_map<std::string, std::shared_ptr<Model>> modelPrototypeCache;
+
+    std::vector<std::unique_ptr<StageObject>> stageObjects;
+
+    std::vector<AABB> terrainBoxes;
 };

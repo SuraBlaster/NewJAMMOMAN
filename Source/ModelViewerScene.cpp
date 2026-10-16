@@ -1,4 +1,4 @@
-#include <functional>
+ï»¿#include <functional>
 #include <imgui.h>
 #include "ModelViewerScene.h"
 #include "Graphics.h"
@@ -6,454 +6,484 @@
 #include "Dialog.h"
 #include "Light.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 ModelViewerScene::ModelViewerScene()
 {
-	ID3D11Device* device = Graphics::Instance().GetDevice();
-	float screenWidth = Graphics::Instance().GetScreenWidth();
-	float screenHeight = Graphics::Instance().GetScreenHeight();
+    ID3D11Device* device = Graphics::Instance().GetDevice();
+    float screenWidth = Graphics::Instance().GetScreenWidth();
+    float screenHeight = Graphics::Instance().GetScreenHeight();
 
-	// ƒJƒƒ‰İ’è
-	Camera& camera = Camera::Instance();
-	camera.SetPerspectiveFov(
-		DirectX::XMConvertToRadians(45),	// ‰æŠp
-		screenWidth / screenHeight,			// ‰æ–ÊƒAƒXƒyƒNƒg”ä
-		0.1f,								// ƒjƒAƒNƒŠƒbƒv
-		1000.0f								// ƒtƒ@[ƒNƒŠƒbƒv
-	);
-	camera.SetLookAt(
-		{ 0, 3, 5 },		// ‹“_
-		{ 0, 0, 0 },		// ’‹“_
-		{ 0, 1, 0 }			// ãƒxƒNƒgƒ‹
-	);
-	cameraController.SyncCameraToController(camera);
+    // ã‚«ãƒ¡ãƒ©è¨­å®š
+    Camera& camera = Camera::Instance();
+    camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45), // ç”»è§’
+                             screenWidth / screenHeight,      // ç”»é¢ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+                             0.1f,                            // ãƒ‹ã‚¢ã‚¯ãƒªãƒƒãƒ—
+                             1000.0f                          // ãƒ•ã‚¡ãƒ¼ã‚¯ãƒªãƒƒãƒ—
+    );
+    camera.SetLookAt({0, 3, 5}, // è¦–ç‚¹
+                     {0, 0, 0}, // æ³¨è¦–ç‚¹
+                     {0, 1, 0}  // ä¸Šãƒ™ã‚¯ãƒˆãƒ«
+    );
+    cameraController.SyncCameraToController(camera);
 
-	shaderId = static_cast<int>(ShaderId::Basic);
+    shaderId = static_cast<int>(ShaderId::Basic);
 
-	// ƒ‰ƒCƒgİ’è
-	LightManager& lightManager = LightManager::Instance();
-	DirectionalLight directionalLight;
-	directionalLight.direction = { 0, -1, -1 };
-	directionalLight.color = { 1, 1, 1 };
-	lightManager.SetDirectionalLight(directionalLight);
+    // ãƒ©ã‚¤ãƒˆè¨­å®š
+    LightManager& lightManager = LightManager::Instance();
+    DirectionalLight directionalLight;
+    directionalLight.direction = {0, -1, -1};
+    directionalLight.color = {1, 1, 1};
+    lightManager.SetDirectionalLight(directionalLight);
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void ModelViewerScene::Update(float elapsedTime)
 {
-	// ƒJƒƒ‰XVˆ—
-	Camera& camera = Camera::Instance();
-	cameraController.Update();
-	cameraController.SyncControllerToCamera(camera);
+    // ã‚«ãƒ¡ãƒ©æ›´æ–°å‡¦ç†
+    Camera& camera = Camera::Instance();
+    cameraController.Update();
+    cameraController.SyncControllerToCamera(camera);
 
-	if (model != nullptr)
-	{
-		// ƒAƒjƒ[ƒVƒ‡ƒ“XV
-		if (animationPlaying && currentAnimationIndex >= 0)
-		{
-			model->ComputeAnimation(currentAnimationIndex, currentAnimationSeconds, nodePoses);
-			model->SetNodePoses(nodePoses);
+    if (model != nullptr)
+    {
+        // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³æ›´æ–°
+        if (animationPlaying && currentAnimationIndex >= 0)
+        {
+            model->ComputeAnimation(currentAnimationIndex, currentAnimationSeconds, nodePoses);
+            model->SetNodePoses(nodePoses);
 
-			// ŠÔXV
-			const Model::Animation& animation = model->GetAnimations().at(currentAnimationIndex);
-			currentAnimationSeconds += elapsedTime * animationSpeed;
-			if (currentAnimationSeconds > animation.secondsLength)
-			{
-				if (animationLoop)
-				{
-					currentAnimationSeconds -= animation.secondsLength;
-				}
-				else
-				{
-					currentAnimationSeconds = animation.secondsLength;
-				}
-			}
-		}
+            // æ™‚é–“æ›´æ–°
+            const Model::Animation& animation = model->GetAnimations().at(currentAnimationIndex);
+            currentAnimationSeconds += elapsedTime * animationSpeed;
 
-		// ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€XV
-		DirectX::XMFLOAT4X4 worldTransform;
-		DirectX::XMStoreFloat4x4(&worldTransform, DirectX::XMMatrixIdentity());
-		model->UpdateTransform(worldTransform);
-	}
+            if (currentAnimationSeconds > animation.secondsLength)
+            {
+                if (animationLoop)
+                {
+                    currentAnimationSeconds -= animation.secondsLength;
+                }
+                else
+                {
+                    currentAnimationSeconds = animation.secondsLength;
+                }
+            }
+        }
 
+        // ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ æ›´æ–°
+        DirectX::XMFLOAT4X4 worldTransform;
+        DirectX::XMStoreFloat4x4(&worldTransform, DirectX::XMMatrixIdentity());
+        model->UpdateTransform(worldTransform);
+    }
 }
 
-// •`‰æˆ—
+// æç”»å‡¦ç†
 void ModelViewerScene::Render(float elapsedTime)
 {
-	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
-	RenderState* renderState = Graphics::Instance().GetRenderState();
-	PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
-	ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
-	LightManager& lightManager = LightManager::Instance();
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    RenderState* renderState = Graphics::Instance().GetRenderState();
+    PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
+    ModelRenderer* modelRenderer = Graphics::Instance().GetModelRenderer();
+    LightManager& lightManager = LightManager::Instance();
 
-	// ƒOƒŠƒbƒh•`‰æ
-	Camera& camera = Camera::Instance();
-	primitiveRenderer->DrawGrid(20, 1);
-	primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    // ã‚°ãƒªãƒƒãƒ‰æç”»
+    Camera& camera = Camera::Instance();
+    primitiveRenderer->DrawGrid(20, 1);
+    primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(),
+                              D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	// •`‰æƒRƒ“ƒeƒLƒXƒgİ’è
-	RenderContext rc;
-	rc.deviceContext = dc;
-	rc.renderState = renderState;
-	rc.camera = &camera;
-	rc.lightManager = &lightManager;
+    // æç”»ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆè¨­å®š
+    RenderContext rc;
+    rc.deviceContext = dc;
+    rc.renderState = renderState;
+    rc.camera = &camera;
+    rc.lightManager = &lightManager;
 
-	// •`‰æ
-	if (model != nullptr)
-	{
-		// ƒ‚ƒfƒ‹•`‰æ
-		modelRenderer->Draw(static_cast<ShaderId>(shaderId), model);
-		modelRenderer->Render(rc);
+    // æç”»
+    if (model != nullptr)
+    {
+        // ãƒ¢ãƒ‡ãƒ«æç”»
+        modelRenderer->Draw(static_cast<ShaderId>(shaderId), model);
+        modelRenderer->Render(rc);
 
-		// ƒŒƒ“ƒ_[ƒXƒe[ƒgİ’è
-		dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
-		dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
-		dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
+        // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
+        dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+        dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-		// ²•`‰æ
-		const std::vector<Model::Node>& nodes = model->GetNodes();
-		if (selectionNode != nullptr)
-		{
-			DirectX::XMFLOAT3 p, x, y, z;
-			const float length = 0.1f;
-			DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&selectionNode->worldTransform);
-			DirectX::XMVECTOR xVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(length, 0, 0, 0), w);
-			DirectX::XMVECTOR yVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, length, 0, 0), w);
-			DirectX::XMVECTOR zVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, length, 0), w);
-			DirectX::XMStoreFloat3(&p, w.r[3]);
-			DirectX::XMStoreFloat3(&x, xVector);
-			DirectX::XMStoreFloat3(&y, yVector);
-			DirectX::XMStoreFloat3(&z, zVector);
-			primitiveRenderer->AddVertex(p, { 1, 0, 0, 1 });
-			primitiveRenderer->AddVertex(x, { 1, 0, 0, 1 });
-			primitiveRenderer->AddVertex(p, { 0, 1, 0, 1 });
-			primitiveRenderer->AddVertex(y, { 0, 1, 0, 1 });
-			primitiveRenderer->AddVertex(p, { 0, 0, 1, 1 });
-			primitiveRenderer->AddVertex(z, { 0, 0, 1, 1 });
-		}
-		primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(), D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	}
+        // è»¸æç”»
+        const std::vector<Model::Node>& nodes = model->GetNodes();
+
+        if (selectionNode != nullptr)
+        {
+            DirectX::XMFLOAT3 p, x, y, z;
+            const float length = 0.1f;
+            DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&selectionNode->worldTransform);
+            DirectX::XMVECTOR xVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(length, 0, 0, 0), w);
+            DirectX::XMVECTOR yVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, length, 0, 0), w);
+            DirectX::XMVECTOR zVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, length, 0), w);
+            DirectX::XMStoreFloat3(&p, w.r[3]);
+            DirectX::XMStoreFloat3(&x, xVector);
+            DirectX::XMStoreFloat3(&y, yVector);
+            DirectX::XMStoreFloat3(&z, zVector);
+            primitiveRenderer->AddVertex(p, {1, 0, 0, 1});
+            primitiveRenderer->AddVertex(x, {1, 0, 0, 1});
+            primitiveRenderer->AddVertex(p, {0, 1, 0, 1});
+            primitiveRenderer->AddVertex(y, {0, 1, 0, 1});
+            primitiveRenderer->AddVertex(p, {0, 0, 1, 1});
+            primitiveRenderer->AddVertex(z, {0, 0, 1, 1});
+        }
+
+        primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(),
+                                  D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    }
 }
 
-// GUI•`‰æˆ—
+// GUIæç”»å‡¦ç†
 void ModelViewerScene::DrawGUI()
 {
-	DrawMenuGUI();
-	DrawHierarchyGUI();
-	DrawPropertyGUI();
-	DrawAnimationGUI();
-	DrawMaterialGUI();
+    DrawMenuGUI();
+    DrawHierarchyGUI();
+    DrawPropertyGUI();
+    DrawAnimationGUI();
+    DrawMaterialGUI();
 }
 
-// ƒƒjƒ…[GUI•`‰æ
+// ãƒ¡ãƒ‹ãƒ¥ãƒ¼GUIæç”»
 void ModelViewerScene::DrawMenuGUI()
 {
-	if (ImGui::BeginMainMenuBar())
-	{
-		// ƒtƒ@ƒCƒ‹ƒƒjƒ…[
-		if (ImGui::BeginMenu("File"))
-		{
-			bool check = false;
-			if (ImGui::MenuItem("Open Model", "", &check))
-			{
-				static const char* FILTER = "Model Files(*.gltf;*.glb)\0*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
+    if (ImGui::BeginMainMenuBar())
+    {
+        // ãƒ•ã‚¡ã‚¤ãƒ«ãƒ¡ãƒ‹ãƒ¥ãƒ¼
+        if (ImGui::BeginMenu("File"))
+        {
+            bool check = false;
 
-				char filename[256] = { 0 };
-				HWND hWnd = Graphics::Instance().GetWindowHandle();
-				DialogResult result = Dialog::OpenFileName(filename, sizeof(filename), FILTER, nullptr, hWnd);
-				if (result == DialogResult::OK)
-				{
-					ID3D11Device* device = Graphics::Instance().GetDevice();
-					model = std::make_shared<Model>(device, filename, animationSamplingRate);
-					animationSpeed = 1.0f;
-					currentAnimationSeconds = 0.0f;
-					currentAnimationIndex = -1;
-				}
-			}
+            if (ImGui::MenuItem("Open Model", "", &check))
+            {
+                static const char* FILTER =
+                    "Model Files(*.gltf;*.glb)\0*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
 
+                char filename[256] = {0};
+                HWND hWnd = Graphics::Instance().GetWindowHandle();
+                DialogResult result = Dialog::OpenFileName(filename, sizeof(filename), FILTER, nullptr, hWnd);
 
-			ImGui::EndMenu();
-		}
+                if (result == DialogResult::OK)
+                {
+                    ID3D11Device* device = Graphics::Instance().GetDevice();
+                    model = std::make_shared<Model>(device, filename, animationSamplingRate);
+                    animationSpeed = 1.0f;
+                    currentAnimationSeconds = 0.0f;
+                    currentAnimationIndex = -1;
+                }
+            }
 
-		ImGui::EndMainMenuBar();
-	}
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
 }
 
-// ƒqƒGƒ‰ƒ‹ƒL[GUI•`‰æ
+// ãƒ’ã‚¨ãƒ©ãƒ«ã‚­ãƒ¼GUIæç”»
 void ModelViewerScene::DrawHierarchyGUI()
 {
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	ImGui::SetNextWindowPos(ImVec2(pos.x + 10, pos.y + 30), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    ImGui::SetNextWindowPos(ImVec2(pos.x + 10, pos.y + 30), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
 
-	if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_None))
-	{
-		// ƒm[ƒhƒcƒŠ[‚ğÄ‹A“I‚É•`‰æ‚·‚éŠÖ”
-		std::function<void(Model::Node*)> drawNodeTree = [&](Model::Node* node)
-		{
-			// –îˆó‚ğƒNƒŠƒbƒNA‚Ü‚½‚Íƒm[ƒh‚ğƒ_ƒuƒ‹ƒNƒŠƒbƒN‚ÅŠK‘w‚ğŠJ‚­
-			ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
-				| ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_None))
+    {
+        // ãƒãƒ¼ãƒ‰ãƒ„ãƒªãƒ¼ã‚’å†å¸°çš„ã«æç”»ã™ã‚‹é–¢æ•°
+        std::function<void(Model::Node*)> drawNodeTree = [&](Model::Node* node)
+        {
+            // çŸ¢å°ã‚’ã‚¯ãƒªãƒƒã‚¯ã€ã¾ãŸã¯ãƒãƒ¼ãƒ‰ã‚’ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã§éšå±¤ã‚’é–‹ã
+            ImGuiTreeNodeFlags nodeFlags =
+                ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-			// q‚ª‚¢‚È‚¢ê‡‚Í–îˆó‚ğ‚Â‚¯‚È‚¢
-			size_t childCount = node->children.size();
-			if (childCount == 0)
-			{
-				nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-			}
+            // å­ãŒã„ãªã„å ´åˆã¯çŸ¢å°ã‚’ã¤ã‘ãªã„
+            size_t childCount = node->children.size();
 
-			// ‘I‘ğƒtƒ‰ƒO
-			if (selectionNode == node)
-			{
-				nodeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
+            if (childCount == 0)
+            {
+                nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            }
 
-			// ƒcƒŠ[ƒm[ƒh‚ğ•\¦
-			bool opened = ImGui::TreeNodeEx(node, nodeFlags, node->name.c_str());
+            // é¸æŠãƒ•ãƒ©ã‚°
+            if (selectionNode == node)
+            {
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
+            }
 
-			// ƒtƒH[ƒJƒX‚³‚ê‚½ƒm[ƒh‚ğ‘I‘ğ‚·‚é
-			if (ImGui::IsItemFocused())
-			{
-				selectionNode = node;
-			}
+            // ãƒ„ãƒªãƒ¼ãƒãƒ¼ãƒ‰ã‚’è¡¨ç¤º
+            bool opened = ImGui::TreeNodeEx(node, nodeFlags, node->name.c_str());
 
-			// ŠJ‚©‚ê‚Ä‚¢‚éê‡AqŠK‘w‚à“¯‚¶ˆ—‚ğs‚¤
-			if (opened && childCount > 0)
-			{
-				for (Model::Node* child : node->children)
-				{
-					drawNodeTree(child);
-				}
-				ImGui::TreePop();
-			}
-		};
-		// Ä‹A“I‚Éƒm[ƒh‚ğ•`‰æ
-		if (model != nullptr)
-		{
-			drawNodeTree(model->GetRootNode());
-		}
-	}
-	ImGui::End();
+            // ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã•ã‚ŒãŸãƒãƒ¼ãƒ‰ã‚’é¸æŠã™ã‚‹
+            if (ImGui::IsItemFocused())
+            {
+                selectionNode = node;
+            }
+
+            // é–‹ã‹ã‚Œã¦ã„ã‚‹å ´åˆã€å­éšå±¤ã‚‚åŒã˜å‡¦ç†ã‚’è¡Œã†
+            if (opened && childCount > 0)
+            {
+                for (Model::Node* child : node->children)
+                {
+                    drawNodeTree(child);
+                }
+
+                ImGui::TreePop();
+            }
+        };
+        // å†å¸°çš„ã«ãƒãƒ¼ãƒ‰ã‚’æç”»
+        if (model != nullptr)
+        {
+            drawNodeTree(model->GetRootNode());
+        }
+    }
+
+    ImGui::End();
 }
 
-// ƒvƒƒpƒeƒBGUI•`‰æ
+// ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£GUIæç”»
 void ModelViewerScene::DrawPropertyGUI()
 {
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	ImGui::SetNextWindowPos(ImVec2(pos.x + 970, pos.y + 30), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    ImGui::SetNextWindowPos(ImVec2(pos.x + 970, pos.y + 30), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
 
-	if (ImGui::Begin("Property", nullptr, ImGuiWindowFlags_None))
-	{
-		if (selectionNode != nullptr)
-		{
-			if (ImGui::CollapsingHeader("Node", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				// ˆÊ’u
-				if (ImGui::DragFloat3("Local Position", &selectionNode->position.x, 0.1f))
-				{
-					animationPlaying = false;
-				}
-				// ˆÊ’u
-				DirectX::XMFLOAT3 globalPosition =
-				{
-					selectionNode->globalTransform._41,
-					selectionNode->globalTransform._42,
-					selectionNode->globalTransform._43,
-				};
-				if (ImGui::DragFloat3("Global Position", &globalPosition.x, 0.1f))
-				{
-					if (selectionNode->parent != nullptr)
-					{
-						DirectX::XMMATRIX parentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
-						DirectX::XMMATRIX inverseParentGlobalTransform = DirectX::XMMatrixInverse(nullptr, parentGlobalTransform);
-						DirectX::XMVECTOR globalPositionVector = DirectX::XMLoadFloat3(&globalPosition);
-						DirectX::XMVECTOR localPosition = DirectX::XMVector3Transform(globalPositionVector, inverseParentGlobalTransform);
-						DirectX::XMStoreFloat3(&selectionNode->position, localPosition);
-					}
-					else
-					{
-						selectionNode->position = globalPosition;
-					}
-					animationPlaying = false;
-				}
+    if (ImGui::Begin("Property", nullptr, ImGuiWindowFlags_None))
+    {
+        if (selectionNode != nullptr)
+        {
+            if (ImGui::CollapsingHeader("Node", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                // ä½ç½®
+                if (ImGui::DragFloat3("Local Position", &selectionNode->position.x, 0.1f))
+                {
+                    animationPlaying = false;
+                }
 
-				// ‰ñ“]
-				DirectX::XMFLOAT3 angle;
-				TransformUtils::QuaternionToRollPitchYaw(selectionNode->rotation, angle.x, angle.y, angle.z);
-				angle.x = DirectX::XMConvertToDegrees(angle.x);
-				angle.y = DirectX::XMConvertToDegrees(angle.y);
-				angle.z = DirectX::XMConvertToDegrees(angle.z);
-				if (ImGui::DragFloat3("Local Rotation", &angle.x, 1.0f))
-				{
-					angle.x = DirectX::XMConvertToRadians(angle.x);
-					angle.y = DirectX::XMConvertToRadians(angle.y);
-					angle.z = DirectX::XMConvertToRadians(angle.z);
-					DirectX::XMVECTOR rotationVector = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
-					DirectX::XMStoreFloat4(&selectionNode->rotation, rotationVector);
-				}
+                // ä½ç½®
+                DirectX::XMFLOAT3 globalPosition = {
+                    selectionNode->globalTransform._41,
+                    selectionNode->globalTransform._42,
+                    selectionNode->globalTransform._43,
+                };
 
-				TransformUtils::MatrixToRollPitchYaw(selectionNode->globalTransform, angle.x, angle.y, angle.z);
-				angle.x = DirectX::XMConvertToDegrees(angle.x);
-				angle.y = DirectX::XMConvertToDegrees(angle.y);
-				angle.z = DirectX::XMConvertToDegrees(angle.z);
-				if (ImGui::DragFloat3("Global Rotation", &angle.x, 0.1f))
-				{
-					angle.x = DirectX::XMConvertToRadians(angle.x);
-					angle.y = DirectX::XMConvertToRadians(angle.y);
-					angle.z = DirectX::XMConvertToRadians(angle.z);
-					DirectX::XMVECTOR globalRotation = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
+                if (ImGui::DragFloat3("Global Position", &globalPosition.x, 0.1f))
+                {
+                    if (selectionNode->parent != nullptr)
+                    {
+                        DirectX::XMMATRIX parentGlobalTransform =
+                            DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
+                        DirectX::XMMATRIX inverseParentGlobalTransform =
+                            DirectX::XMMatrixInverse(nullptr, parentGlobalTransform);
+                        DirectX::XMVECTOR globalPositionVector = DirectX::XMLoadFloat3(&globalPosition);
+                        DirectX::XMVECTOR localPosition =
+                            DirectX::XMVector3Transform(globalPositionVector, inverseParentGlobalTransform);
+                        DirectX::XMStoreFloat3(&selectionNode->position, localPosition);
+                    }
+                    else
+                    {
+                        selectionNode->position = globalPosition;
+                    }
 
-					if (selectionNode->parent != nullptr)
-					{
-						DirectX::XMMATRIX parentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
-						parentGlobalTransform.r[0] = DirectX::XMVector3Normalize(parentGlobalTransform.r[0]);
-						parentGlobalTransform.r[1] = DirectX::XMVector3Normalize(parentGlobalTransform.r[1]);
-						parentGlobalTransform.r[2] = DirectX::XMVector3Normalize(parentGlobalTransform.r[2]);
-						DirectX::XMVECTOR parentGlobalRotation = DirectX::XMQuaternionRotationMatrix(parentGlobalTransform);
-						DirectX::XMVECTOR inverseParentGlobalRotation = DirectX::XMQuaternionInverse(parentGlobalRotation);
-						DirectX::XMVECTOR localRotation = DirectX::XMQuaternionMultiply(globalRotation, inverseParentGlobalRotation);
-						DirectX::XMStoreFloat4(&selectionNode->rotation, localRotation);
-					}
-					else
-					{
-						DirectX::XMStoreFloat4(&selectionNode->rotation, globalRotation);
-					}
-					animationPlaying = false;
-				}
+                    animationPlaying = false;
+                }
 
-				// ƒXƒP[ƒ‹
-				if (ImGui::DragFloat3("Local Scale", &selectionNode->scale.x, 0.01f))
-				{
-					animationPlaying = false;
-				}
+                // å›è»¢
+                DirectX::XMFLOAT3 angle;
+                TransformUtils::QuaternionToRollPitchYaw(selectionNode->rotation, angle.x, angle.y, angle.z);
+                angle.x = DirectX::XMConvertToDegrees(angle.x);
+                angle.y = DirectX::XMConvertToDegrees(angle.y);
+                angle.z = DirectX::XMConvertToDegrees(angle.z);
 
-				DirectX::XMMATRIX globalTransformMatrix = DirectX::XMLoadFloat4x4(&selectionNode->globalTransform);
-				DirectX::XMFLOAT3 globalScale =
-				{
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[0])),
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[1])),
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[2]))
-				};
-				if (ImGui::DragFloat3("Global Scale", &globalScale.x, 0.1f))
-				{
-				}
+                if (ImGui::DragFloat3("Local Rotation", &angle.x, 1.0f))
+                {
+                    angle.x = DirectX::XMConvertToRadians(angle.x);
+                    angle.y = DirectX::XMConvertToRadians(angle.y);
+                    angle.z = DirectX::XMConvertToRadians(angle.z);
+                    DirectX::XMVECTOR rotationVector =
+                        DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
+                    DirectX::XMStoreFloat4(&selectionNode->rotation, rotationVector);
+                }
 
-			}
-		}
-	}
+                TransformUtils::MatrixToRollPitchYaw(selectionNode->globalTransform, angle.x, angle.y,
+                                                     angle.z);
+                angle.x = DirectX::XMConvertToDegrees(angle.x);
+                angle.y = DirectX::XMConvertToDegrees(angle.y);
+                angle.z = DirectX::XMConvertToDegrees(angle.z);
 
-	ImGui::End();
+                if (ImGui::DragFloat3("Global Rotation", &angle.x, 0.1f))
+                {
+                    angle.x = DirectX::XMConvertToRadians(angle.x);
+                    angle.y = DirectX::XMConvertToRadians(angle.y);
+                    angle.z = DirectX::XMConvertToRadians(angle.z);
+                    DirectX::XMVECTOR globalRotation =
+                        DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
+
+                    if (selectionNode->parent != nullptr)
+                    {
+                        DirectX::XMMATRIX parentGlobalTransform =
+                            DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
+                        parentGlobalTransform.r[0] = DirectX::XMVector3Normalize(parentGlobalTransform.r[0]);
+                        parentGlobalTransform.r[1] = DirectX::XMVector3Normalize(parentGlobalTransform.r[1]);
+                        parentGlobalTransform.r[2] = DirectX::XMVector3Normalize(parentGlobalTransform.r[2]);
+                        DirectX::XMVECTOR parentGlobalRotation =
+                            DirectX::XMQuaternionRotationMatrix(parentGlobalTransform);
+                        DirectX::XMVECTOR inverseParentGlobalRotation =
+                            DirectX::XMQuaternionInverse(parentGlobalRotation);
+                        DirectX::XMVECTOR localRotation =
+                            DirectX::XMQuaternionMultiply(globalRotation, inverseParentGlobalRotation);
+                        DirectX::XMStoreFloat4(&selectionNode->rotation, localRotation);
+                    }
+                    else
+                    {
+                        DirectX::XMStoreFloat4(&selectionNode->rotation, globalRotation);
+                    }
+
+                    animationPlaying = false;
+                }
+
+                // ã‚¹ã‚±ãƒ¼ãƒ«
+                if (ImGui::DragFloat3("Local Scale", &selectionNode->scale.x, 0.01f))
+                {
+                    animationPlaying = false;
+                }
+
+                DirectX::XMMATRIX globalTransformMatrix =
+                    DirectX::XMLoadFloat4x4(&selectionNode->globalTransform);
+                DirectX::XMFLOAT3 globalScale = {
+                    DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[0])),
+                    DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[1])),
+                    DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[2]))};
+
+                if (ImGui::DragFloat3("Global Scale", &globalScale.x, 0.1f))
+                {
+                }
+            }
+        }
+    }
+
+    ImGui::End();
 }
 
-// ƒAƒjƒ[ƒVƒ‡ƒ“GUI•`‰æ
+// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³GUIæç”»
 void ModelViewerScene::DrawAnimationGUI()
 {
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	ImGui::SetNextWindowPos(ImVec2(pos.x + 10, pos.y + 350), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    ImGui::SetNextWindowPos(ImVec2(pos.x + 10, pos.y + 350), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
 
-	if (ImGui::Begin("Animation", nullptr, ImGuiWindowFlags_None))
-	{
-		ImGui::Checkbox("Loop", &animationLoop); ImGui::SameLine();
-		ImGui::SetNextItemWidth(70);
-		ImGui::InputFloat("SamplingRate", &animationSamplingRate);
-		ImGui::DragFloat("BlendSeconds", &animationBlendSeconds, 0.01f);
+    if (ImGui::Begin("Animation", nullptr, ImGuiWindowFlags_None))
+    {
+        ImGui::Checkbox("Loop", &animationLoop);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(70);
+        ImGui::InputFloat("SamplingRate", &animationSamplingRate);
+        ImGui::DragFloat("BlendSeconds", &animationBlendSeconds, 0.01f);
 
-		if (model != nullptr)
-		{
-			float secondsLength = currentAnimationIndex >= 0 ? model->GetAnimations().at(currentAnimationIndex).secondsLength : 0;
-			int currentFrame = static_cast<int>(currentAnimationSeconds * 60.0f);
-			int frameLength = static_cast<int>(secondsLength * 60);
+        if (model != nullptr)
+        {
+            float secondsLength = currentAnimationIndex >= 0
+                                      ? model->GetAnimations().at(currentAnimationIndex).secondsLength
+                                      : 0;
+            int currentFrame = static_cast<int>(currentAnimationSeconds * 60.0f);
+            int frameLength = static_cast<int>(secondsLength * 60);
 
-			ImGui::SetNextItemWidth(50);
-			ImGui::PushID(u8"ƒtƒŒ[ƒ€");
-			if (ImGui::DragInt("##v", &currentFrame, 1, 0, frameLength))
-			{
-				animationPlaying = true;
-				currentAnimationSeconds = currentFrame / 60.0f;
-				animationSpeed = 0.0f;
-			}
-			ImGui::PopID();
+            ImGui::SetNextItemWidth(50);
+            ImGui::PushID(u8"ãƒ•ãƒ¬ãƒ¼ãƒ ");
 
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			ImGui::PushID(u8"ƒ^ƒCƒ€ƒ‰ƒCƒ“");
-			if (ImGui::SliderFloat("##v", &currentAnimationSeconds, 0, secondsLength, "%.3f"))
-			{
-				animationPlaying = true;
-				animationSpeed = 0.0f;
-			}
-			ImGui::PopID();
+            if (ImGui::DragInt("##v", &currentFrame, 1, 0, frameLength))
+            {
+                animationPlaying = true;
+                currentAnimationSeconds = currentFrame / 60.0f;
+                animationSpeed = 0.0f;
+            }
 
-			int index = 0;
-			for (const Model::Animation& animation : model->GetAnimations())
-			{
-				ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf;
+            ImGui::PopID();
 
-				ImGui::TreeNodeEx(&animation, nodeFlags, animation.name.c_str());
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ImGui::PushID(u8"ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³");
 
-				// ƒ_ƒuƒ‹ƒNƒŠƒbƒN‚ÅƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
-				if (ImGui::IsItemClicked())
-				{
-					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-					{
-						animationPlaying = true;
-						currentAnimationIndex = index;
-						currentAnimationSeconds = 0.0f;
-						animationSpeed = 1.0f;
-					}
-				}
+            if (ImGui::SliderFloat("##v", &currentAnimationSeconds, 0, secondsLength, "%.3f"))
+            {
+                animationPlaying = true;
+                animationSpeed = 0.0f;
+            }
 
-				ImGui::TreePop();
+            ImGui::PopID();
 
-				index++;
-			}
-		}
-	}
+            int index = 0;
 
-	ImGui::End();
+            for (const Model::Animation& animation : model->GetAnimations())
+            {
+                ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf;
+
+                ImGui::TreeNodeEx(&animation, nodeFlags, animation.name.c_str());
+
+                // ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
+                if (ImGui::IsItemClicked())
+                {
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                    {
+                        animationPlaying = true;
+                        currentAnimationIndex = index;
+                        currentAnimationSeconds = 0.0f;
+                        animationSpeed = 1.0f;
+                    }
+                }
+
+                ImGui::TreePop();
+
+                index++;
+            }
+        }
+    }
+
+    ImGui::End();
 }
 
-// ƒ}ƒeƒŠƒAƒ‹GUI•`‰æ
+// ãƒãƒ†ãƒªã‚¢ãƒ«GUIæç”»
 void ModelViewerScene::DrawMaterialGUI()
 {
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	ImGui::SetNextWindowPos(ImVec2(pos.x + 970, pos.y + 350), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    ImGui::SetNextWindowPos(ImVec2(pos.x + 970, pos.y + 350), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
 
-	if (ImGui::Begin("Material", nullptr, ImGuiWindowFlags_None))
-	{
-		if (model != nullptr)
-		{
-			const char* shaderNames[] =
-			{
-				"Basic",
-				"Lambert",
-			};
-			ImGui::Combo("Shader", &shaderId, shaderNames, _countof(shaderNames));
+    if (ImGui::Begin("Material", nullptr, ImGuiWindowFlags_None))
+    {
+        if (model != nullptr)
+        {
+            const char* shaderNames[] = {
+                "Basic",
+                "Lambert",
+            };
+            ImGui::Combo("Shader", &shaderId, shaderNames, _countof(shaderNames));
 
-			int index = 0;
-			for (const Model::Material& material : model->GetMaterials())
-			{
-				ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
-					| ImGuiTreeNodeFlags_OpenOnDoubleClick;
+            int index = 0;
 
-				if (ImGui::TreeNodeEx(&material, nodeFlags, material.name.c_str()))
-				{
-					ImGui::Text("BaseMap");
-					ImGui::Image(material.baseMap.Get(), ImVec2(50, 50));
-					DirectX::XMFLOAT4 baseColor = material.baseColor;
-					ImGui::ColorEdit4("BaseColor", &baseColor.x, ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
+            for (const Model::Material& material : model->GetMaterials())
+            {
+                ImGuiTreeNodeFlags nodeFlags =
+                    ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-					ImGui::TreePop();
-				}
+                if (ImGui::TreeNodeEx(&material, nodeFlags, material.name.c_str()))
+                {
+                    ImGui::Text("BaseMap");
+                    ImGui::Image(material.baseMap.Get(), ImVec2(50, 50));
+                    DirectX::XMFLOAT4 baseColor = material.baseColor;
+                    ImGui::ColorEdit4("BaseColor", &baseColor.x,
+                                      ImGuiColorEditFlags_NoPicker | ImGuiColorEditFlags_NoInputs);
 
-				index++;
-			}
-		}
-	}
+                    ImGui::TreePop();
+                }
 
-	ImGui::End();
+                index++;
+            }
+        }
+    }
+
+    ImGui::End();
 }

@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <imgui.h>
 #include <DirectXTex.h>
 #include "Graphics.h"
@@ -11,10 +11,20 @@
 
 class ObservedClear : public SceneClear
 {
-public:
-    explicit ObservedClear(bool& finished) : finished(finished) {}
-    void Finalize() override { finished = true; SceneClear::Finalize(); }
-private:
+  public:
+
+    explicit ObservedClear(bool& finished) : finished(finished)
+    {
+    }
+
+    void Finalize() override
+    {
+        finished = true;
+        SceneClear::Finalize();
+    }
+
+  private:
+
     bool& finished;
 };
 
@@ -26,8 +36,8 @@ int main()
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = L"ClearRenderTest";
     RegisterClassW(&wc);
-    HWND window = CreateWindowW(wc.lpszClassName, L"Clear test", WS_POPUP,
-        0, 0, 1280, 720, nullptr, nullptr, wc.hInstance, nullptr);
+    HWND window = CreateWindowW(wc.lpszClassName, L"Clear test", WS_POPUP, 0, 0, 1280, 720, nullptr, nullptr,
+                                wc.hInstance, nullptr);
     auto& graphics = Graphics::Instance();
     graphics.Initialize(window);
     ImGuiRenderer::Initialize(window, graphics.GetDevice(), graphics.GetDeviceContext());
@@ -45,11 +55,13 @@ int main()
         player.Update(10);
         assert(player.GetPosition().x == 0);
     }
+
     Audio audio;
     bool finished = false;
     auto& manager = SceneManager::Instance();
     manager.ChangeScene(std::make_shared<ObservedClear>(finished));
-    manager.Update(30); // Loading time must not skip the sequence.
+    manager.Update(30);
+
     for (int frame = 0; frame < 640; ++frame)
     {
         ImGuiRenderer::NewFrame();
@@ -58,6 +70,7 @@ int main()
         manager.Render(0);
         manager.DrawGUI();
         ImGuiRenderer::Render(graphics.GetDeviceContext());
+
         if (frame == 60 || frame == 230 || frame == 400)
         {
             Microsoft::WRL::ComPtr<ID3D11RenderTargetView> target;
@@ -65,14 +78,20 @@ int main()
             Microsoft::WRL::ComPtr<ID3D11Resource> resource;
             target->GetResource(resource.GetAddressOf());
             DirectX::ScratchImage capture;
-            assert(SUCCEEDED(DirectX::CaptureTexture(graphics.GetDevice(), graphics.GetDeviceContext(), resource.Get(), capture)));
+            assert(SUCCEEDED(DirectX::CaptureTexture(graphics.GetDevice(), graphics.GetDeviceContext(),
+                                                     resource.Get(), capture)));
             wchar_t filename[128];
             swprintf_s(filename, L"obj/clear-preview-%03d.png", frame);
-            assert(SUCCEEDED(DirectX::SaveToWICFile(*capture.GetImage(0,0,0), DirectX::WIC_FLAGS_NONE,
-                DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG), filename)));
+            assert(SUCCEEDED(DirectX::SaveToWICFile(*capture.GetImage(0, 0, 0), DirectX::WIC_FLAGS_NONE,
+                                                    DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG), filename)));
         }
-        if (frame < 550) assert(!finished);
+
+        if (frame < 550)
+        {
+            assert(!finished);
+        }
     }
+
     assert(finished);
     manager.Clear();
     ImGuiRenderer::Finalize();

@@ -1,23 +1,24 @@
-#pragma once
+ï»¿#pragma once
 
 #include <Windows.h>
 #include <d3d11.h>
 
 class ImGuiRenderer
 {
-public:
-	// ‰Šú‰»
-	static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* dc);
-	
-	// I—¹‰»
-	static void Finalize();
+  public:
 
-	// ƒtƒŒ[ƒ€ŠJnˆ—
-	static void NewFrame();
+    // åˆæœŸåŒ–
+    static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* dc);
 
-	// •`‰æÀs
-	static void Render(ID3D11DeviceContext* context);
+    // çµ‚äº†åŒ–
+    static void Finalize();
 
-	// WIN32ƒƒbƒZ[ƒWƒnƒ“ƒhƒ‰[
-	static LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    // ãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹å‡¦ç†
+    static void NewFrame();
+
+    // æç”»å®Ÿè¡Œ
+    static void Render(ID3D11DeviceContext* context);
+
+    // WIN32ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒ³ãƒ‰ãƒ©ãƒ¼
+    static LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };

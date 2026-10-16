@@ -1,12 +1,12 @@
 #include "Sprite.hlsli"
 
-// ’¸“_ƒVƒF[ƒ_[ƒGƒ“ƒgƒŠƒ|ƒCƒ“ƒg
+// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã‚¨ãƒ³ãƒˆãƒªãƒã‚¤ãƒ³ãƒˆ
 VsOutput main(float4 position : POSITION, float4 color : COLOR, float2 texcoord : TEXCOORD)
 {
-	VsOutput vout;
-	vout.position = position;
-	vout.color = color;
-	vout.texcoord = texcoord;
+    VsOutput vout;
+    vout.position = position;
+    vout.color = color;
+    vout.texcoord = texcoord;
 
-	return vout;
+    return vout;
 }

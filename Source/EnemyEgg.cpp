@@ -1,41 +1,44 @@
-#include "ModelManager.h"
+﻿#include "ModelManager.h"
 #include "EnemyEgg.h"
 
 #include "EnemyManager.h"
 #include "EnemyScatter.h"
 
-EnemyEgg::EnemyEgg(
-	ID3D11Device* device,
-	Player* player,
-	const DirectX::XMFLOAT3& spawnPosition)
-	: device(device)
-	, player(player)
+// コンストラクタ
+EnemyEgg::EnemyEgg(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition)
+    : device(device), player(player)
 {
-	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/egg.gltf");
-	position = spawnPosition;
-	scale = { 0.1f, 0.1f, 0.1f };
-	radius = 0.25f;
-	height = 0.4f;
-	health = 1;
-	useGravity = true;
-	UpdateTransform();
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/egg.gltf");
+    position = spawnPosition;
+    scale = {0.1f, 0.1f, 0.1f};
+    radius = 0.25f;
+    height = 0.4f;
+    health = 1;
+    useGravity = true;
+    UpdateTransform();
 }
 
+// 更新処理
 void EnemyEgg::Update(float elapsedTime)
 {
-	UpdateGroundPhysics(elapsedTime);
-	UpdateInvincibleTimer(elapsedTime);
-	UpdateTransform();
+    UpdateGroundPhysics(elapsedTime);
+    UpdateInvincibleTimer(elapsedTime);
+    UpdateTransform();
 }
 
 void EnemyEgg::OnLanding()
 {
-	Destroy();
-	if (!device || !player) return;
-	constexpr int SCATTER_COUNT = 10;
-	for (int i = 0; i < SCATTER_COUNT; ++i)
-	{
-		EnemyManager::Instance().Register(
-			std::make_shared<EnemyScatter>(device, player, position));
-	}
+    Destroy();
+
+    if (!device || !player)
+    {
+        return;
+    }
+
+    constexpr int SCATTER_COUNT = 10;
+
+    for (int i = 0; i < SCATTER_COUNT; ++i)
+    {
+        EnemyManager::Instance().Register(std::make_shared<EnemyScatter>(device, player, position));
+    }
 }

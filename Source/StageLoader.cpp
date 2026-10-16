@@ -1,4 +1,4 @@
-#include "StageLoader.h"
+ï»¿#include "StageLoader.h"
 #include "BossGate.h"
 #include <fstream>
 #include <iostream>
@@ -12,201 +12,201 @@
 
 using json = nlohmann::json;
 
-
-// ‚±‚ÌCPP“à‚¾‚¯‚Åg—p‚·‚éAƒXƒe[ƒWJSON‰ğÍ—p‚Ì•â•ŠÖ”‚ğ‚Ü‚Æ‚ß‚é
+// ã“ã®CPPå†…ã ã‘ã§ä½¿ç”¨ã™ã‚‹ã€ã‚¹ãƒ†ãƒ¼ã‚¸JSONè§£æç”¨ã®è£œåŠ©é–¢æ•°ã‚’ã¾ã¨ã‚ã‚‹
 namespace
 {
-    // objects”z—ñ‚Ì1Œ‚ğŒŸØ‚µAStageObjectData‚Ö•ÏŠ·‚·‚éB
-    // ¬Œ÷‚¾‚¯outputObject‚ğXV‚·‚é‚½‚ßA¸”s‚É“r’†‚Ü‚Å‚Ì’l‚Íc‚ç‚È‚¢B
-    bool ParseStageObject(const json& item, std::size_t objectIndex, const TileTypeManager& tileTypeManager, StageObjectData& outputObject)
+    // objectsé…åˆ—ã®1ä»¶ã‚’æ¤œè¨¼ã—ã€StageObjectDataã¸å¤‰æ›ã™ã‚‹
+    // æˆåŠŸæ™‚ã ã‘outputObjectã‚’æ›´æ–°ã™ã‚‹ãŸã‚ã€å¤±æ•—æ™‚ã«é€”ä¸­ã¾ã§ã®å€¤ã¯æ®‹ã‚‰ãªã„
+    bool ParseStageObject(const json& item, std::size_t objectIndex, const TileTypeManager& tileTypeManager,
+                          StageObjectData& outputObject)
     {
-        // È—ª‰Â”\‚È‰ñ“]‚ÆƒXƒP[ƒ‹‚É‚ÍAStageObjectData‚Ì‰Šú’l‚ğg—p‚·‚é
+        // çœç•¥å¯èƒ½ãªå›è»¢ã¨ã‚¹ã‚±ãƒ¼ãƒ«ã«ã¯ã€StageObjectDataã®åˆæœŸå€¤ã‚’ä½¿ç”¨ã™ã‚‹
         StageObjectData loadedObjectData;
 
-        // objects”z—ñ‚ÌŠe—v‘f‚ÍA”z’uî•ñ‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚é
+        // objectsé…åˆ—ã®å„è¦ç´ ã¯ã€é…ç½®æƒ…å ±ã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: objects[" << objectIndex << "].typeId‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: objects[" << objectIndex << "].typeIdãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ƒ^ƒCƒ‹’è‹`‚Æ‚Ì‘Î‰•t‚¯‚É•K—v‚ÈtypeId‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
+        // ã‚¿ã‚¤ãƒ«å®šç¾©ã¨ã®å¯¾å¿œä»˜ã‘ã«å¿…è¦ãªtypeIdãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
         if (!item.count("typeId"))
         {
-            std::cerr << "ƒGƒ‰[: typeId ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: typeId ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ”z’uÀ•W‚ğ•\‚·position‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
+        // é…ç½®åº§æ¨™ã‚’è¡¨ã™positionãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
         if (!item.count("position"))
         {
-            std::cerr << "ƒGƒ‰[: position ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // typeId‚Í¬”‚â•¶š—ñ‚ğ‹–‰Â‚¹‚¸AJSON®”‚ÉŒÀ’è‚·‚é
+        // typeIdã¯å°æ•°ã‚„æ–‡å­—åˆ—ã‚’è¨±å¯ã›ãšã€JSONæ•´æ•°ã«é™å®šã™ã‚‹
         if (!item.at("typeId").is_number_integer())
         {
-            std::cerr << "ƒGƒ‰[: typeId‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: typeIdãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // Œ^‚ğŠm”F‚µ‚½Œã‚ÅAŒŸØ‚Ég—p‚·‚étypeId‚ğ®”‚Æ‚µ‚Äæ“¾‚·‚é
+        // å‹ã‚’ç¢ºèªã—ãŸå¾Œã§ã€æ¤œè¨¼ã«ä½¿ç”¨ã™ã‚‹typeIdã‚’æ•´æ•°ã¨ã—ã¦å–å¾—ã™ã‚‹
         int typeId = item["typeId"].get<int>();
 
-        // 0‚Í–¢İ’è’l‚Æ‚µ‚Äˆµ‚¤‚½‚ßAtypeId‚Í1ˆÈã‚ÉŒÀ’è‚·‚é
+        // 0ã¯æœªè¨­å®šå€¤ã¨ã—ã¦æ‰±ã†ãŸã‚ã€typeIdã¯1ä»¥ä¸Šã«é™å®šã™ã‚‹
         if (typeId <= 0)
         {
-            std::cerr << "ƒGƒ‰[: typeId‚ª³‚µ‚¢’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: typeIdãŒæ­£ã—ã„å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // TileTypes.json‚É“o˜^‚³‚ê‚Ä‚¢‚È‚¢typeId‚Í”z’u‚Å‚«‚È‚¢
+        // TileTypes.jsonã«ç™»éŒ²ã•ã‚Œã¦ã„ãªã„typeIdã¯é…ç½®ã§ããªã„
         if (tileTypeManager.GetTileInfo(typeId) == nullptr)
         {
-            std::cerr << "ƒGƒ‰[: ƒXƒe[ƒWJSON‚ª‘¶İ‚µ‚È‚¢ƒ^ƒCƒ‹‚Å‚·B" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: ã‚¹ãƒ†ãƒ¼ã‚¸JSONãŒå­˜åœ¨ã—ãªã„ã‚¿ã‚¤ãƒ«ã§ã™ã€‚" << std::endl;
             return false;
         }
 
-        // ŒŸØÏ‚İ‚ÌID‚ğˆêƒf[ƒ^‚Ö•Û‘¶‚·‚é
+        // æ¤œè¨¼æ¸ˆã¿ã®IDã‚’ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸ä¿å­˜ã™ã‚‹
         loadedObjectData.typeId = typeId;
 
-        // 2.5D‚Ì”z’uÀ•W‚Æ‚µ‚ÄAposition‚Íx‚Æy‚ğ‚ÂƒIƒuƒWƒFƒNƒg‚ÉŒÀ’è‚·‚é
+        // 2.5Dã®é…ç½®åº§æ¨™ã¨ã—ã¦ã€positionã¯xã¨yã‚’æŒã¤ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«é™å®šã™ã‚‹
         const json& position = item.at("position");
 
         if (!position.is_object())
         {
-            std::cerr << "ƒGƒ‰[: position‚ÍƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: positionã¯ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // position‚Å‚Íx‚Æy‚Ì—¼•û‚ğ•K{‚Æ‚·‚éBZ‚ÍƒQ[ƒ€‘¤‚ÅŒÅ’è‚·‚é‚½‚ß“Ç‚İ‚Ü‚È‚¢
+        // positionã§ã¯xã¨yã®ä¸¡æ–¹ã‚’å¿…é ˆã¨ã™ã‚‹ã€‚Zã¯ã‚²ãƒ¼ãƒ å´ã§å›ºå®šã™ã‚‹ãŸã‚èª­ã¿è¾¼ã¾ãªã„
         if (!position.count("x"))
         {
-            std::cerr << "ƒGƒ‰[: position.x ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.x ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!position.count("y"))
         {
-            std::cerr << "ƒGƒ‰[: position.y ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.y ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // À•W‚Í®”•\‹L‚Æ¬”•\‹L‚Ì‚Ç‚¿‚ç‚à‹–‰Â‚·‚é
+        // åº§æ¨™ã¯æ•´æ•°è¡¨è¨˜ã¨å°æ•°è¡¨è¨˜ã®ã©ã¡ã‚‰ã‚‚è¨±å¯ã™ã‚‹
         if (!position.at("x").is_number())
         {
-            std::cerr << "ƒGƒ‰[: position.x ‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.x ãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // À•W‚Í®”•\‹L‚Æ¬”•\‹L‚Ì‚Ç‚¿‚ç‚à‹–‰Â‚·‚é
+        // åº§æ¨™ã¯æ•´æ•°è¡¨è¨˜ã¨å°æ•°è¡¨è¨˜ã®ã©ã¡ã‚‰ã‚‚è¨±å¯ã™ã‚‹
         if (!position.at("y").is_number())
         {
-            std::cerr << "ƒGƒ‰[: position.y ‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.y ãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // À•WŒvZ‚Ég—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ‹‘”Û‚·‚é
+        // åº§æ¨™è¨ˆç®—ã«ä½¿ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’æ‹’å¦ã™ã‚‹
         if (!std::isfinite(position.at("x").get<float>()))
         {
-            std::cerr << "ƒGƒ‰[: position.x ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.x ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!std::isfinite(position.at("y").get<float>()))
         {
-            std::cerr << "ƒGƒ‰[: position.y ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.y ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ŒŸØÏ‚İ‚ÌÀ•W‚ğAƒQ[ƒ€‘¤‚Åˆµ‚¤1Œ•ª‚Ìƒf[ƒ^‚ÖŠi”[‚·‚é
+        // æ¤œè¨¼æ¸ˆã¿ã®åº§æ¨™ã‚’ã€ã‚²ãƒ¼ãƒ å´ã§æ‰±ã†1ä»¶åˆ†ã®ãƒ‡ãƒ¼ã‚¿ã¸æ ¼ç´ã™ã‚‹
         loadedObjectData.positionX = position.at("x").get<float>();
 
         loadedObjectData.positionY = position.at("y").get<float>();
 
-        // rotationDegrees‚ÍÈ—ª‰Â”\BÈ—ª‚ÍStageObjectData‚Ì‰Šú’l0“x‚ğg—p‚·‚é
+        // rotationDegreesã¯çœç•¥å¯èƒ½ã€‚çœç•¥æ™‚ã¯StageObjectDataã®åˆæœŸå€¤0åº¦ã‚’ä½¿ç”¨ã™ã‚‹
         if (item.count("rotationDegrees"))
         {
-            // ‰ñ“]Šp“x‚Í®”•\‹L‚Æ¬”•\‹L‚Ì‚Ç‚¿‚ç‚à‹–‰Â‚·‚é
+            // å›è»¢è§’åº¦ã¯æ•´æ•°è¡¨è¨˜ã¨å°æ•°è¡¨è¨˜ã®ã©ã¡ã‚‰ã‚‚è¨±å¯ã™ã‚‹
             if (!item.at("rotationDegrees").is_number())
             {
-                std::cerr << "ƒGƒ‰[: rotationDegrees ‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: rotationDegrees ãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
             float rotationDegrees = item.at("rotationDegrees").get<float>();
 
-            // ‰ñ“]ŒvZ‚Ég—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ‹‘”Û‚·‚é
+            // å›è»¢è¨ˆç®—ã«ä½¿ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’æ‹’å¦ã™ã‚‹
             if (!std::isfinite(rotationDegrees))
             {
-                std::cerr << "ƒGƒ‰[: rotationDegrees ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: rotationDegrees ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
             loadedObjectData.rotationDegrees = rotationDegrees;
         }
 
-        // scale‚ÍÈ—ª‰Â”\BÈ—ª‚ÍStageObjectData‚Ì‰Šú’l1.0‚ğg—p‚·‚é
+        // scaleã¯çœç•¥å¯èƒ½ã€‚çœç•¥æ™‚ã¯StageObjectDataã®åˆæœŸå€¤1.0ã‚’ä½¿ç”¨ã™ã‚‹
         if (item.count("scale"))
         {
             const json& scale = item.at("scale");
 
             if (!scale.is_object())
             {
-                std::cerr << "ƒGƒ‰[: scale‚ÍƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scaleã¯ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
-            // scale‚ğw’è‚·‚éê‡‚Íx‚Æy‚Ì—¼•û‚ğ•K{‚Æ‚·‚é
+            // scaleã‚’æŒ‡å®šã™ã‚‹å ´åˆã¯xã¨yã®ä¸¡æ–¹ã‚’å¿…é ˆã¨ã™ã‚‹
             if (!scale.count("x"))
             {
-                std::cerr << "ƒGƒ‰[: scale.x ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.x ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
             if (!scale.count("y"))
             {
-                std::cerr << "ƒGƒ‰[: scale.y ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.y ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
-            // Šg‘å—¦‚Í®”•\‹L‚Æ¬”•\‹L‚Ì‚Ç‚¿‚ç‚à‹–‰Â‚·‚é
+            // æ‹¡å¤§ç‡ã¯æ•´æ•°è¡¨è¨˜ã¨å°æ•°è¡¨è¨˜ã®ã©ã¡ã‚‰ã‚‚è¨±å¯ã™ã‚‹
             if (!scale.at("x").is_number())
             {
-                std::cerr << "ƒGƒ‰[: scale.x ‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.x ãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
             if (!scale.at("y").is_number())
             {
-                std::cerr << "ƒGƒ‰[: scale.y ‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.y ãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
-            // Šg‘å—¦‚Æ‚µ‚Äg—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ‹‘”Û‚·‚é
+            // æ‹¡å¤§ç‡ã¨ã—ã¦ä½¿ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’æ‹’å¦ã™ã‚‹
             if (!std::isfinite(scale.at("x").get<float>()))
             {
-                std::cerr << "ƒGƒ‰[: scale.x ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.x ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
             if (!std::isfinite(scale.at("y").get<float>()))
             {
-                std::cerr << "ƒGƒ‰[: scale.y ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.y ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
 
-            // ”½“]‚â‘å‚«‚³0‚Ìƒ‚ƒfƒ‹‚ğˆÓ}‚¹‚¸ì‚ç‚È‚¢‚æ‚¤A³‚Ì’l‚¾‚¯‚ğ‹–‰Â‚·‚é
+            // åè»¢ã‚„å¤§ãã•0ã®ãƒ¢ãƒ‡ãƒ«ã‚’æ„å›³ã›ãšä½œã‚‰ãªã„ã‚ˆã†ã€æ­£ã®å€¤ã ã‘ã‚’è¨±å¯ã™ã‚‹
             if (scale.at("x").get<float>() <= 0.0f)
             {
-                std::cerr << "ƒGƒ‰[: scale.x ‚ª0ˆÈ‰º‚Å‚·B" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.x ãŒ0ä»¥ä¸‹ã§ã™ã€‚" << std::endl;
                 return false;
             }
 
             if (scale.at("y").get<float>() <= 0.0f)
             {
-                std::cerr << "ƒGƒ‰[: scale.y ‚ª0ˆÈ‰º‚Å‚·B" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: scale.y ãŒ0ä»¥ä¸‹ã§ã™ã€‚" << std::endl;
                 return false;
             }
 
@@ -214,37 +214,34 @@ namespace
             loadedObjectData.scaleY = scale.at("y").get<float>();
         }
 
-        // ‚·‚×‚Ä¬Œ÷‚µ‚½ê‡‚¾‚¯o—Íæ‚Ö‘ã“ü‚µA“r’†‚Ü‚Å‚Ìƒf[ƒ^‚ğc‚³‚È‚¢
+        // ã™ã¹ã¦æˆåŠŸã—ãŸå ´åˆã ã‘å‡ºåŠ›å…ˆã¸ä»£å…¥ã—ã€é€”ä¸­ã¾ã§ã®ãƒ‡ãƒ¼ã‚¿ã‚’æ®‹ã•ãªã„
         if (BossGate::IsGateType(loadedObjectData.typeId) &&
             (loadedObjectData.rotationDegrees != 0.0f || loadedObjectData.scaleX != 1.0f))
         {
             std::cerr << "Gate placements require rotationDegrees=0 and scale.x=1." << std::endl;
             return false;
         }
+
         outputObject = loadedObjectData;
 
         return true;
-
     }
 
-    // JSONã‚Ì“G–¼‚ğEnemyType‚Ö•ÏŠ·‚·‚éB–¢‘Î‰–¼‚Å‚Ío—Í‚ğ•ÏX‚¹‚¸false‚ğ•Ô‚·B
-    bool TryParseEnemyType(std::string_view enemyTypeName,EnemyType& outputEnemyType)
+    // JSONä¸Šã®æ•µåã‚’EnemyTypeã¸å¤‰æ›ã™ã‚‹ã€‚æœªå¯¾å¿œåã§ã¯å‡ºåŠ›ã‚’å¤‰æ›´ã›ãšfalseã‚’è¿”ã™
+    bool TryParseEnemyType(std::string_view enemyTypeName, EnemyType& outputEnemyType)
     {
-        constexpr std::array<std::pair<std::string_view, EnemyType>,9> ENEMY_TYPE_MAPPINGS =
-        { 
-            {
-                { "Wave",    EnemyType::Wave },
-                { "Scatter", EnemyType::Scatter },
-                { "Mage",    EnemyType::Mage },
-                { "Fan",     EnemyType::Fan },
-                { "Hover",   EnemyType::Hover },
-                { "Fly",     EnemyType::Fly },
-                { "Egg",     EnemyType::Egg },
-                { "Boss",    EnemyType::Boss },
-                { "Vacuum",  EnemyType::Vacuum }
-            } 
-        };
-          
+        constexpr std::array<std::pair<std::string_view, EnemyType>, 10> ENEMY_TYPE_MAPPINGS = {
+            {{"Wave", EnemyType::Wave},
+             {"Scatter", EnemyType::Scatter},
+             {"Mage", EnemyType::Mage},
+             {"Fan", EnemyType::Fan},
+             {"Hover", EnemyType::Hover},
+             {"Fly", EnemyType::Fly},
+             {"Egg", EnemyType::Egg},
+             {"Boss", EnemyType::Boss},
+             {"Vacuum", EnemyType::Vacuum},
+             {"Walker", EnemyType::Walker}}};
+
         for (auto maps : ENEMY_TYPE_MAPPINGS)
         {
             if (maps.first == enemyTypeName)
@@ -257,7 +254,7 @@ namespace
         return false;
     }
 
-    // JSONã‚Ì•ûŒü–¼‚ğ”z’u—p‚Ì—ñ‹“Œ^‚Ö•ÏŠ·‚µA•\‹L—h‚ê‚â•s³’l‚ğ‹‘”Û‚·‚éB
+    // JSONä¸Šã®æ–¹å‘åã‚’é…ç½®ç”¨ã®åˆ—æŒ™å‹ã¸å¤‰æ›ã—ã€è¡¨è¨˜æºã‚Œã‚„ä¸æ­£å€¤ã‚’æ‹’å¦ã™ã‚‹
     bool TryParseEnemySpawnDirection(std::string_view directionName, EnemySpawnDirection& outputDirection)
     {
         if (directionName == "Left")
@@ -275,27 +272,28 @@ namespace
         return false;
     }
 
-    // enemies”z—ñ‚Ì1Œ‚ğŒŸØ‚µAƒQ[ƒ€‘¤‚Å¶¬‚Ég‚¦‚éEnemySpawnData‚Ö•ÏŠ·‚·‚éB
-    // “r’†‚Å¸”s‚µ‚Ä‚àoutputEnemy‚ğ•ÏX‚µ‚È‚¢‚æ‚¤Aˆêƒf[ƒ^‚Ö“Ç‚İ‚ñ‚Å‚©‚ç”½‰f‚·‚éB
+    // enemiesé…åˆ—ã®1ä»¶ã‚’æ¤œè¨¼ã—ã€ã‚²ãƒ¼ãƒ å´ã§ç”Ÿæˆã«ä½¿ãˆã‚‹EnemySpawnDataã¸å¤‰æ›ã™ã‚‹
+    // é€”ä¸­ã§å¤±æ•—ã—ã¦ã‚‚outputEnemyã‚’å¤‰æ›´ã—ãªã„ã‚ˆã†ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸èª­ã¿è¾¼ã‚“ã§ã‹ã‚‰åæ˜ ã™ã‚‹
     bool ParseEnemySpawn(const json& item, std::size_t enemyIndex, EnemySpawnData& outputEnemy)
     {
         EnemySpawnData loadedEnemyData;
 
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: enemies[" << enemyIndex << "]‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex << "]ãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚"
+                      << std::endl;
             return false;
         }
 
         if (item.count("enemyType") == 0)
         {
-            std::cerr << "ƒGƒ‰[: enemyType‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemyTypeãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!item.at("enemyType").is_string())
         {
-            std::cerr << "ƒGƒ‰[: enemyType‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemyTypeãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
@@ -303,13 +301,14 @@ namespace
 
         if (!TryParseEnemyType(enemyTypeName, loadedEnemyData.enemyType))
         {
-            std::cerr << "ƒGƒ‰[: enemyIndex["<< enemyIndex << "]”Ô–Ú‚Ì" << enemyTypeName << "‚ª–¢’è‹`‚Å‚·B" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemyIndex[" << enemyIndex << "]ç•ªç›®ã®" << enemyTypeName << "ãŒæœªå®šç¾©ã§ã™ã€‚"
+                      << std::endl;
             return false;
         }
 
         if (item.count("position") == 0)
         {
-            std::cerr << "ƒGƒ‰[: enemies["<< enemyIndex << "].position‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex << "].positionãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
@@ -317,31 +316,31 @@ namespace
 
         if (!position.is_object())
         {
-            std::cerr << "position‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "positionãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!position.count("x"))
         {
-            std::cerr << "ƒGƒ‰[: enemies[" << enemyIndex << "].position.x‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex << "].position.xãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!position.count("y"))
         {
-            std::cerr << "ƒGƒ‰[: enemies[" << enemyIndex << "].position.y‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex << "].position.yãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!position.at("x").is_number())
         {
-            std::cerr << "ƒGƒ‰[: position.x‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.xãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!position.at("y").is_number())
         {
-            std::cerr << "ƒGƒ‰[: position.y‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.yãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
@@ -350,25 +349,26 @@ namespace
 
         if (!std::isfinite(positionX))
         {
-            std::cerr << "ƒGƒ‰[: position.x ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.x ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (!std::isfinite(positionY))
         {
-            std::cerr << "ƒGƒ‰[: position.y ‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: position.y ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         loadedEnemyData.positionX = positionX;
         loadedEnemyData.positionY = positionY;
 
-        // direction‚ÍÈ—ª‰Â”\BÈ—ª‚ÍEnemySpawnData‚ÌŠù’è’lRight‚ğg—p‚·‚éB
+        // directionã¯çœç•¥å¯èƒ½ã€‚çœç•¥æ™‚ã¯EnemySpawnDataã®æ—¢å®šå€¤Rightã‚’ä½¿ç”¨ã™ã‚‹
         if (item.count("direction") > 0)
         {
             if (!item.at("direction").is_string())
             {
-                std::cerr << "ƒGƒ‰[: enemies[" << enemyIndex << "].direction‚ª•¶š—ñ‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex << "].directionãŒæ–‡å­—åˆ—ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚"
+                          << std::endl;
                 return false;
             }
 
@@ -376,373 +376,364 @@ namespace
 
             if (!TryParseEnemySpawnDirection(directionName, loadedEnemyData.enemySpawnDirection))
             {
-                std::cerr << "ƒGƒ‰[: enemies[" << enemyIndex << "].direction‚ÍLeft‚Ü‚½‚ÍRight‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B" << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: enemies[" << enemyIndex
+                          << "].directionã¯Leftã¾ãŸã¯Rightã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚" << std::endl;
                 return false;
             }
         }
 
-        // ‚·‚×‚Ä‚Ì€–Ú‚ª³í‚Èê‡‚¾‚¯AŒÄ‚Ño‚µŒ³‚Ìo—Í‚ğXV‚·‚éB
+        // ã™ã¹ã¦ã®é …ç›®ãŒæ­£å¸¸ãªå ´åˆã ã‘ã€å‘¼ã³å‡ºã—å…ƒã®å‡ºåŠ›ã‚’æ›´æ–°ã™ã‚‹
         outputEnemy = loadedEnemyData;
-        return true;    
+        return true;
     }
 
-    // fallRespawnZones”z—ñ‚Ì1Œ‚ğŒŸØ‚µAƒQ[ƒ€‚Å”ÍˆÍ”»’è‚Ég‚¦‚éƒf[ƒ^‚Ö•ÏŠ·‚·‚éB
-    // ‘S€–Ú‚ÌŒŸØ‚É¬Œ÷‚µ‚½ê‡‚¾‚¯outputZone‚ğXV‚·‚éB
-    bool ParseFallRespawnZone(
-        const json& item,
-        std::size_t zoneIndex,
-        FallRespawnZoneData& outputZone)
+    // fallRespawnZonesé…åˆ—ã®1ä»¶ã‚’æ¤œè¨¼ã—ã€ã‚²ãƒ¼ãƒ ã§ç¯„å›²åˆ¤å®šã«ä½¿ãˆã‚‹ãƒ‡ãƒ¼ã‚¿ã¸å¤‰æ›ã™ã‚‹
+    // å…¨é …ç›®ã®æ¤œè¨¼ã«æˆåŠŸã—ãŸå ´åˆã ã‘outputZoneã‚’æ›´æ–°ã™ã‚‹
+    bool ParseFallRespawnZone(const json& item, std::size_t zoneIndex, FallRespawnZoneData& outputZone)
     {
-        // “Ç‚İ‚İ“r’†‚Ì¸”s‚ÅŒÄ‚Ño‚µŒ³‚Ö•sŠ®‘S‚È’l‚ğc‚³‚È‚¢‚½‚ßAˆêƒf[ƒ^‚ğg‚¤B
+        // èª­ã¿è¾¼ã¿é€”ä¸­ã®å¤±æ•—ã§å‘¼ã³å‡ºã—å…ƒã¸ä¸å®Œå…¨ãªå€¤ã‚’æ®‹ã•ãªã„ãŸã‚ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã‚’ä½¿ã†
         FallRespawnZoneData loadedZoneData;
 
-        // ”z—ñ‚ÌŠe—v‘f‚ÍA4‚Â‚Ì‹«ŠE’l‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚éB
+        // é…åˆ—ã®å„è¦ç´ ã¯ã€4ã¤ã®å¢ƒç•Œå€¤ã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]ãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // “¯‚¶ŒŸØˆ—‚ğ‚Ü‚Æ‚ß‚Äs‚¦‚é‚æ‚¤A•K{‚Æ‚È‚é‹«ŠE–¼‚ğˆê——‰»‚·‚éB
-        constexpr std::array REQUIRED_FIELD_NAMES
-        {
-            std::string_view("minX"),
-            std::string_view("maxX"),
-            std::string_view("minY"),
-            std::string_view("maxY")
-        };
+        // åŒã˜æ¤œè¨¼å‡¦ç†ã‚’ã¾ã¨ã‚ã¦è¡Œãˆã‚‹ã‚ˆã†ã€å¿…é ˆã¨ãªã‚‹å¢ƒç•Œåã‚’ä¸€è¦§åŒ–ã™ã‚‹
+        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                                  std::string_view("minY"), std::string_view("maxY")};
 
-        // 4‚Â‚Ì‹«ŠE‚É‚Â‚¢‚ÄA‘¶İE”’lŒ^E—LŒÀ’l‚ğ‡”Ô‚ÉŠm”F‚·‚éB
+        // 4ã¤ã®å¢ƒç•Œã«ã¤ã„ã¦ã€å­˜åœ¨ãƒ»æ•°å€¤å‹ãƒ»æœ‰é™å€¤ã‚’é †ç•ªã«ç¢ºèªã™ã‚‹
         for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
-                std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]." << fieldName << "‚ª‘¶İ‚µ‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // ‘¶İŠm”FŒã‚È‚Ì‚ÅAat‚ÅˆÀ‘S‚É‘ÎÛ‚Ì’l‚ğQÆ‚Å‚«‚éB
+            // å­˜åœ¨ç¢ºèªå¾Œãªã®ã§ã€atã§å®‰å…¨ã«å¯¾è±¡ã®å€¤ã‚’å‚ç…§ã§ãã‚‹
             const json& fieldValue = item.at(std::string(fieldName));
 
             if (!fieldValue.is_number())
             {
-                std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]." << fieldName << "‚ª”’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæ•°å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // À•WŒvZ‚É—˜—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ“Ç‚İ‚İ“_‚Å‹‘”Û‚·‚éB
+            // åº§æ¨™è¨ˆç®—ã«åˆ©ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’èª­ã¿è¾¼ã¿æ™‚ç‚¹ã§æ‹’å¦ã™ã‚‹
             const float fieldNumber = fieldValue.get<float>();
 
             if (!std::isfinite(fieldNumber))
             {
-                std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]." << fieldName << "‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
-
         }
 
-        // ‚·‚×‚Ä‚Ì’l‚ğŒŸØ‚µ‚Ä‚©‚çAˆêƒf[ƒ^‚Ö‹«ŠE‚ğŠi”[‚·‚éB
+        // ã™ã¹ã¦ã®å€¤ã‚’æ¤œè¨¼ã—ã¦ã‹ã‚‰ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸å¢ƒç•Œã‚’æ ¼ç´ã™ã‚‹
         loadedZoneData.minX = item.at("minX").get<float>();
         loadedZoneData.maxX = item.at("maxX").get<float>();
         loadedZoneData.minY = item.at("minY").get<float>();
         loadedZoneData.maxY = item.at("maxY").get<float>();
 
-        // •‚ª0‚Ì”ÍˆÍ‚âA¶‰E‚ª‹t“]‚µ‚½”ÍˆÍ‚Í’·•ûŒ`‚Æ‚µ‚Äˆµ‚¦‚È‚¢B
+        // å¹…ãŒ0ã®ç¯„å›²ã‚„ã€å·¦å³ãŒé€†è»¢ã—ãŸç¯„å›²ã¯é•·æ–¹å½¢ã¨ã—ã¦æ‰±ãˆãªã„
         if (loadedZoneData.minX >= loadedZoneData.maxX)
         {
-            std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]‚ÍminX‚æ‚èmaxX‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]ã¯minXã‚ˆã‚ŠmaxXãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // ‚‚³‚ª0‚Ì”ÍˆÍ‚âAã‰º‚ª‹t“]‚µ‚½”ÍˆÍ‚à“ü—Íƒ~ƒX‚Æ‚µ‚Ä‹‘”Û‚·‚éB
+        // é«˜ã•ãŒ0ã®ç¯„å›²ã‚„ã€ä¸Šä¸‹ãŒé€†è»¢ã—ãŸç¯„å›²ã‚‚å…¥åŠ›ãƒŸã‚¹ã¨ã—ã¦æ‹’å¦ã™ã‚‹
         if (loadedZoneData.minY >= loadedZoneData.maxY)
         {
-            std::cerr << "ƒGƒ‰[: fallRespawnZones[" << zoneIndex << "]‚ÍminY‚æ‚èmaxY‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZones[" << zoneIndex << "]ã¯minYã‚ˆã‚ŠmaxYãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // ‚·‚×‚Ä‚ÌŒŸØ‚ğ’Ê‰ß‚µ‚½ƒf[ƒ^‚¾‚¯‚ğŒÄ‚Ño‚µŒ³‚Ö”½‰f‚·‚éB
+        // ã™ã¹ã¦ã®æ¤œè¨¼ã‚’é€šéã—ãŸãƒ‡ãƒ¼ã‚¿ã ã‘ã‚’å‘¼ã³å‡ºã—å…ƒã¸åæ˜ ã™ã‚‹
         outputZone = loadedZoneData;
 
         return true;
     }
 
-    bool ParseBossEncounterZone(
-        const json& item,
-        std::size_t zoneIndex,
-        BossEncounterZoneData& outputZone)
+    bool ParseBossEncounterZone(const json& item, std::size_t zoneIndex, BossEncounterZoneData& outputZone)
     {
-        // “Ç‚İ‚İ“r’†‚Ì¸”s‚ÅŒÄ‚Ño‚µŒ³‚Ö•sŠ®‘S‚È’l‚ğc‚³‚È‚¢‚½‚ßAˆêƒf[ƒ^‚ğg‚¤B
+        // èª­ã¿è¾¼ã¿é€”ä¸­ã®å¤±æ•—ã§å‘¼ã³å‡ºã—å…ƒã¸ä¸å®Œå…¨ãªå€¤ã‚’æ®‹ã•ãªã„ãŸã‚ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã‚’ä½¿ã†
         BossEncounterZoneData loadedZoneData;
 
-        // ”z—ñ‚ÌŠe—v‘f‚ÍA4‚Â‚Ì‹«ŠE’l‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚éB
+        // é…åˆ—ã®å„è¦ç´ ã¯ã€4ã¤ã®å¢ƒç•Œå€¤ã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex << "]ãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // “¯‚¶ŒŸØˆ—‚ğ‚Ü‚Æ‚ß‚Äs‚¦‚é‚æ‚¤A•K{‚Æ‚È‚é‹«ŠE–¼‚ğˆê——‰»‚·‚éB
-        constexpr std::array REQUIRED_FIELD_NAMES
-        {
-            std::string_view("minX"),
-            std::string_view("maxX"),
-            std::string_view("minY"),
-            std::string_view("maxY")
-        };
+        // åŒã˜æ¤œè¨¼å‡¦ç†ã‚’ã¾ã¨ã‚ã¦è¡Œãˆã‚‹ã‚ˆã†ã€å¿…é ˆã¨ãªã‚‹å¢ƒç•Œåã‚’ä¸€è¦§åŒ–ã™ã‚‹
+        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                                  std::string_view("minY"), std::string_view("maxY")};
 
-        // 4‚Â‚Ì‹«ŠE‚É‚Â‚¢‚ÄA‘¶İE”’lŒ^E—LŒÀ’l‚ğ‡”Ô‚ÉŠm”F‚·‚éB
+        // 4ã¤ã®å¢ƒç•Œã«ã¤ã„ã¦ã€å­˜åœ¨ãƒ»æ•°å€¤å‹ãƒ»æœ‰é™å€¤ã‚’é †ç•ªã«ç¢ºèªã™ã‚‹
         for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
-                std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]." << fieldName << "‚ª‘¶İ‚µ‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // ‘¶İŠm”FŒã‚È‚Ì‚ÅAat‚ÅˆÀ‘S‚É‘ÎÛ‚Ì’l‚ğQÆ‚Å‚«‚éB
+            // å­˜åœ¨ç¢ºèªå¾Œãªã®ã§ã€atã§å®‰å…¨ã«å¯¾è±¡ã®å€¤ã‚’å‚ç…§ã§ãã‚‹
             const json& fieldValue = item.at(std::string(fieldName));
 
             if (!fieldValue.is_number())
             {
-                std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]." << fieldName << "‚ª”’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæ•°å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // À•WŒvZ‚É—˜—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ“Ç‚İ‚İ“_‚Å‹‘”Û‚·‚éB
+            // åº§æ¨™è¨ˆç®—ã«åˆ©ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’èª­ã¿è¾¼ã¿æ™‚ç‚¹ã§æ‹’å¦ã™ã‚‹
             const float fieldNumber = fieldValue.get<float>();
 
             if (!std::isfinite(fieldNumber))
             {
-                std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]." << fieldName << "‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
-
         }
 
-        // ‚·‚×‚Ä‚Ì’l‚ğŒŸØ‚µ‚Ä‚©‚çAˆêƒf[ƒ^‚Ö‹«ŠE‚ğŠi”[‚·‚éB
+        // ã™ã¹ã¦ã®å€¤ã‚’æ¤œè¨¼ã—ã¦ã‹ã‚‰ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸å¢ƒç•Œã‚’æ ¼ç´ã™ã‚‹
         loadedZoneData.minX = item.at("minX").get<float>();
         loadedZoneData.maxX = item.at("maxX").get<float>();
         loadedZoneData.minY = item.at("minY").get<float>();
         loadedZoneData.maxY = item.at("maxY").get<float>();
 
-        // •‚ª0‚Ì”ÍˆÍ‚âA¶‰E‚ª‹t“]‚µ‚½”ÍˆÍ‚Í’·•ûŒ`‚Æ‚µ‚Äˆµ‚¦‚È‚¢B
+        // å¹…ãŒ0ã®ç¯„å›²ã‚„ã€å·¦å³ãŒé€†è»¢ã—ãŸç¯„å›²ã¯é•·æ–¹å½¢ã¨ã—ã¦æ‰±ãˆãªã„
         if (loadedZoneData.minX >= loadedZoneData.maxX)
         {
-            std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]‚ÍminX‚æ‚èmaxX‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex
+                      << "]ã¯minXã‚ˆã‚ŠmaxXãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚" << std::endl;
 
             return false;
         }
 
-        // ‚‚³‚ª0‚Ì”ÍˆÍ‚âAã‰º‚ª‹t“]‚µ‚½”ÍˆÍ‚à“ü—Íƒ~ƒX‚Æ‚µ‚Ä‹‘”Û‚·‚éB
+        // é«˜ã•ãŒ0ã®ç¯„å›²ã‚„ã€ä¸Šä¸‹ãŒé€†è»¢ã—ãŸç¯„å›²ã‚‚å…¥åŠ›ãƒŸã‚¹ã¨ã—ã¦æ‹’å¦ã™ã‚‹
         if (loadedZoneData.minY >= loadedZoneData.maxY)
         {
-            std::cerr << "ƒGƒ‰[: bossEncounterZones[" << zoneIndex << "]‚ÍminY‚æ‚èmaxY‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZones[" << zoneIndex
+                      << "]ã¯minYã‚ˆã‚ŠmaxYãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚" << std::endl;
 
             return false;
         }
 
-        // ‚·‚×‚Ä‚ÌŒŸØ‚ğ’Ê‰ß‚µ‚½ƒf[ƒ^‚¾‚¯‚ğŒÄ‚Ño‚µŒ³‚Ö”½‰f‚·‚éB
+        // ã™ã¹ã¦ã®æ¤œè¨¼ã‚’é€šéã—ãŸãƒ‡ãƒ¼ã‚¿ã ã‘ã‚’å‘¼ã³å‡ºã—å…ƒã¸åæ˜ ã™ã‚‹
         outputZone = loadedZoneData;
 
         return true;
     }
 
-    bool CameraLimitZone(
-        const json& item,
-        std::size_t zoneIndex,
-        CameraLimitZoneData& outputZone)
+    bool CameraLimitZone(const json& item, std::size_t zoneIndex, CameraLimitZoneData& outputZone)
     {
-        // “Ç‚İ‚İ“r’†‚Ì¸”s‚ÅŒÄ‚Ño‚µŒ³‚Ö•sŠ®‘S‚È’l‚ğc‚³‚È‚¢‚½‚ßAˆêƒf[ƒ^‚ğg‚¤B
+        // èª­ã¿è¾¼ã¿é€”ä¸­ã®å¤±æ•—ã§å‘¼ã³å‡ºã—å…ƒã¸ä¸å®Œå…¨ãªå€¤ã‚’æ®‹ã•ãªã„ãŸã‚ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã‚’ä½¿ã†
         CameraLimitZoneData loadedZoneData;
 
-        // ”z—ñ‚ÌŠe—v‘f‚ÍA4‚Â‚Ì‹«ŠE’l‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚éB
+        // é…åˆ—ã®å„è¦ç´ ã¯ã€4ã¤ã®å¢ƒç•Œå€¤ã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]ãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // “¯‚¶ŒŸØˆ—‚ğ‚Ü‚Æ‚ß‚Äs‚¦‚é‚æ‚¤A•K{‚Æ‚È‚é‹«ŠE–¼‚ğˆê——‰»‚·‚éB
-        constexpr std::array REQUIRED_FIELD_NAMES
-        {
-            std::string_view("minX"),
-            std::string_view("maxX"),
-            std::string_view("minY"),
-            std::string_view("maxY")
-        };
+        // åŒã˜æ¤œè¨¼å‡¦ç†ã‚’ã¾ã¨ã‚ã¦è¡Œãˆã‚‹ã‚ˆã†ã€å¿…é ˆã¨ãªã‚‹å¢ƒç•Œåã‚’ä¸€è¦§åŒ–ã™ã‚‹
+        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                                  std::string_view("minY"), std::string_view("maxY")};
 
-        // 4‚Â‚Ì‹«ŠE‚É‚Â‚¢‚ÄA‘¶İE”’lŒ^E—LŒÀ’l‚ğ‡”Ô‚ÉŠm”F‚·‚éB
+        // 4ã¤ã®å¢ƒç•Œã«ã¤ã„ã¦ã€å­˜åœ¨ãƒ»æ•°å€¤å‹ãƒ»æœ‰é™å€¤ã‚’é †ç•ªã«ç¢ºèªã™ã‚‹
         for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
-                std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]." << fieldName << "‚ª‘¶İ‚µ‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]." << fieldName << "ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚"
+                          << std::endl;
 
                 return false;
             }
 
-            // ‘¶İŠm”FŒã‚È‚Ì‚ÅAat‚ÅˆÀ‘S‚É‘ÎÛ‚Ì’l‚ğQÆ‚Å‚«‚éB
+            // å­˜åœ¨ç¢ºèªå¾Œãªã®ã§ã€atã§å®‰å…¨ã«å¯¾è±¡ã®å€¤ã‚’å‚ç…§ã§ãã‚‹
             const json& fieldValue = item.at(std::string(fieldName));
 
             if (!fieldValue.is_number())
             {
-                std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]." << fieldName << "‚ª”’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]." << fieldName
+                          << "ãŒæ•°å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // À•WŒvZ‚É—˜—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ“Ç‚İ‚İ“_‚Å‹‘”Û‚·‚éB
+            // åº§æ¨™è¨ˆç®—ã«åˆ©ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’èª­ã¿è¾¼ã¿æ™‚ç‚¹ã§æ‹’å¦ã™ã‚‹
             const float fieldNumber = fieldValue.get<float>();
 
             if (!std::isfinite(fieldNumber))
             {
-                std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]." << fieldName << "‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]." << fieldName
+                          << "ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
-
         }
 
-        // ‚·‚×‚Ä‚Ì’l‚ğŒŸØ‚µ‚Ä‚©‚çAˆêƒf[ƒ^‚Ö‹«ŠE‚ğŠi”[‚·‚éB
+        // ã™ã¹ã¦ã®å€¤ã‚’æ¤œè¨¼ã—ã¦ã‹ã‚‰ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸å¢ƒç•Œã‚’æ ¼ç´ã™ã‚‹
         loadedZoneData.minX = item.at("minX").get<float>();
         loadedZoneData.maxX = item.at("maxX").get<float>();
         loadedZoneData.minY = item.at("minY").get<float>();
         loadedZoneData.maxY = item.at("maxY").get<float>();
 
-        // •‚ª0‚Ì”ÍˆÍ‚âA¶‰E‚ª‹t“]‚µ‚½”ÍˆÍ‚Í’·•ûŒ`‚Æ‚µ‚Äˆµ‚¦‚È‚¢B
+        // å¹…ãŒ0ã®ç¯„å›²ã‚„ã€å·¦å³ãŒé€†è»¢ã—ãŸç¯„å›²ã¯é•·æ–¹å½¢ã¨ã—ã¦æ‰±ãˆãªã„
         if (loadedZoneData.minX >= loadedZoneData.maxX)
         {
-            std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]‚ÍminX‚æ‚èmaxX‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]ã¯minXã‚ˆã‚ŠmaxXãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // ‚‚³‚ª0‚Ì”ÍˆÍ‚âAã‰º‚ª‹t“]‚µ‚½”ÍˆÍ‚à“ü—Íƒ~ƒX‚Æ‚µ‚Ä‹‘”Û‚·‚éB
+        // é«˜ã•ãŒ0ã®ç¯„å›²ã‚„ã€ä¸Šä¸‹ãŒé€†è»¢ã—ãŸç¯„å›²ã‚‚å…¥åŠ›ãƒŸã‚¹ã¨ã—ã¦æ‹’å¦ã™ã‚‹
         if (loadedZoneData.minY >= loadedZoneData.maxY)
         {
-            std::cerr << "ƒGƒ‰[: cameraBounds[" << zoneIndex << "]‚ÍminY‚æ‚èmaxY‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: cameraBounds[" << zoneIndex << "]ã¯minYã‚ˆã‚ŠmaxYãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
+                      << std::endl;
 
             return false;
         }
 
-        // ‚·‚×‚Ä‚ÌŒŸØ‚ğ’Ê‰ß‚µ‚½ƒf[ƒ^‚¾‚¯‚ğŒÄ‚Ño‚µŒ³‚Ö”½‰f‚·‚éB
+        // ã™ã¹ã¦ã®æ¤œè¨¼ã‚’é€šéã—ãŸãƒ‡ãƒ¼ã‚¿ã ã‘ã‚’å‘¼ã³å‡ºã—å…ƒã¸åæ˜ ã™ã‚‹
+        if (item.count("cameraSection") > 0)
+        {
+            if (!item.at("cameraSection").is_string())
+            {
+                return false;
+            }
+
+            loadedZoneData.cameraSection = item.at("cameraSection").get<std::string>();
+        }
+
+        if (item.count("isSectionTrigger") > 0)
+        {
+            if (!item.at("isSectionTrigger").is_boolean())
+            {
+                return false;
+            }
+
+            loadedZoneData.isSectionTrigger = item.at("isSectionTrigger").get<bool>();
+
+            if (loadedZoneData.isSectionTrigger && loadedZoneData.cameraSection.empty())
+            {
+                return false;
+            }
+        }
+
         outputZone = loadedZoneData;
 
         return true;
     }
 
-    bool ParseBossApproachCameraZone(
-        const json& item,
-        std::size_t zoneIndex,
-        BossApproachCameraZoneData& outputZone)
+    bool ParseBossApproachCameraZone(const json& item, std::size_t zoneIndex,
+                                     BossApproachCameraZoneData& outputZone)
     {
-        // “Ç‚İ‚İ“r’†‚Ì¸”s‚ÅŒÄ‚Ño‚µŒ³‚Ö•sŠ®‘S‚È’l‚ğc‚³‚È‚¢‚½‚ßAˆêƒf[ƒ^‚ğg‚¤B
+        // èª­ã¿è¾¼ã¿é€”ä¸­ã®å¤±æ•—ã§å‘¼ã³å‡ºã—å…ƒã¸ä¸å®Œå…¨ãªå€¤ã‚’æ®‹ã•ãªã„ãŸã‚ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã‚’ä½¿ã†
         BossApproachCameraZoneData loadedZoneData;
 
-        // ”z—ñ‚ÌŠe—v‘f‚ÍA4‚Â‚Ì‹«ŠE’l‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚éB
+        // é…åˆ—ã®å„è¦ç´ ã¯ã€4ã¤ã®å¢ƒç•Œå€¤ã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!item.is_object())
         {
-            std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex
+                      << "]ãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
 
             return false;
         }
 
-        // “¯‚¶ŒŸØˆ—‚ğ‚Ü‚Æ‚ß‚Äs‚¦‚é‚æ‚¤A•K{‚Æ‚È‚é‹«ŠE–¼‚ğˆê——‰»‚·‚éB
-        constexpr std::array REQUIRED_FIELD_NAMES
-        {
-            std::string_view("minX"),
-            std::string_view("maxX"),
-            std::string_view("minY"),
-            std::string_view("maxY")
-        };
+        // åŒã˜æ¤œè¨¼å‡¦ç†ã‚’ã¾ã¨ã‚ã¦è¡Œãˆã‚‹ã‚ˆã†ã€å¿…é ˆã¨ãªã‚‹å¢ƒç•Œåã‚’ä¸€è¦§åŒ–ã™ã‚‹
+        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                                  std::string_view("minY"), std::string_view("maxY")};
 
-        // 4‚Â‚Ì‹«ŠE‚É‚Â‚¢‚ÄA‘¶İE”’lŒ^E—LŒÀ’l‚ğ‡”Ô‚ÉŠm”F‚·‚éB
+        // 4ã¤ã®å¢ƒç•Œã«ã¤ã„ã¦ã€å­˜åœ¨ãƒ»æ•°å€¤å‹ãƒ»æœ‰é™å€¤ã‚’é †ç•ªã«ç¢ºèªã™ã‚‹
         for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
-                std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]." << fieldName << "‚ª‘¶İ‚µ‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // ‘¶İŠm”FŒã‚È‚Ì‚ÅAat‚ÅˆÀ‘S‚É‘ÎÛ‚Ì’l‚ğQÆ‚Å‚«‚éB
+            // å­˜åœ¨ç¢ºèªå¾Œãªã®ã§ã€atã§å®‰å…¨ã«å¯¾è±¡ã®å€¤ã‚’å‚ç…§ã§ãã‚‹
             const json& fieldValue = item.at(std::string(fieldName));
 
             if (!fieldValue.is_number())
             {
-                std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]." << fieldName << "‚ª”’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæ•°å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
 
                 return false;
             }
 
-            // À•WŒvZ‚É—˜—p‚Å‚«‚È‚¢NaN‚â–³ŒÀ‘å‚ğ“Ç‚İ‚İ“_‚Å‹‘”Û‚·‚éB
+            // åº§æ¨™è¨ˆç®—ã«åˆ©ç”¨ã§ããªã„NaNã‚„ç„¡é™å¤§ã‚’èª­ã¿è¾¼ã¿æ™‚ç‚¹ã§æ‹’å¦ã™ã‚‹
             const float fieldNumber = fieldValue.get<float>();
 
             if (!std::isfinite(fieldNumber))
             {
-                std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]." << fieldName << "‚ª—LŒÀ’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB"
-                    << std::endl;
+                std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                          << "ãŒæœ‰é™å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
                 return false;
             }
-
         }
 
-        // ‚·‚×‚Ä‚Ì’l‚ğŒŸØ‚µ‚Ä‚©‚çAˆêƒf[ƒ^‚Ö‹«ŠE‚ğŠi”[‚·‚éB
+        // ã™ã¹ã¦ã®å€¤ã‚’æ¤œè¨¼ã—ã¦ã‹ã‚‰ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸å¢ƒç•Œã‚’æ ¼ç´ã™ã‚‹
         loadedZoneData.minX = item.at("minX").get<float>();
         loadedZoneData.maxX = item.at("maxX").get<float>();
         loadedZoneData.minY = item.at("minY").get<float>();
         loadedZoneData.maxY = item.at("maxY").get<float>();
 
-        // •‚ª0‚Ì”ÍˆÍ‚âA¶‰E‚ª‹t“]‚µ‚½”ÍˆÍ‚Í’·•ûŒ`‚Æ‚µ‚Äˆµ‚¦‚È‚¢B
+        // å¹…ãŒ0ã®ç¯„å›²ã‚„ã€å·¦å³ãŒé€†è»¢ã—ãŸç¯„å›²ã¯é•·æ–¹å½¢ã¨ã—ã¦æ‰±ãˆãªã„
         if (loadedZoneData.minX >= loadedZoneData.maxX)
         {
-            std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]‚ÍminX‚æ‚èmaxX‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex
+                      << "]ã¯minXã‚ˆã‚ŠmaxXãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚" << std::endl;
 
             return false;
         }
 
-        // ‚‚³‚ª0‚Ì”ÍˆÍ‚âAã‰º‚ª‹t“]‚µ‚½”ÍˆÍ‚à“ü—Íƒ~ƒX‚Æ‚µ‚Ä‹‘”Û‚·‚éB
+        // é«˜ã•ãŒ0ã®ç¯„å›²ã‚„ã€ä¸Šä¸‹ãŒé€†è»¢ã—ãŸç¯„å›²ã‚‚å…¥åŠ›ãƒŸã‚¹ã¨ã—ã¦æ‹’å¦ã™ã‚‹
         if (loadedZoneData.minY >= loadedZoneData.maxY)
         {
-            std::cerr << "ƒGƒ‰[: bossApproachCameraZones[" << zoneIndex << "]‚ÍminY‚æ‚èmaxY‚ª‘å‚«‚¢•K—v‚ª‚ ‚è‚Ü‚·B"
-                << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZones[" << zoneIndex
+                      << "]ã¯minYã‚ˆã‚ŠmaxYãŒå¤§ãã„å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚" << std::endl;
 
             return false;
         }
 
-        // ‚·‚×‚Ä‚ÌŒŸØ‚ğ’Ê‰ß‚µ‚½ƒf[ƒ^‚¾‚¯‚ğŒÄ‚Ño‚µŒ³‚Ö”½‰f‚·‚éB
+        // ã™ã¹ã¦ã®æ¤œè¨¼ã‚’é€šéã—ãŸãƒ‡ãƒ¼ã‚¿ã ã‘ã‚’å‘¼ã³å‡ºã—å…ƒã¸åæ˜ ã™ã‚‹
         outputZone = loadedZoneData;
 
         return true;
@@ -750,103 +741,103 @@ namespace
 
 }
 
-
-// ƒXƒe[ƒWJSON‘S‘Ì‚ğ“Ç‚İ‚İA‘S€–Ú‚ÌŒŸØ‚É¬Œ÷‚µ‚½ê‡‚¾‚¯o—Í‚ğXV‚·‚é
-bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileTypeManager, StageData& outputStageData)
+// ã‚¹ãƒ†ãƒ¼ã‚¸JSONå…¨ä½“ã‚’èª­ã¿è¾¼ã¿ã€å…¨é …ç›®ã®æ¤œè¨¼ã«æˆåŠŸã—ãŸå ´åˆã ã‘å‡ºåŠ›ã‚’æ›´æ–°ã™ã‚‹
+bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileTypeManager,
+                       StageData& outputStageData)
 {
-    // ƒtƒ@ƒCƒ‹‚ğŠJ‚¯‚È‚¢ê‡‚ÍJSON‰ğÍ‚Öi‚Ü‚È‚¢
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã‘ãªã„å ´åˆã¯JSONè§£æã¸é€²ã¾ãªã„
     std::ifstream file(jsonPath);
 
-    if (!file.is_open()) 
+    if (!file.is_open())
     {
         std::cerr << "don't open json" << jsonPath << std::endl;
         return false;
     }
 
-    // JSONƒtƒ@ƒCƒ‹‘S‘Ì‚ğ•Û‚·‚éƒ‹[ƒgƒIƒuƒWƒFƒNƒg
+    // JSONãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’ä¿æŒã™ã‚‹ãƒ«ãƒ¼ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
     json root;
 
     try
     {
-        // \•¶ƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚Í‰º‚Ìparse_error‚Åˆ—‚·‚é
+        // æ§‹æ–‡ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆã¯ä¸‹ã®parse_errorã§å‡¦ç†ã™ã‚‹
         file >> root;
 
-        // ƒtƒ@ƒCƒ‹‘S‘Ì‚ÍAformatVersionAstageNameAobjects‚ğ‚ÂJSONƒIƒuƒWƒFƒNƒg‚Å‚ ‚é•K—v‚ª‚ ‚é
-        if (!root.is_object()) 
+        // ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã¯ã€formatVersionã€stageNameã€objectsã‚’æŒã¤JSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
+        if (!root.is_object())
         {
-            std::cerr << "ƒGƒ‰[: root‚ªJSONƒIƒuƒWƒFƒNƒg‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: rootãŒJSONã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ƒXƒe[ƒWŒ`®‚Ì”»•Ê‚É•K—v‚ÈformatVersion‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
-        if (!root.count("formatVersion")) 
+        // ã‚¹ãƒ†ãƒ¼ã‚¸å½¢å¼ã®åˆ¤åˆ¥ã«å¿…è¦ãªformatVersionãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
+        if (!root.count("formatVersion"))
         {
-            std::cerr << "ƒGƒ‰[: formatVersion ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: formatVersion ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ƒXƒe[ƒW‚ğ¯•Ê‚·‚éstageName‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
-        if (!root.count("stageName")) 
+        // ã‚¹ãƒ†ãƒ¼ã‚¸ã‚’è­˜åˆ¥ã™ã‚‹stageNameãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
+        if (!root.count("stageName"))
         {
-            std::cerr << "ƒGƒ‰[: stageName ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: stageName ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ”z’uˆê——‚ğ•\‚·objects‚ª‘¶İ‚·‚é‚©Šm”F‚·‚é
-        if (!root.count("objects")) 
+        // é…ç½®ä¸€è¦§ã‚’è¡¨ã™objectsãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèªã™ã‚‹
+        if (!root.count("objects"))
         {
-            std::cerr << "ƒGƒ‰[: objects ‚ª‘¶İ‚µ‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: objects ãŒå­˜åœ¨ã—ã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // formatVersion‚ÍJSON®”‚Å‚ ‚é•K—v‚ª‚ ‚é
+        // formatVersionã¯JSONæ•´æ•°ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!root.at("formatVersion").is_number_integer())
         {
-            std::cerr << "ƒGƒ‰[: formatVersion‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: formatVersionãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // stageName‚ÍJSON•¶š—ñ‚Å‚ ‚é•K—v‚ª‚ ‚é
+        // stageNameã¯JSONæ–‡å­—åˆ—ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!root.at("stageName").is_string())
         {
-            std::cerr << "ƒGƒ‰[: stageName‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: stageNameãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // objects‚Í‹ó‚Ìê‡‚àŠÜ‚ßAJSON”z—ñ‚Å‚ ‚é•K—v‚ª‚ ‚é
+        // objectsã¯ç©ºã®å ´åˆã‚‚å«ã‚ã€JSONé…åˆ—ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹
         if (!root.at("objects").is_array())
         {
-            std::cerr << "ƒGƒ‰[: objects‚ª³‚µ‚¢Œ^‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: objectsãŒæ­£ã—ã„å‹ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // enemies‚Í‹ŒŒ`®‚Æ‚ÌŒİŠ·«‚Ì‚½‚ßÈ—ª‰Â”\‚¾‚ªA‘¶İ‚·‚éê‡‚Í•K‚¸”z—ñ‚Æ‚·‚éB
+        // enemiesã¯æ—§å½¢å¼ã¨ã®äº’æ›æ€§ã®ãŸã‚çœç•¥å¯èƒ½ã ãŒã€å­˜åœ¨ã™ã‚‹å ´åˆã¯å¿…ãšé…åˆ—ã¨ã™ã‚‹
         if (root.count("enemies") > 0 && !root.at("enemies").is_array())
         {
-            std::cerr << "ƒGƒ‰[: enemies‚ªJSON”z—ñ‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: enemiesãŒJSONé…åˆ—ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ‹ŒƒXƒe[ƒW‚Æ‚ÌŒİŠ·«‚Ì‚½‚ßÈ—ª‰Â”\‚¾‚ªA‘¶İ‚·‚éê‡‚ÍJSON”z—ñ‚ÉŒÀ’è‚·‚éB
+        // æ—§ã‚¹ãƒ†ãƒ¼ã‚¸ã¨ã®äº’æ›æ€§ã®ãŸã‚çœç•¥å¯èƒ½ã ãŒã€å­˜åœ¨ã™ã‚‹å ´åˆã¯JSONé…åˆ—ã«é™å®šã™ã‚‹
         if (root.count("fallRespawnZones") > 0 && !root.at("fallRespawnZones").is_array())
         {
-            std::cerr << "ƒGƒ‰[: fallRespawnZones‚ªJSON”z—ñ‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: fallRespawnZonesãŒJSONé…åˆ—ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (root.count("bossEncounterZones") > 0 && !root.at("bossEncounterZones").is_array())
         {
-            std::cerr << "ƒGƒ‰[: bossEncounterZones‚ªJSON”z—ñ‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossEncounterZonesãŒJSONé…åˆ—ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
         if (root.count("bossApproachCameraZones") > 0 && !root.at("bossApproachCameraZones").is_array())
         {
-            std::cerr << "ƒGƒ‰[: bossApproachCameraZones‚ªJSON”z—ñ‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: bossApproachCameraZonesãŒJSONé…åˆ—ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // ƒRƒs[‚¹‚¸‚ÉŠe”z’u‚ğ“Ç‚İæ‚é‚½‚ßAobjects”z—ñ‚Ö‚Ì’è”QÆ‚ğæ“¾‚·‚é
+        // ã‚³ãƒ”ãƒ¼ã›ãšã«å„é…ç½®ã‚’èª­ã¿å–ã‚‹ãŸã‚ã€objectsé…åˆ—ã¸ã®å®šæ•°å‚ç…§ã‚’å–å¾—ã™ã‚‹
         if (root.count("cameraBounds") > 0 && !root.at("cameraBounds").is_array())
         {
             std::cerr << "cameraBounds must be a JSON array." << std::endl;
@@ -855,61 +846,61 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
 
         const json& objects = root.at("objects");
 
-        // Œ»İ‚±‚Ìƒ[ƒ_[‚ª‘Î‰‚µ‚Ä‚¢‚éƒXƒe[ƒWŒ`®‚Íƒo[ƒWƒ‡ƒ“1‚Ì‚İ
+        // ç¾åœ¨ã“ã®ãƒ­ãƒ¼ãƒ€ãƒ¼ãŒå¯¾å¿œã—ã¦ã„ã‚‹ã‚¹ãƒ†ãƒ¼ã‚¸å½¢å¼ã¯ãƒãƒ¼ã‚¸ãƒ§ãƒ³1ã®ã¿
         if (root.at("formatVersion").get<int>() != 1)
         {
-            std::cerr << "ƒGƒ‰[: formatVersion‚ª³‚µ‚¢’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: formatVersionãŒæ­£ã—ã„å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // –¼‘O‚Ì‚È‚¢ƒXƒe[ƒW‚ğì‚ç‚È‚¢‚æ‚¤A‹ó•¶š—ñ‚ğ‹‘”Û‚·‚é
+        // åå‰ã®ãªã„ã‚¹ãƒ†ãƒ¼ã‚¸ã‚’ä½œã‚‰ãªã„ã‚ˆã†ã€ç©ºæ–‡å­—åˆ—ã‚’æ‹’å¦ã™ã‚‹
         if (root.at("stageName") == "")
         {
-            std::cerr << "ƒGƒ‰[: stageName‚ª³‚µ‚¢’l‚Å‚Í‚ ‚è‚Ü‚¹‚ñB" << std::endl;
+            std::cerr << "ã‚¨ãƒ©ãƒ¼: stageNameãŒæ­£ã—ã„å€¤ã§ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚" << std::endl;
             return false;
         }
 
-        // “Ç‚İ‚İ“r’†‚Å¸”s‚µ‚Ä‚ào—Íæ‚ğ‰ó‚³‚È‚¢‚æ‚¤Aˆêƒf[ƒ^‚ÖŠi”[‚·‚é
+        // èª­ã¿è¾¼ã¿é€”ä¸­ã§å¤±æ•—ã—ã¦ã‚‚å‡ºåŠ›å…ˆã‚’å£Šã•ãªã„ã‚ˆã†ã€ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸æ ¼ç´ã™ã‚‹
         StageData loadedStageData;
 
-        // ŒŸØÏ‚İ‚Ìƒ‹[ƒgî•ñ‚ğˆêƒXƒe[ƒWƒf[ƒ^‚ÖŠi”[‚·‚é
+        // æ¤œè¨¼æ¸ˆã¿ã®ãƒ«ãƒ¼ãƒˆæƒ…å ±ã‚’ä¸€æ™‚ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã¸æ ¼ç´ã™ã‚‹
         loadedStageData.formatVersion = root.at("formatVersion").get<int>();
 
         loadedStageData.stageName = root.at("stageName").get<std::string>();
 
-        // ”z’uŒ”•ª‚Ì—e—Ê‚ğæ‚ÉŠm•Û‚µApush_back‚ÌÄŠm•Û‚ğŒ¸‚ç‚·
+        // é…ç½®ä»¶æ•°åˆ†ã®å®¹é‡ã‚’å…ˆã«ç¢ºä¿ã—ã€push_backæ™‚ã®å†ç¢ºä¿ã‚’æ¸›ã‚‰ã™
         loadedStageData.objects.reserve(objects.size());
 
-        // ”z—ñ”Ô†‚ğ•Û‚µ‚ÄAƒGƒ‰[‚Éobjects[”Ô†]‚ğ•\¦‚Å‚«‚é‚æ‚¤‚É‚·‚é
+        // é…åˆ—ç•ªå·ã‚’ä¿æŒã—ã¦ã€ã‚¨ãƒ©ãƒ¼æ™‚ã«objects[ç•ªå·]ã‚’è¡¨ç¤ºã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
         for (std::size_t objectIndex = 0; objectIndex < objects.size(); objectIndex++)
         {
-            // ”z’u1Œ•ª‚àˆêƒf[ƒ^‚Ö“Ç‚İ‚İA¬Œ÷‚·‚é‚Ü‚Åˆê——‚Ö’Ç‰Á‚µ‚È‚¢
+            // é…ç½®1ä»¶åˆ†ã‚‚ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã¸èª­ã¿è¾¼ã¿ã€æˆåŠŸã™ã‚‹ã¾ã§ä¸€è¦§ã¸è¿½åŠ ã—ãªã„
             StageObjectData loadedObjectData;
 
-            // 1Œ‚Å‚à•s³‚È”z’u‚ª‚ ‚ê‚ÎAƒXƒe[ƒWƒtƒ@ƒCƒ‹‘S‘Ì‚ğ“Ç‚İ‚İ¸”s‚É‚·‚é
+            // 1ä»¶ã§ã‚‚ä¸æ­£ãªé…ç½®ãŒã‚ã‚Œã°ã€ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’èª­ã¿è¾¼ã¿å¤±æ•—ã«ã™ã‚‹
             if (!ParseStageObject(objects[objectIndex], objectIndex, tileTypeManager, loadedObjectData))
             {
                 return false;
             }
 
-            // ŒŸØ‚É¬Œ÷‚µ‚½”z’u‚¾‚¯‚ğˆêƒXƒe[ƒW‚Ö’Ç‰Á‚·‚é
+            // æ¤œè¨¼ã«æˆåŠŸã—ãŸé…ç½®ã ã‘ã‚’ä¸€æ™‚ã‚¹ãƒ†ãƒ¼ã‚¸ã¸è¿½åŠ ã™ã‚‹
             loadedStageData.objects.push_back(loadedObjectData);
         }
 
-        // “G”z’u‚ª‚ ‚éê‡‚¾‚¯“Ç‚İ‚İA‹ó‚Ü‚½‚Í–¢’è‹`‚È‚ç“G‚È‚µƒXƒe[ƒW‚Æ‚µ‚Äˆµ‚¤B
+        // æ•µé…ç½®ãŒã‚ã‚‹å ´åˆã ã‘èª­ã¿è¾¼ã¿ã€ç©ºã¾ãŸã¯æœªå®šç¾©ãªã‚‰æ•µãªã—ã‚¹ãƒ†ãƒ¼ã‚¸ã¨ã—ã¦æ‰±ã†
         if (root.count("enemies") > 0)
         {
             const json& enemies = root.at("enemies");
 
-            // ”z’u”‚ª–‘O‚É•ª‚©‚é‚½‚ßAvector‚ÌÄŠm•Û‚ğ”ğ‚¯‚éB
+            // é…ç½®æ•°ãŒäº‹å‰ã«åˆ†ã‹ã‚‹ãŸã‚ã€vectorã®å†ç¢ºä¿ã‚’é¿ã‘ã‚‹
             loadedStageData.enemies.reserve(enemies.size());
 
             for (std::size_t enemyIndex = 0; enemyIndex < enemies.size(); enemyIndex++)
             {
                 EnemySpawnData loadedEnemyData;
 
-                // 1‘Ì‚Å‚à•s³‚È‚çA’†“r”¼’[‚ÈƒXƒe[ƒWƒf[ƒ^‚ğÌ—p‚¹‚¸“Ç‚İ‚İ‘S‘Ì‚ğ¸”s‚³‚¹‚éB
-                if (!ParseEnemySpawn(enemies[enemyIndex], enemyIndex,loadedEnemyData))
+                // 1ä½“ã§ã‚‚ä¸æ­£ãªã‚‰ã€ä¸­é€”åŠç«¯ãªã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚’æ¡ç”¨ã›ãšèª­ã¿è¾¼ã¿å…¨ä½“ã‚’å¤±æ•—ã•ã›ã‚‹
+                if (!ParseEnemySpawn(enemies[enemyIndex], enemyIndex, loadedEnemyData))
                 {
                     return false;
                 }
@@ -918,25 +909,20 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
             }
         }
 
-        // —‰º•œ‹AƒGƒŠƒA‚ª‚ ‚éê‡AŠe’·•ûŒ`‚ğŒŸØ‚µ‚Ä“Ç‚İ‚ŞB
+        // è½ä¸‹å¾©å¸°ã‚¨ãƒªã‚¢ãŒã‚ã‚‹å ´åˆã€å„é•·æ–¹å½¢ã‚’æ¤œè¨¼ã—ã¦èª­ã¿è¾¼ã‚€
         if (root.count("fallRespawnZones") > 0)
         {
             const json& fallRespawnZones = root.at("fallRespawnZones");
 
-            // —v‘f”‚ª•ª‚©‚Á‚Ä‚¢‚é‚½‚ßA’Ç‰Á‚Évector‚ª‰½“x‚àÄŠm•Û‚³‚ê‚é‚Ì‚ğ–h‚®B
+            // è¦ç´ æ•°ãŒåˆ†ã‹ã£ã¦ã„ã‚‹ãŸã‚ã€è¿½åŠ æ™‚ã«vectorãŒä½•åº¦ã‚‚å†ç¢ºä¿ã•ã‚Œã‚‹ã®ã‚’é˜²ã
             loadedStageData.fallRespawnZones.reserve(fallRespawnZones.size());
 
-            for (std::size_t zoneIndex = 0;
-                zoneIndex < fallRespawnZones.size();
-                zoneIndex++)
+            for (std::size_t zoneIndex = 0; zoneIndex < fallRespawnZones.size(); zoneIndex++)
             {
                 FallRespawnZoneData loadedZoneData;
 
-                // 1Œ‚Å‚à•s³‚È‚çA’†“r”¼’[‚ÈƒXƒe[ƒWƒf[ƒ^‚ğÌ—p‚µ‚È‚¢B
-                if (!ParseFallRespawnZone(
-                    fallRespawnZones[zoneIndex],
-                    zoneIndex,
-                    loadedZoneData))
+                // 1ä»¶ã§ã‚‚ä¸æ­£ãªã‚‰ã€ä¸­é€”åŠç«¯ãªã‚¹ãƒ†ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚’æ¡ç”¨ã—ãªã„
+                if (!ParseFallRespawnZone(fallRespawnZones[zoneIndex], zoneIndex, loadedZoneData))
                 {
                     return false;
                 }
@@ -949,101 +935,101 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
         {
             const json& bossEncounterZones = root.at("bossEncounterZones");
 
-            loadedStageData.bossEncounterZones.reserve(
-                bossEncounterZones.size());
+            loadedStageData.bossEncounterZones.reserve(bossEncounterZones.size());
 
-            for (std::size_t zoneIndex = 0;
-                zoneIndex < bossEncounterZones.size();
-                zoneIndex++)
+            for (std::size_t zoneIndex = 0; zoneIndex < bossEncounterZones.size(); zoneIndex++)
             {
                 BossEncounterZoneData loadedZoneData;
 
-                if (!ParseBossEncounterZone(
-                    bossEncounterZones[zoneIndex],
-                    zoneIndex,
-                    loadedZoneData))
+                if (!ParseBossEncounterZone(bossEncounterZones[zoneIndex], zoneIndex, loadedZoneData))
                 {
                     return false;
                 }
 
-                loadedStageData.bossEncounterZones.push_back(
-                    loadedZoneData);
+                loadedStageData.bossEncounterZones.push_back(loadedZoneData);
             }
         }
 
         if (root.count("bossApproachCameraZones") > 0)
         {
-            const json& bossApproachCameraZones =
-                root.at("bossApproachCameraZones");
+            const json& bossApproachCameraZones = root.at("bossApproachCameraZones");
 
-            loadedStageData.bossApproachCameraZones.reserve(
-                bossApproachCameraZones.size());
+            loadedStageData.bossApproachCameraZones.reserve(bossApproachCameraZones.size());
 
-            for (std::size_t zoneIndex = 0;
-                zoneIndex < bossApproachCameraZones.size();
-                zoneIndex++)
+            for (std::size_t zoneIndex = 0; zoneIndex < bossApproachCameraZones.size(); zoneIndex++)
             {
                 BossApproachCameraZoneData loadedZoneData;
 
-                if (!ParseBossApproachCameraZone(
-                    bossApproachCameraZones[zoneIndex],
-                    zoneIndex,
-                    loadedZoneData))
+                if (!ParseBossApproachCameraZone(bossApproachCameraZones[zoneIndex], zoneIndex,
+                                                 loadedZoneData))
                 {
                     return false;
                 }
 
-                loadedStageData.bossApproachCameraZones.push_back(
-                    loadedZoneData);
+                loadedStageData.bossApproachCameraZones.push_back(loadedZoneData);
             }
         }
 
         if (root.count("cameraBounds") > 0)
         {
-            const json& cameraLimitZones =
-                root.at("cameraBounds");
+            const json& cameraLimitZones = root.at("cameraBounds");
 
-            loadedStageData.cameraLimitZones.reserve(
-                cameraLimitZones.size());
+            loadedStageData.cameraLimitZones.reserve(cameraLimitZones.size());
 
-            for (std::size_t zoneIndex = 0;
-                zoneIndex < cameraLimitZones.size();
-                zoneIndex++)
+            for (std::size_t zoneIndex = 0; zoneIndex < cameraLimitZones.size(); zoneIndex++)
             {
                 CameraLimitZoneData loadedZoneData;
 
-                if (!CameraLimitZone(
-                    cameraLimitZones[zoneIndex],
-                    zoneIndex,
-                    loadedZoneData))
+                if (!CameraLimitZone(cameraLimitZones[zoneIndex], zoneIndex, loadedZoneData))
                 {
                     return false;
                 }
 
-                loadedStageData.cameraLimitZones.push_back(
-                    loadedZoneData);
+                loadedStageData.cameraLimitZones.push_back(loadedZoneData);
             }
         }
 
-        // ‘S”z’u‚Ì“Ç‚İ‚İ¬Œ÷Œã‚É‚¾‚¯AŒÄ‚Ño‚µŒ³‚Ìƒf[ƒ^‚ğV‚µ‚¢“à—e‚Ö’u‚«Š·‚¦‚é
+        // å…¨é…ç½®ã®èª­ã¿è¾¼ã¿æˆåŠŸå¾Œã«ã ã‘ã€å‘¼ã³å‡ºã—å…ƒã®ãƒ‡ãƒ¼ã‚¿ã‚’æ–°ã—ã„å†…å®¹ã¸ç½®ãæ›ãˆã‚‹
+        for (const auto& trigger : loadedStageData.cameraLimitZones)
+        {
+            if (!trigger.isSectionTrigger)
+            {
+                continue;
+            }
+
+            bool targetExists = false;
+
+            for (const auto& zone : loadedStageData.cameraLimitZones)
+            {
+                if (!zone.isSectionTrigger && zone.cameraSection == trigger.cameraSection)
+                {
+                    targetExists = true;
+                }
+            }
+
+            if (!targetExists)
+            {
+                return false;
+            }
+        }
+
         outputStageData = std::move(loadedStageData);
     }
 
-    // ƒJƒ“ƒ}‚âŠ‡ŒÊ‚È‚ÇAJSON©‘Ì‚Ì\•¶‚ª‰ó‚ê‚Ä‚¢‚éê‡
+    // ã‚«ãƒ³ãƒã‚„æ‹¬å¼§ãªã©ã€JSONè‡ªä½“ã®æ§‹æ–‡ãŒå£Šã‚Œã¦ã„ã‚‹å ´åˆ
     catch (const json::parse_error& e)
     {
         std::cerr << "JSON" << e.what() << std::endl;
         return false;
     }
 
-    // JSON’l‚Ìæ“¾‚â•ÏŠ·’†‚É”­¶‚µ‚½A‚»‚Ì‘¼‚Ìnlohmann::json—áŠO
+    // JSONå€¤ã®å–å¾—ã‚„å¤‰æ›ä¸­ã«ç™ºç”Ÿã—ãŸã€ãã®ä»–ã®nlohmann::jsonä¾‹å¤–
     catch (const json::exception& e)
     {
-        std::cerr << "JSONˆ—ƒGƒ‰[: "
-            << e.what() << std::endl;
+        std::cerr << "JSONå‡¦ç†ã‚¨ãƒ©ãƒ¼: " << e.what() << std::endl;
         return false;
     }
 
-    // ƒ‹[ƒg‚©‚ç‘S”z’u‚Ü‚Å–â‘è‚È‚­“Ç‚İ‚ß‚½
+    // ãƒ«ãƒ¼ãƒˆã‹ã‚‰å…¨é…ç½®ã¾ã§å•é¡Œãªãèª­ã¿è¾¼ã‚ãŸ
     return true;
 }

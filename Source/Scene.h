@@ -1,22 +1,43 @@
-#pragma once
+﻿#pragma once
 
-// �V�[�����
+// シーン基底
 class Scene
 {
-public:
-	Scene() = default;
-	virtual ~Scene() = default;
+  public:
 
-	virtual void Initialize() {}
-	virtual void Finalize() {}
+    // コンストラクタ
+    Scene() = default;
 
-	// �X�V����
-	virtual void Update(float elapsedTime) {}
+    // デストラクタ
+    virtual ~Scene() = default;
 
-	// �`�揈��
-	virtual void Render(float elapsedTime) {}
+    // 初期化処理
+    virtual void Initialize()
+    {
+    }
 
-	// GUI�`�揈��
-	virtual void DrawGUI() {}
-    virtual bool IsBackgroundEditing() const { return false; }
+    // 終了処理
+    virtual void Finalize()
+    {
+    }
+
+    // 更新処理
+    virtual void Update(float elapsedTime)
+    {
+    }
+
+    // 描画処理
+    virtual void Render(float elapsedTime)
+    {
+    }
+
+    // GUI描画処理
+    virtual void DrawGUI()
+    {
+    }
+
+    virtual bool IsBackgroundEditing() const
+    {
+        return false;
+    }
 };

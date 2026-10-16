@@ -1,10 +1,11 @@
-#include "SceneClear.h"
+﻿#include "SceneClear.h"
 #include "SceneTitle.h"
 #include "SceneManager.h"
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
 #include "TextRenderer.h"
+#include "Audio/Audio.h"
 #include <algorithm>
 #include <string>
 
@@ -14,15 +15,18 @@ namespace
     constexpr size_t MESSAGE_LENGTH = sizeof(MESSAGE) - 1;
 }
 
+// 初期化処理
 void SceneClear::Initialize()
 {
     sceneTimer = waveTimer = 0.0f;
     presented = requested = false;
-    background = std::make_unique<Sprite>(Graphics::Instance().GetDevice(),
-        "Data/Sprite/LoadingBackground.png", true);
+    background =
+        std::make_unique<Sprite>(Graphics::Instance().GetDevice(), "Data/Sprite/LoadingBackground.png", true);
     player = std::make_unique<ClearPlayer>();
+    Audio::Instance().Play("BGM_ENDING");
 }
 
+// 終了処理
 void SceneClear::Finalize()
 {
     player.reset();
@@ -31,25 +35,43 @@ void SceneClear::Finalize()
 
 void SceneClear::ReturnToTitle()
 {
-    if (requested) return;
+    if (requested)
+    {
+        return;
+    }
+
     requested = true;
     SceneManager::Instance().ChangeScene([]() { return std::make_shared<SceneTitle>(); });
 }
 
+// 更新処理
 void SceneClear::Update(float elapsedTime)
 {
-    // Count visible time only, so loading stalls cannot skip the ending.
+
     const float dt = presented ? (std::clamp)(elapsedTime, 0.0f, 0.05f) : 0.0f;
     presented = false;
     sceneTimer += dt;
+
     if (sceneTimer >= TYPEWRITER_DELAY + MESSAGE_LENGTH * LETTER_INTERVAL + 0.4f)
+    {
         player->BeginEntrance();
+    }
+
     const bool wasWaving = player->IsWaving();
     player->Update(dt);
-    if (wasWaving) waveTimer += dt;
-    if (waveTimer >= WAVE_DISPLAY_TIME) ReturnToTitle();
+
+    if (wasWaving)
+    {
+        waveTimer += dt;
+    }
+
+    if (waveTimer >= WAVE_DISPLAY_TIME)
+    {
+        ReturnToTitle();
+    }
 }
 
+// 描画処理
 void SceneClear::Render(float elapsedTime)
 {
     auto& graphics = Graphics::Instance();
@@ -61,17 +83,18 @@ void SceneClear::Render(float elapsedTime)
     dc->RSSetState(state->GetRasterizerState(RasterizerState::SolidCullNone));
     auto* sampler = state->GetSamplerState(SamplerState::LinearClamp);
     dc->PSSetSamplers(0, 1, &sampler);
-    background->Render(dc, 0, 0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(),
-        0, 1, 1, 1, 1);
+    background->Render(dc, 0, 0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(), 0, 1, 1, 1, 1);
 
     const float scale = (std::min)(graphics.GetScreenWidth() / 1280, graphics.GetScreenHeight() / 720);
     D3D11_VIEWPORT previous = {};
     UINT count = 1;
     dc->RSGetViewports(&count, &previous);
-    const D3D11_VIEWPORT viewport = {
-        (graphics.GetScreenWidth() - 1280 * scale) * 0.5f,
-        (graphics.GetScreenHeight() - 720 * scale) * 0.5f,
-        1280 * scale, 720 * scale, 0, 1};
+    const D3D11_VIEWPORT viewport = {(graphics.GetScreenWidth() - 1280 * scale) * 0.5f,
+                                     (graphics.GetScreenHeight() - 720 * scale) * 0.5f,
+                                     1280 * scale,
+                                     720 * scale,
+                                     0,
+                                     1};
     dc->RSSetViewports(1, &viewport);
     auto& camera = Camera::Instance();
     camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45), 1280.0f / 720, 0.1f, 1000);
@@ -87,6 +110,7 @@ void SceneClear::Render(float elapsedTime)
     dc->RSSetViewports(1, &previous);
 }
 
+// デバッグ画面の描画処理
 void SceneClear::DrawGUI()
 {
     auto& graphics = Graphics::Instance();
@@ -97,10 +121,9 @@ void SceneClear::DrawGUI()
     const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(MESSAGE_LENGTH)));
     const std::string visible(MESSAGE, count);
     const float fontSize = 56 * scale;
-    // Fix the full sentence's left edge so typing does not slide existing letters.
+
     const auto size = TextRenderer::Measure(MESSAGE, fontSize);
-    TextRenderer::Draw(offsetX + 640 * scale - size.x * 0.5f,
-        offsetY + 340 * scale - size.y * 0.5f, visible.c_str(), fontSize,
-        {0.06f, 0.20f, 0.36f, 1});
+    TextRenderer::Draw(offsetX + 640 * scale - size.x * 0.5f, offsetY + 340 * scale - size.y * 0.5f,
+                       visible.c_str(), fontSize, {0.06f, 0.20f, 0.36f, 1});
     presented = true;
 }

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <xaudio2.h>
 #include "Audio/AudioSource.h"
@@ -7,49 +7,60 @@
 #include <string>
 #include <map>
 
-// ƒI[ƒfƒBƒI
+// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ª
 class Audio
 {
-public:
-	Audio();
-	Audio(const Audio&) = delete;
-	Audio& operator=(const Audio&) = delete;
-	~Audio();
+  public:
 
-public:
-	// ƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
-	static Audio& Instance() { return *instance; }
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Audio();
 
-	// ‰¹Œ¹‚Ì“o˜^
-	void Register(const std::string& key, const char* filename);
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Audio(const Audio&) = delete;
+    Audio& operator=(const Audio&) = delete;
 
-	// ƒŠƒXƒgƒtƒ@ƒCƒ‹‚©‚çˆêŠ‡“o˜^
-	void RegisterFromFile(const char* listFilename);
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~Audio();
 
-	// “o˜^‚µ‚½‰¹Œ¹‚ÌÄ¶
-	void Play(const std::string& key, bool loop = false);
+  public:
 
-	// “o˜^‚µ‚½‰¹Œ¹‚Ì’â~
-	void Stop(const std::string& key);
+    // ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
+    static Audio& Instance()
+    {
+        return *instance;
+    }
 
-	// ‘S’â~
-	void StopAll();
+    // éŸ³æºã®ç™»éŒ²
+    void Register(const std::string& key, const char* filename);
 
-	// ƒ}ƒXƒ^[ƒ{ƒŠƒ…[ƒ€İ’è
-	void SetMasterVolume(float volume);
+    // ãƒªã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ä¸€æ‹¬ç™»éŒ²
+    void RegisterFromFile(const char* listFilename);
 
-	// ŒÂ•Ê‚Ì‰¹—Êİ’è
-	void SetVolume(const std::string& key, float volume);
+    // ç™»éŒ²ã—ãŸéŸ³æºã®å†ç”Ÿ
+    void Play(const std::string& key, bool loop = false);
 
-	// ƒI[ƒfƒBƒIƒ\[ƒX“Ç‚İ‚İ
-	std::unique_ptr<AudioSource> LoadAudioSource(const char* filename);
+    // ç™»éŒ²ã—ãŸéŸ³æºã®åœæ­¢
+    void Stop(const std::string& key);
 
-private:
-	bool comInitialized = false;
-	static Audio*			instance;
+    // å…¨åœæ­¢
+    void StopAll();
 
-	IXAudio2*				xaudio = nullptr;
-	IXAudio2MasteringVoice* masteringVoice = nullptr;
+    // ãƒã‚¹ã‚¿ãƒ¼ãƒœãƒªãƒ¥ãƒ¼ãƒ è¨­å®š
+    void SetMasterVolume(float volume);
 
-	std::map<std::string, std::shared_ptr<AudioSource>> soundMap;
+    // å€‹åˆ¥ã®éŸ³é‡è¨­å®š
+    void SetVolume(const std::string& key, float volume);
+
+    // ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªã‚½ãƒ¼ã‚¹èª­ã¿è¾¼ã¿
+    std::unique_ptr<AudioSource> LoadAudioSource(const char* filename);
+
+  private:
+
+    bool comInitialized = false;
+    static Audio* instance;
+
+    IXAudio2* xaudio = nullptr;
+    IXAudio2MasteringVoice* masteringVoice = nullptr;
+
+    std::map<std::string, std::shared_ptr<AudioSource>> soundMap;
 };

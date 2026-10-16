@@ -1,8 +1,10 @@
-#include "StageObject.h"
+Ôªø#include "StageObject.h"
 #include <algorithm>
 #include <limits>
 
-StageObject::StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData, const TileInfo& tileInfo, float positionZ, std::shared_ptr<Model> collisionModel)
+// „Ç≥„É≥„Çπ„Éà„É©„ÇØ„Çø
+StageObject::StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData,
+                         const TileInfo& tileInfo, float positionZ, std::shared_ptr<Model> collisionModel)
 {
     this->model = model;
     this->collisionModel = collisionModel ? collisionModel : model;
@@ -22,19 +24,24 @@ StageObject::StageObject(std::shared_ptr<Model> model, const StageObjectData& st
     UpdateTransform();
 
     this->model->UpdateTransform(transform);
+
     if (this->collisionModel != this->model)
+    {
         this->collisionModel->UpdateTransform(transform);
+    }
 
     if (tileInfo.collision)
     {
         BuildCollisionAABB();
         collisionMesh.model = this->collisionModel.get();
         collisionMesh.transform = &transform;
+        collisionMesh.bounds = hasCollisionAABB ? &collisionAABB : nullptr;
         CollisionManager::Instance().Register(&collisionMesh);
         registerCollisionMesh = true;
     }
 }
 
+// „Éá„Çπ„Éà„É©„ÇØ„Çø
 StageObject::~StageObject()
 {
     if (registerCollisionMesh)
@@ -43,6 +50,7 @@ StageObject::~StageObject()
     }
 }
 
+// Â§âÊèõË°åÂàó„ÅÆÊõ¥Êñ∞Âá¶ÁêÜ
 void StageObject::UpdateTransform()
 {
     DirectX::XMMATRIX s = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
@@ -55,21 +63,15 @@ void StageObject::BuildCollisionAABB()
 {
     hasCollisionAABB = false;
 
-    const float largest =
-        (std::numeric_limits<float>::max)();
+    const float largest = (std::numeric_limits<float>::max)();
 
-    const float lowest =
-        (std::numeric_limits<float>::lowest)();
+    const float lowest = (std::numeric_limits<float>::lowest)();
 
-    AABB box = {
-        { largest, largest, largest },
-        { lowest, lowest, lowest }
-    };
+    AABB box = {{largest, largest, largest}, {lowest, lowest, lowest}};
 
     bool hasVertex = false;
 
-    const DirectX::XMMATRIX objectWorld =
-        DirectX::XMLoadFloat4x4(&transform);
+    const DirectX::XMMATRIX objectWorld = DirectX::XMLoadFloat4x4(&transform);
 
     for (const Model::Mesh& mesh : collisionModel->GetMeshes())
     {
@@ -78,13 +80,10 @@ void StageObject::BuildCollisionAABB()
             continue;
         }
 
-        // ÉÇÉfÉãì‡ïîÇÃïœä∑Ç…ÅAÉXÉeÅ[ÉWè„ÇÃîzíuÇëgÇ›çáÇÌÇπÇÈÅB
-        const DirectX::XMMATRIX nodeTransform =
-            DirectX::XMLoadFloat4x4(
-                &mesh.node->globalTransform);
+        // „É¢„Éá„É´ÂÜÖÈÉ®„ÅÆÂ§âÊèõ„Å´„ÄÅ„Çπ„ÉÜ„Éº„Ç∏‰∏ä„ÅÆÈÖçÁΩÆ„ÇíÁµÑ„ÅøÂêà„Çè„Åõ„Çã
+        const DirectX::XMMATRIX nodeTransform = DirectX::XMLoadFloat4x4(&mesh.node->globalTransform);
 
-        const DirectX::XMMATRIX worldTransform =
-            nodeTransform * objectWorld;
+        const DirectX::XMMATRIX worldTransform = nodeTransform * objectWorld;
 
         for (const auto& vertex : mesh.vertices)
         {
@@ -92,27 +91,19 @@ void StageObject::BuildCollisionAABB()
 
             DirectX::XMStoreFloat3(
                 &worldPosition,
-                DirectX::XMVector3TransformCoord(
-                    DirectX::XMLoadFloat3(&vertex.position),
-                    worldTransform));
+                DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&vertex.position), worldTransform));
 
-            box.min.x = (std::min)(
-                box.min.x, worldPosition.x);
+            box.min.x = (std::min)(box.min.x, worldPosition.x);
 
-            box.min.y = (std::min)(
-                box.min.y, worldPosition.y);
+            box.min.y = (std::min)(box.min.y, worldPosition.y);
 
-            box.min.z = (std::min)(
-                box.min.z, worldPosition.z);
+            box.min.z = (std::min)(box.min.z, worldPosition.z);
 
-            box.max.x = (std::max)(
-                box.max.x, worldPosition.x);
+            box.max.x = (std::max)(box.max.x, worldPosition.x);
 
-            box.max.y = (std::max)(
-                box.max.y, worldPosition.y);
+            box.max.y = (std::max)(box.max.y, worldPosition.y);
 
-            box.max.z = (std::max)(
-                box.max.z, worldPosition.z);
+            box.max.z = (std::max)(box.max.z, worldPosition.z);
 
             hasVertex = true;
         }
@@ -123,10 +114,8 @@ void StageObject::BuildCollisionAABB()
         return;
     }
 
-    // å˙Ç›ÇÃÇ»Ç¢î†ÇÕÅAç°âÒÇÃóßëÃínå`Ç∆ÇµÇƒàµÇÌÇ»Ç¢ÅB
-    if (box.min.x >= box.max.x ||
-        box.min.y >= box.max.y ||
-        box.min.z >= box.max.z)
+    // Âéö„Åø„ÅÆ„Å™„ÅÑÁÆ±„ÅØ„ÄÅ‰ªäÂõû„ÅÆÁ´ã‰ΩìÂú∞ÂΩ¢„Å®„Åó„Å¶Êâ±„Çè„Å™„ÅÑ
+    if (box.min.x >= box.max.x || box.min.y >= box.max.y || box.min.z >= box.max.z)
     {
         return;
     }

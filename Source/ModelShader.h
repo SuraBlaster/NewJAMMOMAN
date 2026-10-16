@@ -1,34 +1,39 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Shader.h"
 
 class ModelShader : public Shader
 {
-public:
-	ModelShader(ID3D11Device* device);
-	~ModelShader() override = default;
+  public:
 
-	// ŠJnˆ—
-	void Begin(const RenderContext& rc) override;
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ModelShader(ID3D11Device* device);
 
-	// XVˆ—
-	void Update(const RenderContext& rc, const Model::Mesh& mesh) override;
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~ModelShader() override = default;
 
-	// I—¹ˆ—
-	void End(const RenderContext& rc) override;
+    // é–‹å§‹å‡¦ç†
+    void Begin(const RenderContext& rc) override;
 
-private:
-	struct CbMesh
-	{
-		DirectX::XMFLOAT4		materialColor;
-		DirectX::XMFLOAT3		emissive;
-		float					metalness;
-		float					smoothness;
-		float					padding[3];
-	};
+    // æ›´æ–°å‡¦ç†
+    void Update(const RenderContext& rc, const Model::Mesh& mesh) override;
 
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>		vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>		pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>		inputLayout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			meshConstantBuffer;
+    // çµ‚äº†å‡¦ç†
+    void End(const RenderContext& rc) override;
+
+  private:
+
+    struct CbMesh
+    {
+        DirectX::XMFLOAT4 materialColor;
+        DirectX::XMFLOAT3 emissive;
+        float metalness;
+        float smoothness;
+        float padding[3];
+    };
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> meshConstantBuffer;
 };

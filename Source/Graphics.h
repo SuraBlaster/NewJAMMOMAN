@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <d3d11.h>
 #include <wrl.h>
@@ -8,74 +8,107 @@
 #include "ShapeRenderer.h"
 #include "ModelRenderer.h"
 
-// ƒOƒ‰ƒtƒBƒbƒNƒX
+// ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹
 class Graphics
 {
-private:
-	Graphics() = default;
-	~Graphics() = default;
+  private:
 
-public:
-	// ƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
-	static Graphics& Instance()
-	{
-		static Graphics instance;
-		return instance;
-	}
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Graphics() = default;
 
-	// ‰Šú‰»
-	void Initialize(HWND hWnd);
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~Graphics() = default;
 
-	// ƒNƒŠƒA
-	void Clear(float r, float g, float b, float a);
+  public:
 
-	// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgİ’è
-	void SetRenderTargets();
+    // ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
+    static Graphics& Instance()
+    {
+        static Graphics instance;
+        return instance;
+    }
 
-	// ‰æ–Ê•\¦
-	void Present(UINT syncInterval);
+    // åˆæœŸåŒ–
+    void Initialize(HWND hWnd);
 
-	// ƒEƒCƒ“ƒhƒEƒnƒ“ƒhƒ‹æ“¾
-	HWND GetWindowHandle() { return hWnd; }
+    // ã‚¯ãƒªã‚¢
+    void Clear(float r, float g, float b, float a);
 
-	// ƒfƒoƒCƒXæ“¾
-	ID3D11Device* GetDevice() { return device.Get(); }
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆè¨­å®š
+    void SetRenderTargets();
 
-	// ƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒgæ“¾
-	ID3D11DeviceContext* GetDeviceContext() { return immediateContext.Get(); }
+    // ç”»é¢è¡¨ç¤º
+    void Present(UINT syncInterval);
 
-	// ƒXƒNƒŠ[ƒ“•æ“¾
-	float GetScreenWidth() const { return screenWidth; }
+    // ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«å–å¾—
+    HWND GetWindowHandle()
+    {
+        return hWnd;
+    }
 
-	// ƒXƒNƒŠ[ƒ“‚‚³æ“¾
-	float GetScreenHeight() const { return screenHeight; }
+    // ãƒ‡ãƒã‚¤ã‚¹å–å¾—
+    ID3D11Device* GetDevice()
+    {
+        return device.Get();
+    }
 
-	// ƒŒƒ“ƒ_[ƒXƒe[ƒgæ“¾
-	RenderState* GetRenderState() { return renderState.get(); }
+    // ãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆå–å¾—
+    ID3D11DeviceContext* GetDeviceContext()
+    {
+        return immediateContext.Get();
+    }
 
-	// ƒvƒŠƒ~ƒeƒBƒuƒŒƒ“ƒ_ƒ‰æ“¾
-	PrimitiveRenderer* GetPrimitiveRenderer() const { return primitiveRenderer.get(); }
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¹…å–å¾—
+    float GetScreenWidth() const
+    {
+        return screenWidth;
+    }
 
-	// ƒVƒFƒCƒvƒŒƒ“ƒ_ƒ‰æ“¾
-	ShapeRenderer* GetShapeRenderer() const { return shapeRenderer.get(); }
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³é«˜ã•å–å¾—
+    float GetScreenHeight() const
+    {
+        return screenHeight;
+    }
 
-	// ƒ‚ƒfƒ‹ƒŒƒ“ƒ_ƒ‰æ“¾
-	ModelRenderer* GetModelRenderer() const { return modelRenderer.get(); }
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆå–å¾—
+    RenderState* GetRenderState()
+    {
+        return renderState.get();
+    }
 
-private:
-	HWND											hWnd = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11Device>			device;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>		immediateContext;
-	Microsoft::WRL::ComPtr<IDXGISwapChain>			swapchain;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>	renderTargetView;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>	depthStencilView;
-	D3D11_VIEWPORT									viewport;
+    // ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
+    PrimitiveRenderer* GetPrimitiveRenderer() const
+    {
+        return primitiveRenderer.get();
+    }
 
-	float	screenWidth = 0;
-	float	screenHeight = 0;
+    // ã‚·ã‚§ã‚¤ãƒ—ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
+    ShapeRenderer* GetShapeRenderer() const
+    {
+        return shapeRenderer.get();
+    }
 
-	std::unique_ptr<RenderState>					renderState;
-	std::unique_ptr<PrimitiveRenderer>				primitiveRenderer;
-	std::unique_ptr<ShapeRenderer>					shapeRenderer;
-	std::unique_ptr<ModelRenderer>					modelRenderer;
+    // ãƒ¢ãƒ‡ãƒ«ãƒ¬ãƒ³ãƒ€ãƒ©å–å¾—
+    ModelRenderer* GetModelRenderer() const
+    {
+        return modelRenderer.get();
+    }
+
+  private:
+
+    HWND hWnd = nullptr;
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
+    Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+    D3D11_VIEWPORT viewport;
+
+    float screenWidth = 0;
+    float screenHeight = 0;
+
+    std::unique_ptr<RenderState> renderState;
+    std::unique_ptr<PrimitiveRenderer> primitiveRenderer;
+    std::unique_ptr<ShapeRenderer> shapeRenderer;
+    std::unique_ptr<ModelRenderer> modelRenderer;
 };

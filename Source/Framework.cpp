@@ -1,4 +1,4 @@
-#include "ModelManager.h"
+ï»¿#include "ModelManager.h"
 #include "LoadingProfile.h"
 #include <memory>
 #include <sstream>
@@ -17,212 +17,230 @@
 #include "SceneClear.h"
 #include "SceneLoading.h"
 
-// ‚’¼“¯ŠúŠÔŠuİ’è
+// å‚ç›´åŒæœŸé–“éš”è¨­å®š
 static const int SYNC_INTERVAL = 1;
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-Framework::Framework(HWND hWnd)
-	: hWnd(hWnd)
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+Framework::Framework(HWND hWnd) : hWnd(hWnd)
 {
-	// ƒOƒ‰ƒtƒBƒbƒNƒX‰Šú‰»
-	Graphics::Instance().Initialize(hWnd);
-	InputManager::Instance().Initialize(hWnd);
-	audio = std::make_unique<Audio>();
-	EffectManager::Instance().Initialize();
+    // ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹åˆæœŸåŒ–
+    Graphics::Instance().Initialize(hWnd);
+    InputManager::Instance().Initialize(hWnd);
+    audio = std::make_unique<Audio>();
+    EffectManager::Instance().Initialize();
 
-	// IMGUI‰Šú‰»
-	ImGuiRenderer::Initialize(hWnd, Graphics::Instance().GetDevice(), Graphics::Instance().GetDeviceContext());
+    // IMGUIåˆæœŸåŒ–
+    ImGuiRenderer::Initialize(hWnd, Graphics::Instance().GetDevice(),
+                              Graphics::Instance().GetDeviceContext());
 
-	// ƒV[ƒ“‰Šú‰»
-	SceneManager::Instance().ChangeScene([]() { return std::make_shared<SceneTitle>(); });
+    // ã‚·ãƒ¼ãƒ³åˆæœŸåŒ–
+    SceneManager::Instance().ChangeScene([]() { return std::make_shared<SceneTitle>(); });
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Framework::~Framework()
 {
-	// IMGUII—¹‰»
-	SceneManager::Instance().Clear();
-	ModelManager::Instance().Clear();
-	EffectManager::Instance().Finalize();
-	InputManager::Instance().GetGamePad().StopVibration();
-	audio.reset();
-	ImGuiRenderer::Finalize();
+    // IMGUIçµ‚äº†åŒ–
+    SceneManager::Instance().Clear();
+    ModelManager::Instance().Clear();
+    EffectManager::Instance().Finalize();
+    InputManager::Instance().GetGamePad().StopVibration();
+    audio.reset();
+    ImGuiRenderer::Finalize();
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void Framework::Update(float elapsedTime)
 {
-	InputManager::Instance().Update();
+    InputManager::Instance().Update();
 
-	// IMGUIƒtƒŒ[ƒ€ŠJnˆ—	
-	ImGuiRenderer::NewFrame();
+    // IMGUIãƒ•ãƒ¬ãƒ¼ãƒ é–‹å§‹å‡¦ç†
+    ImGuiRenderer::NewFrame();
 
-	// ƒV[ƒ“XVˆ—
-	SceneManager::Instance().Update(elapsedTime);
-	if (!SceneManager::Instance().IsBackgroundEditing())
+    // ã‚·ãƒ¼ãƒ³æ›´æ–°å‡¦ç†
+    SceneManager::Instance().Update(elapsedTime);
+
+    if (!SceneManager::Instance().IsBackgroundEditing())
+    {
         EffectManager::Instance().Update(elapsedTime);
+    }
 }
 
-// •`‰æˆ—
+// æç”»å‡¦ç†
 void Framework::Render(float elapsedTime)
 {
-	ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
+    ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
 
-	// ‰æ–ÊƒNƒŠƒA
-	Graphics::Instance().Clear(0.5f, 0.5f, 0.5f, 1);
+    // ç”»é¢ã‚¯ãƒªã‚¢
+    Graphics::Instance().Clear(0.5f, 0.5f, 0.5f, 1);
 
-	// ƒŒƒ“ƒ_[ƒ^[ƒQƒbƒgİ’è
-	Graphics::Instance().SetRenderTargets();
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¿ãƒ¼ã‚²ãƒƒãƒˆè¨­å®š
+    Graphics::Instance().SetRenderTargets();
 
-	// ƒV[ƒ“•`‰æˆ—
-	SceneManager::Instance().Render(elapsedTime);
-	if (!SceneManager::Instance().IsBackgroundEditing())
+    // ã‚·ãƒ¼ãƒ³æç”»å‡¦ç†
+    SceneManager::Instance().Render(elapsedTime);
+
+    if (!SceneManager::Instance().IsBackgroundEditing())
+    {
         EffectManager::Instance().Render(Camera::Instance().GetView(), Camera::Instance().GetProjection());
+    }
 
-	// ƒV[ƒ“GUI•`‰æˆ—
-	SceneManager::Instance().DrawGUI();
+    // ã‚·ãƒ¼ãƒ³GUIæç”»å‡¦ç†
+    SceneManager::Instance().DrawGUI();
 
-	// ƒV[ƒ“Ø‚è‘Ö‚¦GUI
-	SceneSelectGUI();
+    // ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆGUI
+    SceneSelectGUI();
 #if 0
-	// IMGUIƒfƒ‚ƒEƒCƒ“ƒhƒE•`‰æiIMGUI‹@”\ƒeƒXƒg—pj
-	ImGui::ShowDemoWindow();
+    // IMGUIãƒ‡ãƒ¢ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦æç”»ï¼ˆIMGUIæ©Ÿèƒ½ãƒ†ã‚¹ãƒˆç”¨ï¼‰
+    ImGui::ShowDemoWindow();
 #endif
-	// IMGUI•`‰æ
-	ImGuiRenderer::Render(dc);
+    // IMGUIæç”»
+    ImGuiRenderer::Render(dc);
 
-	// ‰æ–Ê•\¦
-	Graphics::Instance().Present(SYNC_INTERVAL);
+    // ç”»é¢è¡¨ç¤º
+    Graphics::Instance().Present(SYNC_INTERVAL);
+
     if (LoadingProfile::Enabled() && LoadingProfile::gameReady && !LoadingProfile::firstGameFrame)
     {
         LoadingProfile::firstGameFrame = true;
-        LoadingProfile::Record("Loading.to_first_game_present", LoadingProfile::Milliseconds(LoadingProfile::loadingStart));
-        if (LoadingProfile::Automatic()) PostQuitMessage(0);
+        LoadingProfile::Record("Loading.to_first_game_present",
+                               LoadingProfile::Milliseconds(LoadingProfile::loadingStart));
+
+        if (LoadingProfile::Automatic())
+        {
+            PostQuitMessage(0);
+        }
     }
+
     LoadingProfile::Flush();
 }
 
-template<class T>
-void Framework::ChangeSceneButtonGUI(const char* name)
+template <class T> void Framework::ChangeSceneButtonGUI(const char* name)
 {
-	if (ImGui::Button(name))
-	{
-		SceneManager::Instance().ChangeScene([]() {
-			return std::make_shared<SceneLoading>([]() { return std::make_shared<T>(); });
-		});
-	}
+    if (ImGui::Button(name))
+    {
+        SceneManager::Instance().ChangeScene(
+            []() { return std::make_shared<SceneLoading>([]() { return std::make_shared<T>(); }); });
+    }
 }
 
-// ƒV[ƒ“Ø‚è‘Ö‚¦GUI
+// ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆGUI
 void Framework::SceneSelectGUI()
 {
-	ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-	ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
-	float width = 210;
-	float height = 490;
-	ImGui::SetNextWindowPos(ImVec2(pos.x + displaySize.x - width - 10, pos.y + 10), ImGuiCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Once);
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
+    float width = 210;
+    float height = 490;
+    ImGui::SetNextWindowPos(ImVec2(pos.x + displaySize.x - width - 10, pos.y + 10), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Once);
 
-	if (ImGui::Begin("Scene"))
-	{
-		ChangeSceneButtonGUI<SceneTitle>("Title");
-		ChangeSceneButtonGUI<SceneClear>("Clear (preview)");
-		ChangeSceneButtonGUI<ModelViewerScene>(u8"ƒ‚ƒfƒ‹ƒrƒ…[ƒA");
-		ChangeSceneButtonGUI<GameScene>(u8"ƒQ[ƒ€");
-	}
-	ImGui::End();
+    if (ImGui::Begin("Scene"))
+    {
+        ChangeSceneButtonGUI<SceneTitle>("Title");
+        ChangeSceneButtonGUI<SceneClear>("Clear (preview)");
+        ChangeSceneButtonGUI<ModelViewerScene>(u8"ãƒ¢ãƒ‡ãƒ«ãƒ“ãƒ¥ãƒ¼ã‚¢");
+        ChangeSceneButtonGUI<GameScene>(u8"ã‚²ãƒ¼ãƒ ");
+    }
+
+    ImGui::End();
 }
 
-// ƒtƒŒ[ƒ€ƒŒ[ƒgŒvZ
+// ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ¬ãƒ¼ãƒˆè¨ˆç®—
 void Framework::CalculateFrameStats()
 {
-	// Code computes the average frames per second, and also the 
-	// average time it takes to render one frame.  These stats 
-	// are appended to the window caption bar.
-	static int frames = 0;
-	static float timeElapsed = 0.0f;
 
-	frames++;
+    static int frames = 0;
+    static float timeElapsed = 0.0f;
 
-	// Compute averages over one second period.
-	if ((timer.TimeStamp() - timeElapsed) >= 1.0f)
-	{
-		float fps = static_cast<float>(frames); // fps = frameCnt / 1
-		float mspf = 1000.0f / fps;
-		std::ostringstream outs;
-		outs.precision(6);
-		outs << "FPS : " << fps << " / " << "Frame Time : " << mspf << " (ms)";
-		SetWindowTextA(hWnd, outs.str().c_str());
+    frames++;
 
-		// Reset for next average.
-		frames = 0;
-		timeElapsed += 1.0f;
-	}
+    if ((timer.TimeStamp() - timeElapsed) >= 1.0f)
+    {
+        float fps = static_cast<float>(frames);
+        float mspf = 1000.0f / fps;
+        std::ostringstream outs;
+        outs.precision(6);
+        outs << "FPS : " << fps << " / " << "Frame Time : " << mspf << " (ms)";
+        SetWindowTextA(hWnd, outs.str().c_str());
+
+        frames = 0;
+        timeElapsed += 1.0f;
+    }
 }
 
-// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒ‹[ƒv
+// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒ«ãƒ¼ãƒ—
 int Framework::Run()
 {
-	MSG msg = {};
+    MSG msg = {};
 
-	while (WM_QUIT != msg.message)
-	{
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else
-		{
-			timer.Tick();
-			CalculateFrameStats();
+    while (WM_QUIT != msg.message)
+    {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            timer.Tick();
+            CalculateFrameStats();
 
-			float elapsedTime = timer.TimeInterval();
-			Update(elapsedTime);
-			Render(elapsedTime);
-		}
-	}
-	return static_cast<int>(msg.wParam);
+            float elapsedTime = timer.TimeInterval();
+            Update(elapsedTime);
+            Render(elapsedTime);
+        }
+    }
+
+    return static_cast<int>(msg.wParam);
 }
 
-// ƒƒbƒZ[ƒWƒnƒ“ƒhƒ‰
+// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒãƒ³ãƒ‰ãƒ©
 LRESULT CALLBACK Framework::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (msg == WM_MOUSEWHEEL)
-		InputManager::Instance().SetWheel(GET_WHEEL_DELTA_WPARAM(wParam));
+    if (msg == WM_MOUSEWHEEL)
+    {
+        InputManager::Instance().SetWheel(GET_WHEEL_DELTA_WPARAM(wParam));
+    }
 
-	if (ImGuiRenderer::HandleMessage(hWnd, msg, wParam, lParam))
-		return true;
+    if (ImGuiRenderer::HandleMessage(hWnd, msg, wParam, lParam))
+    {
+        return true;
+    }
 
-	switch (msg)
-	{
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc;
-		hdc = BeginPaint(hWnd, &ps);
-		EndPaint(hWnd, &ps);
-		break;
-	}
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	case WM_CREATE:
-		break;
-	case WM_KEYDOWN:
-		if (wParam == VK_ESCAPE) PostMessage(hWnd, WM_CLOSE, 0, 0);
-		break;
-	case WM_ENTERSIZEMOVE:
-		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-		timer.Stop();
-		break;
-	case WM_EXITSIZEMOVE:
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
-		timer.Start();
-		break;
-	default:
-		return DefWindowProc(hWnd, msg, wParam, lParam);
-	}
-	return 0;
+    switch (msg)
+    {
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc;
+        hdc = BeginPaint(hWnd, &ps);
+        EndPaint(hWnd, &ps);
+        break;
+    }
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    case WM_CREATE:
+        break;
+    case WM_KEYDOWN:
+        if (wParam == VK_ESCAPE)
+        {
+            PostMessage(hWnd, WM_CLOSE, 0, 0);
+        }
+
+        break;
+    case WM_ENTERSIZEMOVE:
+
+        timer.Stop();
+        break;
+    case WM_EXITSIZEMOVE:
+
+        timer.Start();
+        break;
+    default:
+        return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
+
+    return 0;
 }

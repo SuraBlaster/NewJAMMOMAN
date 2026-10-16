@@ -1,4 +1,4 @@
-#include "TileTypeManager.h"
+﻿#include "TileTypeManager.h"
 
 #include <algorithm>
 #include <array>
@@ -15,32 +15,13 @@ namespace
 {
     constexpr int SUPPORTED_FORMAT_VERSION = 1;
 
-    constexpr std::array<std::string_view, 6> REQUIRED_DEFINITION_FIELDS
-    {
-        "typeId",
-        "name",
-        "category",
-        "modelPath",
-        "collision",
-        "defaultScale"
-    };
+    constexpr std::array<std::string_view, 6> REQUIRED_DEFINITION_FIELDS{
+        "typeId", "name", "category", "modelPath", "collision", "defaultScale"};
 
-    constexpr std::array<std::string_view, 3> SCALE_FIELDS
-    {
-        "x",
-        "y",
-        "z"
-    };
+    constexpr std::array<std::string_view, 3> SCALE_FIELDS{"x", "y", "z"};
 
-    constexpr std::array<std::string_view, 6> SUPPORTED_CATEGORIES
-    {
-        "Ground",
-        "Wall",
-        "Decoration",
-        "Hazard",
-        "CollisionOnly",
-        "Gate"
-    };
+    constexpr std::array<std::string_view, 6> SUPPORTED_CATEGORIES{"Ground", "Wall",          "Decoration",
+                                                                   "Hazard", "CollisionOnly", "Gate"};
 
     void PrintDefinitionError(const std::string& message)
     {
@@ -48,7 +29,6 @@ namespace
     }
 }
 
-// Validate one element in the definitions array before converting it to TileInfo.
 bool TileTypeManager::DefinitionsVerification(const json& item)
 {
     if (!item.is_object())
@@ -61,8 +41,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     {
         if (item.count(std::string(fieldName)) == 0)
         {
-            PrintDefinitionError(
-                "required field is missing: " + std::string(fieldName));
+            PrintDefinitionError("required field is missing: " + std::string(fieldName));
             return false;
         }
     }
@@ -104,6 +83,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const int typeId = item.at("typeId").get<int>();
+
     if (typeId <= 0)
     {
         PrintDefinitionError("typeId must be greater than zero.");
@@ -111,6 +91,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const std::string name = item.at("name").get<std::string>();
+
     if (name.empty())
     {
         PrintDefinitionError("name must not be empty.");
@@ -118,11 +99,8 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const std::string category = item.at("category").get<std::string>();
-    const bool isSupportedCategory =
-        std::find(
-            SUPPORTED_CATEGORIES.begin(),
-            SUPPORTED_CATEGORIES.end(),
-            category) != SUPPORTED_CATEGORIES.end();
+    const bool isSupportedCategory = std::find(SUPPORTED_CATEGORIES.begin(), SUPPORTED_CATEGORIES.end(),
+                                               category) != SUPPORTED_CATEGORIES.end();
 
     if (!isSupportedCategory)
     {
@@ -131,6 +109,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const std::string modelPath = item.at("modelPath").get<std::string>();
+
     if (modelPath.empty())
     {
         PrintDefinitionError("modelPath must not be empty.");
@@ -138,37 +117,36 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const json& defaultScale = item.at("defaultScale");
+
     for (const std::string_view scaleField : SCALE_FIELDS)
     {
         const std::string fieldName(scaleField);
 
         if (defaultScale.count(fieldName) == 0)
         {
-            PrintDefinitionError(
-                "defaultScale is missing field: " + fieldName);
+            PrintDefinitionError("defaultScale is missing field: " + fieldName);
             return false;
         }
 
         const json& scaleValue = defaultScale.at(fieldName);
+
         if (!scaleValue.is_number())
         {
-            PrintDefinitionError(
-                "defaultScale." + fieldName + " must be a number.");
+            PrintDefinitionError("defaultScale." + fieldName + " must be a number.");
             return false;
         }
 
         const float scale = scaleValue.get<float>();
+
         if (!std::isfinite(scale))
         {
-            PrintDefinitionError(
-                "defaultScale." + fieldName + " must be finite.");
+            PrintDefinitionError("defaultScale." + fieldName + " must be finite.");
             return false;
         }
 
         if (scale <= 0.0f)
         {
-            PrintDefinitionError(
-                "defaultScale." + fieldName + " must be greater than zero.");
+            PrintDefinitionError("defaultScale." + fieldName + " must be greater than zero.");
             return false;
         }
     }
@@ -182,10 +160,10 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
             return false;
         }
     }
+
     return ValidateModelPath(modelPath);
 }
 
-// Accept only an existing glTF model below the project's Data/Model directory.
 bool TileTypeManager::ValidateModelPath(const std::string& modelPath)
 {
     if (modelPath.empty())
@@ -204,15 +182,13 @@ bool TileTypeManager::ValidateModelPath(const std::string& modelPath)
 
     if (filePath.has_root_name())
     {
-        PrintDefinitionError(
-            "modelPath must not contain a drive or network root: " + modelPath);
+        PrintDefinitionError("modelPath must not contain a drive or network root: " + modelPath);
         return false;
     }
 
     if (filePath.has_root_directory())
     {
-        PrintDefinitionError(
-            "modelPath must not begin at a root directory: " + modelPath);
+        PrintDefinitionError("modelPath must not begin at a root directory: " + modelPath);
         return false;
     }
 
@@ -220,8 +196,7 @@ bool TileTypeManager::ValidateModelPath(const std::string& modelPath)
     {
         if (pathElement == "..")
         {
-            PrintDefinitionError(
-                "modelPath must not contain '..': " + modelPath);
+            PrintDefinitionError("modelPath must not contain '..': " + modelPath);
             return false;
         }
     }
@@ -231,81 +206,69 @@ bool TileTypeManager::ValidateModelPath(const std::string& modelPath)
 
     if (pathIterator == normalizedPath.end() || *pathIterator != "Data")
     {
-        PrintDefinitionError(
-            "modelPath must be below Data/Model: " + modelPath);
+        PrintDefinitionError("modelPath must be below Data/Model: " + modelPath);
         return false;
     }
 
     ++pathIterator;
+
     if (pathIterator == normalizedPath.end() || *pathIterator != "Model")
     {
-        PrintDefinitionError(
-            "modelPath must be below Data/Model: " + modelPath);
+        PrintDefinitionError("modelPath must be below Data/Model: " + modelPath);
         return false;
     }
 
     std::string extension = normalizedPath.extension().string();
-    std::transform(
-        extension.begin(),
-        extension.end(),
-        extension.begin(),
-        [](unsigned char character)
-        {
-            return static_cast<char>(std::tolower(character));
-        });
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
 
     if (extension != ".gltf" && extension != ".glb")
     {
-        PrintDefinitionError(
-            "modelPath extension must be .gltf or .glb: " + modelPath);
+        PrintDefinitionError("modelPath extension must be .gltf or .glb: " + modelPath);
         return false;
     }
 
     std::error_code fileSystemError;
     const bool fileExists = std::filesystem::exists(normalizedPath, fileSystemError);
+
     if (fileSystemError)
     {
-        PrintDefinitionError(
-            "failed to check modelPath: " + modelPath);
+        PrintDefinitionError("failed to check modelPath: " + modelPath);
         return false;
     }
 
     if (!fileExists)
     {
-        PrintDefinitionError(
-            "modelPath does not exist: " + modelPath);
+        PrintDefinitionError("modelPath does not exist: " + modelPath);
         return false;
     }
 
-    const bool isRegularFile =
-        std::filesystem::is_regular_file(normalizedPath, fileSystemError);
+    const bool isRegularFile = std::filesystem::is_regular_file(normalizedPath, fileSystemError);
+
     if (fileSystemError)
     {
-        PrintDefinitionError(
-            "failed to inspect modelPath: " + modelPath);
+        PrintDefinitionError("failed to inspect modelPath: " + modelPath);
         return false;
     }
 
     if (!isRegularFile)
     {
-        PrintDefinitionError(
-            "modelPath must refer to a file: " + modelPath);
+        PrintDefinitionError("modelPath must refer to a file: " + modelPath);
         return false;
     }
 
     return true;
 }
 
-// Load all definitions transactionally so a failed reload keeps the old data intact.
 bool TileTypeManager::LoadDefinitions(const std::string& jsonPath)
 {
     try
     {
         std::ifstream inputFile(jsonPath);
+
         if (!inputFile.is_open())
         {
-            std::cerr << "Failed to open tile definition file: "
-                << jsonPath << std::endl;
+            std::cerr << "Failed to open tile definition file: " << jsonPath << std::endl;
             return false;
         }
 
@@ -314,45 +277,41 @@ bool TileTypeManager::LoadDefinitions(const std::string& jsonPath)
 
         if (!root.is_object())
         {
-            std::cerr << "Tile definition root must be a JSON object."
-                << std::endl;
+            std::cerr << "Tile definition root must be a JSON object." << std::endl;
             return false;
         }
 
         if (root.count("formatVersion") == 0)
         {
-            std::cerr << "Tile definition formatVersion is missing."
-                << std::endl;
+            std::cerr << "Tile definition formatVersion is missing." << std::endl;
             return false;
         }
 
         if (!root.at("formatVersion").is_number_integer())
         {
-            std::cerr << "Tile definition formatVersion must be an integer."
-                << std::endl;
+            std::cerr << "Tile definition formatVersion must be an integer." << std::endl;
             return false;
         }
 
         const int formatVersion = root.at("formatVersion").get<int>();
+
         if (formatVersion != SUPPORTED_FORMAT_VERSION)
         {
-            std::cerr << "Unsupported tile definition formatVersion: "
-                << formatVersion << std::endl;
+            std::cerr << "Unsupported tile definition formatVersion: " << formatVersion << std::endl;
             return false;
         }
 
         if (root.count("definitions") == 0)
         {
-            std::cerr << "Tile definition definitions array is missing."
-                << std::endl;
+            std::cerr << "Tile definition definitions array is missing." << std::endl;
             return false;
         }
 
         const json& definitions = root.at("definitions");
+
         if (!definitions.is_array())
         {
-            std::cerr << "Tile definition definitions must be a JSON array."
-                << std::endl;
+            std::cerr << "Tile definition definitions must be a JSON array." << std::endl;
             return false;
         }
 
@@ -379,13 +338,12 @@ bool TileTypeManager::LoadDefinitions(const std::string& jsonPath)
             tileInfo.defaultScale.y = defaultScale.at("y").get<float>();
             tileInfo.defaultScale.z = defaultScale.at("z").get<float>();
 
-            const auto insertionResult =
-                loadedDefinitions.emplace(tileInfo.typeId, std::move(tileInfo));
+            const auto insertionResult = loadedDefinitions.emplace(tileInfo.typeId, std::move(tileInfo));
 
             if (!insertionResult.second)
             {
-                std::cerr << "Duplicate tile definition typeId: "
-                    << item.at("typeId").get<int>() << std::endl;
+                std::cerr << "Duplicate tile definition typeId: " << item.at("typeId").get<int>()
+                          << std::endl;
                 return false;
             }
         }
@@ -395,20 +353,17 @@ bool TileTypeManager::LoadDefinitions(const std::string& jsonPath)
     }
     catch (const json::parse_error& exception)
     {
-        std::cerr << "Failed to parse tile definition JSON: "
-            << exception.what() << std::endl;
+        std::cerr << "Failed to parse tile definition JSON: " << exception.what() << std::endl;
         return false;
     }
     catch (const json::exception& exception)
     {
-        std::cerr << "Invalid tile definition JSON: "
-            << exception.what() << std::endl;
+        std::cerr << "Invalid tile definition JSON: " << exception.what() << std::endl;
         return false;
     }
     catch (const std::exception& exception)
     {
-        std::cerr << "Failed to load tile definitions: "
-            << exception.what() << std::endl;
+        std::cerr << "Failed to load tile definitions: " << exception.what() << std::endl;
         return false;
     }
 }
