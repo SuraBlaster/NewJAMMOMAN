@@ -8,12 +8,12 @@
 
 namespace
 {
-	constexpr float EnemyScale = 0.01f;
-	constexpr float DespawnDistance = 14.0f;
-	constexpr int ContactDamage = 1;
-	constexpr float DamageInvincibleTime = 1.2f;
-	constexpr float KnockbackHorizontal = 6.0f;
-	constexpr float KnockbackVertical = 5.0f;
+	constexpr float ENEMY_SCALE = 0.01f;
+	constexpr float DESPAWN_DISTANCE = 14.0f;
+	constexpr int CONTACT_DAMAGE = 1;
+	constexpr float DAMAGE_INVINCIBLE_TIME = 1.2f;
+	constexpr float KNOCKBACK_HORIZONTAL = 6.0f;
+	constexpr float KNOCKBACK_VERTICAL = 5.0f;
 
 }
 
@@ -23,7 +23,7 @@ EnemyWave::EnemyWave(ID3D11Device* device, Player* player)
 	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
 	animator = std::make_unique<Animator>(model.get());
 	animator->Play(0, "Idle_Seq_0", true);
-	scale = { EnemyScale, EnemyScale, EnemyScale };
+	scale = { ENEMY_SCALE, ENEMY_SCALE, ENEMY_SCALE };
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	color = { 1.0f, 0.25f, 0.25f, 1.0f };
 	radius = 0.45f;
@@ -40,10 +40,10 @@ void EnemyWave::Update(float elapsedTime)
 		return;
 	}
 
-	if (!target_y_initialized)
+	if (!targetYInitialized)
 	{
-		target_y = player->GetPosition().y;
-		target_y_initialized = true;
+		targetY = player->GetPosition().y;
+		targetYInitialized = true;
 	}
 
 	UpdateAttacking(elapsedTime);
@@ -63,10 +63,10 @@ void EnemyWave::SetDirection(Direction value)
 
 void EnemyWave::UpdateAttacking(float elapsedTime)
 {
-	wave_time += elapsedTime * wave_speed;
+	waveTime += elapsedTime * waveSpeed;
 	const float moveDirection = direction == Direction::Right ? 1.0f : -1.0f;
-	position.x += moveDirection * move_speed * elapsedTime;
-	position.y = target_y + std::sin(wave_time) * wave_amplitude;
+	position.x += moveDirection * moveSpeed * elapsedTime;
+	position.y = targetY + std::sin(waveTime) * waveAmplitude;
 	if (IsOutOfRange()) Destroy();
 }
 
@@ -81,7 +81,7 @@ void EnemyWave::CollideWithPlayer()
 		return;
 	}
 
-	if (!player->ApplyDamage(ContactDamage, DamageInvincibleTime)) return;
+	if (!player->ApplyDamage(CONTACT_DAMAGE, DAMAGE_INVINCIBLE_TIME)) return;
 
 	DirectX::XMFLOAT3 impulse = {
 		player->GetPosition().x - position.x,
@@ -91,19 +91,19 @@ void EnemyWave::CollideWithPlayer()
 	const float length = std::sqrt(impulse.x * impulse.x + impulse.z * impulse.z);
 	if (length > 0.0001f)
 	{
-		impulse.x = impulse.x / length * KnockbackHorizontal;
-		impulse.z = impulse.z / length * KnockbackHorizontal;
+		impulse.x = impulse.x / length * KNOCKBACK_HORIZONTAL;
+		impulse.z = impulse.z / length * KNOCKBACK_HORIZONTAL;
 	}
 	else
 	{
-		impulse.x = direction == Direction::Right ? KnockbackHorizontal : -KnockbackHorizontal;
+		impulse.x = direction == Direction::Right ? KNOCKBACK_HORIZONTAL : -KNOCKBACK_HORIZONTAL;
 	}
-	impulse.y = KnockbackVertical;
+	impulse.y = KNOCKBACK_VERTICAL;
 	player->SetVelocity({ 0, 0, 0 });
 	player->AddImpulse(impulse);
 }
 
 bool EnemyWave::IsOutOfRange() const
 {
-	return std::abs(position.x - player->GetPosition().x) > DespawnDistance;
+	return std::abs(position.x - player->GetPosition().x) > DESPAWN_DISTANCE;
 }

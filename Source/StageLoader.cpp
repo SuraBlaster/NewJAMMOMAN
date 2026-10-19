@@ -1,4 +1,5 @@
 #include "StageLoader.h"
+#include "BossGate.h"
 #include <fstream>
 #include <iostream>
 #include <json.hpp>
@@ -214,6 +215,12 @@ namespace
         }
 
         // すべて成功した場合だけ出力先へ代入し、途中までのデータを残さない
+        if (BossGate::IsGateType(loadedObjectData.typeId) &&
+            (loadedObjectData.rotationDegrees != 0.0f || loadedObjectData.scaleX != 1.0f))
+        {
+            std::cerr << "Gate placements require rotationDegrees=0 and scale.x=1." << std::endl;
+            return false;
+        }
         outputObject = loadedObjectData;
 
         return true;
@@ -223,7 +230,7 @@ namespace
     // JSON上の敵名をEnemyTypeへ変換する。未対応名では出力を変更せずfalseを返す。
     bool TryParseEnemyType(std::string_view enemyTypeName,EnemyType& outputEnemyType)
     {
-        constexpr std::array<std::pair<std::string_view, EnemyType>,9> enemyTypeMappings =
+        constexpr std::array<std::pair<std::string_view, EnemyType>,9> ENEMY_TYPE_MAPPINGS =
         { 
             {
                 { "Wave",    EnemyType::Wave },
@@ -238,7 +245,7 @@ namespace
             } 
         };
           
-        for (auto maps : enemyTypeMappings)
+        for (auto maps : ENEMY_TYPE_MAPPINGS)
         {
             if (maps.first == enemyTypeName)
             {
@@ -399,7 +406,7 @@ namespace
         }
 
         // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する。
-        constexpr std::array requiredFieldNames
+        constexpr std::array REQUIRED_FIELD_NAMES
         {
             std::string_view("minX"),
             std::string_view("maxX"),
@@ -408,7 +415,7 @@ namespace
         };
 
         // 4つの境界について、存在・数値型・有限値を順番に確認する。
-        for (const std::string_view fieldName : requiredFieldNames)
+        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
@@ -489,7 +496,7 @@ namespace
         }
 
         // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する。
-        constexpr std::array requiredFieldNames
+        constexpr std::array REQUIRED_FIELD_NAMES
         {
             std::string_view("minX"),
             std::string_view("maxX"),
@@ -498,7 +505,7 @@ namespace
         };
 
         // 4つの境界について、存在・数値型・有限値を順番に確認する。
-        for (const std::string_view fieldName : requiredFieldNames)
+        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
@@ -579,7 +586,7 @@ namespace
         }
 
         // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する。
-        constexpr std::array requiredFieldNames
+        constexpr std::array REQUIRED_FIELD_NAMES
         {
             std::string_view("minX"),
             std::string_view("maxX"),
@@ -588,7 +595,7 @@ namespace
         };
 
         // 4つの境界について、存在・数値型・有限値を順番に確認する。
-        for (const std::string_view fieldName : requiredFieldNames)
+        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {
@@ -669,7 +676,7 @@ namespace
         }
 
         // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する。
-        constexpr std::array requiredFieldNames
+        constexpr std::array REQUIRED_FIELD_NAMES
         {
             std::string_view("minX"),
             std::string_view("maxX"),
@@ -678,7 +685,7 @@ namespace
         };
 
         // 4つの境界について、存在・数値型・有限値を順番に確認する。
-        for (const std::string_view fieldName : requiredFieldNames)
+        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
         {
             if (item.count(std::string(fieldName)) == 0)
             {

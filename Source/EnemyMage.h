@@ -22,5 +22,5 @@ private:
 
 	Player* player = nullptr;
 	std::vector<EnemyProjectile> projectiles;
-	float attack_timer = 1.5f;
+	float attackTimer = 1.5f;
 };

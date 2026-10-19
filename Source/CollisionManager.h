@@ -42,7 +42,7 @@ public:
 	void Register(CollisionMesh* mesh);
 	void Unregister(CollisionMesh* mesh);
 
-	bool Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result);
+	bool Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult);
 
 	void RegisterTerrainAABB(const AABB& box);
 	void ClearTerrainAABBs();
@@ -53,7 +53,7 @@ public:
 		TerrainSweepHit& hit) const;
 	bool CheckWall(const AABB& body, float displacementX, TerrainSweepHit& hit) const;
 private:
-	bool RayCast(const CollisionMesh* mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit_result);
+	bool RayCast(const CollisionMesh* mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult);
 private:
 	std::vector<CollisionMesh*> meshes;
 	std::vector<AABB> terrainBoxes;

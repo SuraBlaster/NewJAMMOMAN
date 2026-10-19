@@ -10,9 +10,9 @@
 
 namespace
 {
-    constexpr int kExitSuccess = 0;
-    constexpr int kExitInvalidArguments = 1;
-    constexpr int kExitConversionFailure = 2;
+    constexpr int CONVERTER_EXIT_SUCCESS = 0;
+    constexpr int EXIT_INVALID_ARGUMENTS = 1;
+    constexpr int EXIT_CONVERSION_FAILURE = 2;
 
     std::string WideToUtf8(const std::wstring& text)
     {
@@ -55,7 +55,7 @@ namespace
         LPWSTR* wideArguments = CommandLineToArgvW(GetCommandLineW(), &argumentCount);
         if (wideArguments == nullptr)
         {
-            return kExitInvalidArguments;
+            return EXIT_INVALID_ARGUMENTS;
         }
 
         std::vector<std::string> utf8Arguments;
@@ -81,22 +81,22 @@ namespace
             options,
             errorMessage))
         {
-            return kExitInvalidArguments;
+            return EXIT_INVALID_ARGUMENTS;
         }
         if (options.showHelp)
         {
-            return kExitSuccess;
+            return CONVERTER_EXIT_SUCCESS;
         }
 
         try
         {
             const stage_converter::TiledStageConverter converter;
             converter.Convert(options);
-            return kExitSuccess;
+            return CONVERTER_EXIT_SUCCESS;
         }
         catch (const std::exception&)
         {
-            return kExitConversionFailure;
+            return EXIT_CONVERSION_FAILURE;
         }
     }
 }

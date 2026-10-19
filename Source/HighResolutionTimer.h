@@ -5,15 +5,15 @@
 class HighResolutionTimer
 {
 public:
-	HighResolutionTimer() : delta_time(-1.0), paused_time(0), stopped(false)
+	HighResolutionTimer() : deltaTime(-1.0), pausedTime(0), stopped(false)
 	{
-		LONGLONG counts_per_sec;
-		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&counts_per_sec));
-		seconds_per_count = 1.0 / static_cast<double>(counts_per_sec);
+		LONGLONG countsPerSec;
+		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&countsPerSec));
+		secondsPerCount = 1.0 / static_cast<double>(countsPerSec);
 
-		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&this_time));
-		base_time = this_time;
-		last_time = this_time;
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&thisTime));
+		baseTime = thisTime;
+		lastTime = thisTime;
 	}
 
 	// Returns the total time elapsed since Reset() was called, NOT counting any
@@ -31,7 +31,7 @@ public:
 
 		if (stopped)
 		{
-			return static_cast<float>(((stop_time - paused_time) - base_time)*seconds_per_count);
+			return static_cast<float>(((stopTime - pausedTime) - baseTime)*secondsPerCount);
 		}
 
 		// The distance this_time - mBaseTime includes paused time,
@@ -45,29 +45,29 @@ public:
 		//  base_time       stop_time        start_time     this_time
 		else
 		{
-			return static_cast<float>(((this_time - paused_time) - base_time)*seconds_per_count);
+			return static_cast<float>(((thisTime - pausedTime) - baseTime)*secondsPerCount);
 		}
 	}
 
 	float TimeInterval() const  // in seconds
 	{
-		return static_cast<float>(delta_time);
+		return static_cast<float>(deltaTime);
 	}
 
 	void Reset() // Call before message loop.
 	{
-		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&this_time));
-		base_time = this_time;
-		last_time = this_time;
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&thisTime));
+		baseTime = thisTime;
+		lastTime = thisTime;
 
-		stop_time = 0;
+		stopTime = 0;
 		stopped = false;
 	}
 
 	void Start() // Call when unpaused.
 	{
-		LONGLONG start_time;
-		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&start_time));
+		LONGLONG startTime;
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&startTime));
 
 		// Accumulate the time elapsed between stop and start pairs.
 		//
@@ -76,9 +76,9 @@ public:
 		//  base_time       stop_time        start_time     
 		if (stopped)
 		{
-			paused_time += (start_time - stop_time);
-			last_time = start_time;
-			stop_time = 0;
+			pausedTime += (startTime - stopTime);
+			lastTime = startTime;
+			stopTime = 0;
 			stopped = false;
 		}
 	}
@@ -87,7 +87,7 @@ public:
 	{
 		if (!stopped)
 		{
-			QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&stop_time));
+			QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&stopTime));
 			stopped = true;
 		}
 	}
@@ -96,35 +96,35 @@ public:
 	{
 		if (stopped)
 		{
-			delta_time = 0.0;
+			deltaTime = 0.0;
 			return;
 		}
 
-		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&this_time));
+		QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&thisTime));
 		// Time difference between this frame and the previous.
-		delta_time = (this_time - last_time)*seconds_per_count;
+		deltaTime = (thisTime - lastTime)*secondsPerCount;
 
 		// Prepare for next frame.
-		last_time = this_time;
+		lastTime = thisTime;
 
 		// Force nonnegative.  The DXSDK's CDXUTTimer mentions that if the 
 		// processor goes into a power save mode or we get shuffled to another
 		// processor, then mDeltaTime can be negative.
-		if (delta_time < 0.0)
+		if (deltaTime < 0.0)
 		{
-			delta_time = 0.0;
+			deltaTime = 0.0;
 		}
 	}
 
 private:
-	double seconds_per_count;
-	double delta_time;
+	double secondsPerCount;
+	double deltaTime;
 
-	LONGLONG base_time;
-	LONGLONG paused_time;
-	LONGLONG stop_time;
-	LONGLONG last_time;
-	LONGLONG this_time;
+	LONGLONG baseTime;
+	LONGLONG pausedTime;
+	LONGLONG stopTime;
+	LONGLONG lastTime;
+	LONGLONG thisTime;
 
 	bool stopped;
 };

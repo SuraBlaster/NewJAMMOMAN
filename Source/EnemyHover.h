@@ -22,7 +22,7 @@ private:
 
 	Player* player = nullptr;
 	std::vector<EnemyProjectile> projectiles;
-	float attack_timer = 2.0f;
-	float hover_time = 0.0f;
-	float base_y = 0.0f;
+	float attackTimer = 2.0f;
+	float hoverTime = 0.0f;
+	float baseY = 0.0f;
 };

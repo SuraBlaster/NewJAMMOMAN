@@ -13,9 +13,9 @@ struct SphereCastResult
 };
 
 // 外部の点に対する三角形内部の最近点を算出する
-bool GetClosestPos_PointTriangle(
-	const  DirectX::XMVECTOR& Point,
-	const  DirectX::XMVECTOR TrianglePos[3],
+bool GetClosestPointOnTriangle(
+	const  DirectX::XMVECTOR& point,
+	const  DirectX::XMVECTOR trianglePosVector[3],
 	DirectX::XMVECTOR& nearPos,
 	DirectX::XMVECTOR* nearTriPos1 = {},		// 外部の点に対して一番近い頂点
 	DirectX::XMVECTOR* nearTriPos2 = {});		// 外部の点に対してnearTriPos1と合わせて一番近い辺を構成する頂点

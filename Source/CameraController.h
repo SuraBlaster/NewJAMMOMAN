@@ -42,35 +42,35 @@ public:
 	void SetMode(CameraMode newMode) { mode = newMode; }
 
 private:
-	CameraMode				mode = CameraMode::Free;
+	CameraMode				mode = CameraMode::Follow2D;
 
 	DirectX::XMFLOAT3		target = { 0, 0, 0 };	// 注視点
 	DirectX::XMFLOAT3		angle = { DirectX::XMConvertToRadians(45), 0, 0 };	// 回転角度
-	float					roll_speed = DirectX::XMConvertToRadians(90); // 回転速度
+	float					rollSpeed = DirectX::XMConvertToRadians(90); // 回転速度
 	float					range = 10.0f; 	// 距離
-	float					max_angle_x = DirectX::XMConvertToRadians(45);
-	float					min_angle_x = DirectX::XMConvertToRadians(-45);
-	float					interpolation_speed = 3.0f; // 補間速度
+	float					maxAngleX = DirectX::XMConvertToRadians(45);
+	float					minAngleX = DirectX::XMConvertToRadians(-45);
+	float					interpolationSpeed = 3.0f; // 補間速度
 
 	// Follow2D look-ahead settings. Keep looking in the last movement direction
 	// while stopped, and smoothly cross to the other side on a direction change.
-	float					look_ahead_distance = 2.0f;
-	float					look_ahead_lerp_speed = 3.0f;
-	float					look_ahead_velocity_threshold = 0.1f;
-	float					direction_change_confirm_time = 0.2f;
-	float					last_move_direction_x = 0.0f;
-	float					pending_move_direction_x = 0.0f;
-	float					direction_change_timer = 0.0f;
-	float					current_look_ahead_x = 0.0f;
+	float					lookAheadDistance = 2.0f;
+	float					lookAheadLerpSpeed = 3.0f;
+	float					lookAheadVelocityThreshold = 0.1f;
+	float					directionChangeConfirmTime = 0.2f;
+	float					lastMoveDirectionX = 0.0f;
+	float					pendingMoveDirectionX = 0.0f;
+	float					directionChangeTimer = 0.0f;
+	float					currentLookAheadX = 0.0f;
 
 	// Follow2D vertical tracking settings.
-	float					vertical_follow_lerp_speed = 3.0f;
-	float					vertical_eye_offset = 1.0f;
+	float					verticalFollowLerpSpeed = 3.0f;
+	float					verticalEyeOffset = 1.0f;
 
 	// 固定2Dカメラの注視点からの距離。
-	float fixed_2d_distance = 10.0f;
+	float fixed2dDistance = 10.0f;
 
 	// 補正値
-	DirectX::XMFLOAT2 correction_value{};
-	float fixed_minX, fixed_maxX, fixed_minY, fixed_maxY;
+	DirectX::XMFLOAT2 correctionValue{};
+	float fixedMinX, fixedMaxX, fixedMinY, fixedMaxY;
 };

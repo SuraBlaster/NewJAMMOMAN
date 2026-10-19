@@ -13,9 +13,9 @@
 
 namespace
 {
-    constexpr int SupportedFormatVersion = 1;
+    constexpr int SUPPORTED_FORMAT_VERSION = 1;
 
-    constexpr std::array<std::string_view, 6> RequiredDefinitionFields
+    constexpr std::array<std::string_view, 6> REQUIRED_DEFINITION_FIELDS
     {
         "typeId",
         "name",
@@ -25,20 +25,21 @@ namespace
         "defaultScale"
     };
 
-    constexpr std::array<std::string_view, 3> ScaleFields
+    constexpr std::array<std::string_view, 3> SCALE_FIELDS
     {
         "x",
         "y",
         "z"
     };
 
-    constexpr std::array<std::string_view, 5> SupportedCategories
+    constexpr std::array<std::string_view, 6> SUPPORTED_CATEGORIES
     {
         "Ground",
         "Wall",
         "Decoration",
         "Hazard",
-        "CollisionOnly"
+        "CollisionOnly",
+        "Gate"
     };
 
     void PrintDefinitionError(const std::string& message)
@@ -56,7 +57,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
         return false;
     }
 
-    for (const std::string_view fieldName : RequiredDefinitionFields)
+    for (const std::string_view fieldName : REQUIRED_DEFINITION_FIELDS)
     {
         if (item.count(std::string(fieldName)) == 0)
         {
@@ -119,9 +120,9 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     const std::string category = item.at("category").get<std::string>();
     const bool isSupportedCategory =
         std::find(
-            SupportedCategories.begin(),
-            SupportedCategories.end(),
-            category) != SupportedCategories.end();
+            SUPPORTED_CATEGORIES.begin(),
+            SUPPORTED_CATEGORIES.end(),
+            category) != SUPPORTED_CATEGORIES.end();
 
     if (!isSupportedCategory)
     {
@@ -137,7 +138,7 @@ bool TileTypeManager::DefinitionsVerification(const json& item)
     }
 
     const json& defaultScale = item.at("defaultScale");
-    for (const std::string_view scaleField : ScaleFields)
+    for (const std::string_view scaleField : SCALE_FIELDS)
     {
         const std::string fieldName(scaleField);
 
@@ -333,7 +334,7 @@ bool TileTypeManager::LoadDefinitions(const std::string& jsonPath)
         }
 
         const int formatVersion = root.at("formatVersion").get<int>();
-        if (formatVersion != SupportedFormatVersion)
+        if (formatVersion != SUPPORTED_FORMAT_VERSION)
         {
             std::cerr << "Unsupported tile definition formatVersion: "
                 << formatVersion << std::endl;

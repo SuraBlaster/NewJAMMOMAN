@@ -10,7 +10,7 @@ class EnemyVacuum final : public Enemy
 public:
 	EnemyVacuum(ID3D11Device* device, Player* player);
 	void Update(float elapsedTime) override;
-	void SetDirection(float direction) { move_direction = direction < 0.0f ? -1.0f : 1.0f; }
+	void SetDirection(float direction) { moveDirection = direction < 0.0f ? -1.0f : 1.0f; }
 
 	enum class StateId
 	{
@@ -19,7 +19,7 @@ public:
 		Pursuit,
 		EnumCount,
 	};
-	StateId GetState() const { return current_state; }
+	StateId GetState() const { return currentState; }
 
 	class State
 	{
@@ -39,6 +39,8 @@ public:
 		explicit MoveState(EnemyVacuum* owner) : State(owner) {}
 		void OnEnter() override;
 		void OnUpdate(float elapsedTime) override;
+	private:
+		const float NORMAL_ROTATION_SPEED = 10.0f;
 	};
 
 	class PursuitState final : public State
@@ -47,6 +49,8 @@ public:
 		explicit PursuitState(EnemyVacuum* owner) : State(owner) {}
 		void OnEnter() override;
 		void OnUpdate(float elapsedTime) override;
+	private:
+		const float PURSUIT_ROTATION_SPEED = 20.0f;
 	};
 
 private:
@@ -57,13 +61,15 @@ private:
 	void OnDead() override { Destroy(); }
 
 	Player* player = nullptr;
-	StateId current_state = StateId::None;
-	StateId next_state = StateId::None;
+	StateId currentState = StateId::None;
+	StateId nextState = StateId::None;
 	std::unique_ptr<State> states[static_cast<size_t>(StateId::EnumCount)];
-	float move_speed = 1.5f;
-	float move_direction = -1.0f;
-	float wall_turn_timer = 0.0f;
-	float pursuit_speed = 3.0f;
-	float pursuit_start_distance = 5.0f;
-	float pursuit_end_distance = 7.0f;
+	float moveSpeed = 1.5f;
+	float moveDirection = -1.0f;
+	float wallTurnTimer = 0.0f;
+	float pursuitSpeed = 3.0f;
+	float pursuitStartDistance = 5.0f;
+	float pursuitEndDistance = 7.0f;
+
+	float rotationSpeed = 0.0f;
 };

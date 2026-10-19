@@ -15,7 +15,7 @@ EnemyMage::EnemyMage(ID3D11Device* device, Player* player)
 	radius = 0.45f;
 	height = 1.2f;
 	health = 3;
-	use_gravity = true;
+	useGravity = true;
 	color = { 0.65f, 0.35f, 1.0f, 1.0f };
 	InitializeAnimator();
 	UpdateTransform();
@@ -29,15 +29,15 @@ void EnemyMage::Update(float elapsedTime)
 		return;
 	}
 
-	attack_timer -= elapsedTime;
+	attackTimer -= elapsedTime;
 	const DirectX::XMFLOAT3 target = player->GetPosition();
 	const float dx = target.x - position.x;
 	const float dy = target.y - position.y;
 	// UŒ‚‚µ‚Ä‚­‚é”ÍˆÍ
-	if (attack_timer <= 0.0f && std::abs(dx) < 5.0f && std::abs(dy) < 5.0f)
+	if (attackTimer <= 0.0f && std::abs(dx) < 5.0f && std::abs(dy) < 5.0f)
 	{
 		FireProjectile();
-		attack_timer = 3.0f;
+		attackTimer = 3.0f;
 		PlayAnimation(1, false);
 	}
 

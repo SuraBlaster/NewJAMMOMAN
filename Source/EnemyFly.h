@@ -16,6 +16,6 @@ private:
 
 	ID3D11Device* device = nullptr;
 	Player* player = nullptr;
-	float move_speed = 5.0f;
-	bool egg_dropped = false;
+	float moveSpeed = 5.0f;
+	bool eggDropped = false;
 };

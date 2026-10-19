@@ -151,12 +151,12 @@ void Framework::CalculateFrameStats()
 	// average time it takes to render one frame.  These stats 
 	// are appended to the window caption bar.
 	static int frames = 0;
-	static float time_tlapsed = 0.0f;
+	static float timeElapsed = 0.0f;
 
 	frames++;
 
 	// Compute averages over one second period.
-	if ((timer.TimeStamp() - time_tlapsed) >= 1.0f)
+	if ((timer.TimeStamp() - timeElapsed) >= 1.0f)
 	{
 		float fps = static_cast<float>(frames); // fps = frameCnt / 1
 		float mspf = 1000.0f / fps;
@@ -167,7 +167,7 @@ void Framework::CalculateFrameStats()
 
 		// Reset for next average.
 		frames = 0;
-		time_tlapsed += 1.0f;
+		timeElapsed += 1.0f;
 	}
 }
 

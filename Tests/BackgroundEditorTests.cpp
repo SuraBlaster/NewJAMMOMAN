@@ -171,12 +171,12 @@ int main()
         camera.SetLookAt({20,4,-9},{20,1,2},{0,1,0});
         editor.SetEditing(false);assert(camera.GetEye().x==5);
         // All appended assets load, retain their IDs through save/reload, and render.
-        for(int asset=3;asset<LaboratoryAssets::Count;++asset)
+        for(int asset=3;asset<LaboratoryAssets::COUNT;++asset)
             editor.Add(asset,{float(asset-3)*3.0f,0,6});
         assert(editor.Save());
         BackgroundEditor expanded(g.GetDevice(),file);
         assert(expanded.Objects().size()==11);
-        for(int asset=3;asset<LaboratoryAssets::Count;++asset)
+        for(int asset=3;asset<LaboratoryAssets::COUNT;++asset)
             assert(expanded.Objects()[asset].asset==asset);
         camera.SetLookAt({10,10,-24},{10,1,6},{0,1,0});
         g.Clear(0.10f,0.12f,0.15f,1);g.SetRenderTargets();

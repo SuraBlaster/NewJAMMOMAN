@@ -37,6 +37,30 @@
         "y": 1,
         "z": 1
       }
+    },
+    {
+      "typeId": 301,
+      "name": "OneWayGateRight",
+      "category": "Gate",
+      "modelPath": "Data/Model/Cube/Cube.gltf",
+      "collision": false,
+      "defaultScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
+    },
+    {
+      "typeId": 302,
+      "name": "OneWayGateLeft",
+      "category": "Gate",
+      "modelPath": "Data/Model/Cube/Cube.gltf",
+      "collision": false,
+      "defaultScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      }
     }
   ]
 }

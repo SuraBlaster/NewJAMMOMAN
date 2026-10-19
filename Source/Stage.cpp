@@ -1,5 +1,6 @@
 #include "LoadingProfile.h"
 #include "Stage.h"
+#include "BossGate.h"
 #include <stdexcept>
 #include <algorithm>
 #include <cmath>
@@ -14,7 +15,7 @@ namespace
         AABB& merged)
     {
         // 座標変換による微小な誤差だけを許容する。
-        constexpr float tolerance = 0.00001f;
+        constexpr float TOLERANCE = 0.00001f;
 
         const float aMin[3] = {
             a.min.x, a.min.y, a.min.z
@@ -37,8 +38,8 @@ namespace
             if (axis == mergeAxis)
             {
                 // 統合方向に隙間があれば、まとめない。
-                if (aMax[axis] < bMin[axis] - tolerance ||
-                    bMax[axis] < aMin[axis] - tolerance)
+                if (aMax[axis] < bMin[axis] - TOLERANCE ||
+                    bMax[axis] < aMin[axis] - TOLERANCE)
                 {
                     return false;
                 }
@@ -47,9 +48,9 @@ namespace
             {
                 // 他の2軸は、範囲が一致する必要がある。
                 if (std::abs(aMin[axis] - bMin[axis])
-                    > tolerance ||
+                    > TOLERANCE ||
                     std::abs(aMax[axis] - bMax[axis])
-                > tolerance)
+                > TOLERANCE)
                 {
                     return false;
                 }
@@ -75,12 +76,14 @@ namespace
 Stage::Stage(ID3D11Device* device, const StageData& stageData, const TileTypeManager& tileTypeManager)
 {
 	LoadingProfile::Scope profile("Stage");
-    constexpr float fixedPositionZ = 0.0f;
+    constexpr float FIXED_POSITION_Z = 0.0f;
 
 	stageObjects.reserve(stageData.objects.size());
 
 	for (const auto& objectData : stageData.objects)
 	{
+        // Gates own their animated rendering and dynamic collision in GameScene.
+        if (BossGate::IsGateType(objectData.typeId)) continue;
 		const TileInfo* tileInfo = tileTypeManager.GetTileInfo(objectData.typeId);
 
 		if (tileInfo == nullptr)
@@ -125,7 +128,7 @@ Stage::Stage(ID3D11Device* device, const StageData& stageData, const TileTypeMan
 				instanceModel,
 				objectData,
 				*tileInfo,
-				fixedPositionZ, collisionModel));
+				FIXED_POSITION_Z, collisionModel));
 	}
 
     // 全ブロックの生成後に、衝突用の箱をまとめる。

@@ -7,20 +7,20 @@ cbuffer CbMesh : register(b0)
 
 cbuffer CbTransparency : register(b9)
 {
-    float4 cb_transparency_color;
-    float  cb_transparency_alpha;
-    float3 cb_transparency_padding;
+    float4 cbTransparencyColor;
+    float  cbTransparencyAlpha;
+    float3 cbTransparencyPadding;
 };
 
-Texture2D DiffuseMap		: register(t0);
-SamplerState LinearSampler	: register(s0);
+Texture2D diffuseMap		: register(t0);
+SamplerState linearSampler	: register(s0);
 
-float4 main(VS_OUT pin) : SV_TARGET
+float4 main(VsOutput pin) : SV_TARGET
 {
-    float4 color = DiffuseMap.Sample(LinearSampler, pin.texcoord);
+    float4 color = diffuseMap.Sample(linearSampler, pin.texcoord);
     
-    color.rgb *= cb_transparency_color.rgb;
-    color.a   *= cb_transparency_color.a * cb_transparency_alpha;
+    color.rgb *= cbTransparencyColor.rgb;
+    color.a   *= cbTransparencyColor.a * cbTransparencyAlpha;
     
 	return color;
 }

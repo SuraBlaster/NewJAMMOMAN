@@ -36,7 +36,7 @@ namespace
 		DirectX::XMFLOAT3& closest1,
 		DirectX::XMFLOAT3& closest2)
 	{
-		constexpr float epsilon = 1.0e-6f;
+		constexpr float EPSILON = 1.0e-6f;
 		const DirectX::XMFLOAT3 d1 = Subtract(q1, p1);
 		const DirectX::XMFLOAT3 d2 = Subtract(q2, p2);
 		const DirectX::XMFLOAT3 r = Subtract(p1, p2);
@@ -46,20 +46,20 @@ namespace
 		float s = 0.0f;
 		float t = 0.0f;
 
-		if (a <= epsilon && e <= epsilon)
+		if (a <= EPSILON && e <= EPSILON)
 		{
 			closest1 = p1;
 			closest2 = p2;
 			return Dot(r, r);
 		}
-		if (a <= epsilon)
+		if (a <= EPSILON)
 		{
 			t = (std::clamp)(f / e, 0.0f, 1.0f);
 		}
 		else
 		{
 			const float c = Dot(d1, r);
-			if (e <= epsilon)
+			if (e <= EPSILON)
 			{
 				s = (std::clamp)(-c / a, 0.0f, 1.0f);
 			}
@@ -389,7 +389,7 @@ SweepStatus Collision::SweepAABB(const AABB& movingBox, const DirectX::XMFLOAT3&
 
 	// 5. 最後に進入した軸が、接触面になる。
 	// ほぼ同時なら複数の面として保持する。
-	constexpr float timeTolerance = 0.000001f;
+	constexpr float TIME_TOLERANCE = 0.000001f;
 
 	for (int axis = 0; axis < 3; ++axis)
 	{
@@ -399,7 +399,7 @@ SweepStatus Collision::SweepAABB(const AABB& movingBox, const DirectX::XMFLOAT3&
 		}
 
 		if (std::abs(axisEnter[axis] - enterTime)
-	> timeTolerance)
+	> TIME_TOLERANCE)
 		{
 			continue;
 		}

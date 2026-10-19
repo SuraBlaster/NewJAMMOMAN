@@ -7,8 +7,8 @@ struct HealthGaugeTrail
     float current = 1.0f;
     float trailing = 1.0f;
     float delay = 0.0f;
-    static constexpr float holdDuration = 0.3f;
-    static constexpr float drainSpeed = 0.65f;
+    static constexpr float HOLD_DURATION = 0.3f;
+    static constexpr float DRAIN_SPEED = 0.65f;
 
     void Reset(float ratio)
     {
@@ -28,12 +28,12 @@ struct HealthGaugeTrail
         if (ratio < current)
         {
             current = ratio;
-            delay = holdDuration;
+            delay = HOLD_DURATION;
             return;
         }
         const float held = (std::min)(delay, remaining);
         delay -= held;
         remaining -= held;
-        trailing = (std::max)(current, trailing - drainSpeed * remaining);
+        trailing = (std::max)(current, trailing - DRAIN_SPEED * remaining);
     }
 };

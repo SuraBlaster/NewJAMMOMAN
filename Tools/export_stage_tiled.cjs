@@ -2,9 +2,10 @@
 const fs=require('fs'),path=require('path'),assert=require('assert');
 function exportStage(input,output) {
  const stage=JSON.parse(fs.readFileSync(input,'utf8'));
+ assert(stage.objects.every(o=>[100,301,302].includes(o.typeId)),'Unsupported tile type for export');
  const dir=path.dirname(output),resources=path.join(dir,'Tiled');
  fs.mkdirSync(resources,{recursive:true});
- for(const file of ['CubeBlockTileset.tsj','BlockTileset.png','EnemyPlacements.tsj','EnemyPlacements.png'])
+ for(const file of ['CubeBlockTileset.tsj','BlockTileset.png','EnemyPlacements.tsj','EnemyPlacements.png','GateTileset.tsj','GateTileset.png'])
   fs.copyFileSync(path.join(__dirname,'StageConverter/Sample',file),path.join(resources,file));
  fs.cpSync(path.join(__dirname,'StageConverter/Sample/EnemyPlacementIcons'),path.join(resources,'EnemyPlacementIcons'),{recursive:true});
  let layerId=1,objectId=1;
@@ -15,7 +16,7 @@ function exportStage(input,output) {
   ['05_FinalBridges',177,210],['06_BossApproach',210,225],['07_BossArena',225,Infinity]];
  for(const [name,min,max] of ranges) {
   const chunks=new Map();
-  for(const o of stage.objects.filter(o=>o.position.x>=min&&o.position.x<max)) {
+  for(const o of stage.objects.filter(o=>o.typeId===100&&o.position.x>=min&&o.position.x<max)) {
    assert(o.typeId===100&&o.rotationDegrees===0&&o.scale.x===1&&o.scale.y===1,'Tile export requires unit blocks');
    const x=o.position.x,y=-o.position.y;assert(Number.isInteger(x)&&Number.isInteger(y));
    const cx=Math.floor(x/16)*16,cy=Math.floor(y/16)*16,key=`${cx},${cy}`;
@@ -30,6 +31,22 @@ function exportStage(input,output) {
   layers.push({id:layerId++,name,type:'tilelayer',visible:true,opacity:1,x:0,y:0,width,height,
    chunks:cells,startx,starty});
  }
+ const gateChunks=new Map();
+ for(const o of stage.objects.filter(o=>[301,302].includes(o.typeId))) {
+  assert(o.rotationDegrees===0&&o.scale.x===1&&o.scale.y===1,'Gate tile export requires unit blocks');
+  const x=o.position.x,y=-o.position.y;assert(Number.isInteger(x)&&Number.isInteger(y));
+  const cx=Math.floor(x/16)*16,cy=Math.floor(y/16)*16,key=cx+','+cy;
+  if(!gateChunks.has(key))gateChunks.set(key,{x:cx,y:cy,width:16,height:16,data:Array(256).fill(0)});
+  const c=gateChunks.get(key),index=(y-cy)*16+x-cx;assert(!c.data[index],'Duplicate gate cell');
+  c.data[index]=o.typeId===301?11:12;
+ }
+ const gateCells=[...gateChunks.values()];
+ const gateX=gateCells.length?Math.min(...gateCells.map(c=>c.x)):0;
+ const gateY=gateCells.length?Math.min(...gateCells.map(c=>c.y)):0;
+ layers.push({id:layerId++,name:'Gates',type:'tilelayer',visible:true,opacity:1,x:0,y:0,
+  startx:gateX,starty:gateY,chunks:gateCells,
+  width:gateCells.length?Math.max(...gateCells.map(c=>c.x+c.width))-gateX:0,
+  height:gateCells.length?Math.max(...gateCells.map(c=>c.y+c.height))-gateY:0});
  const objectLayer=(name,objects,color)=>layers.push({id:layerId++,name,type:'objectgroup',visible:true,opacity:1,x:0,y:0,draworder:'topdown',color,objects});
  const enemyNames=['Wave','Scatter','Mage','Fan','Hover','Fly','Egg','Boss','Vacuum'];
  objectLayer('Enemies',stage.enemies.map(e=>({id:objectId++,name:e.enemyType,gid:2+enemyNames.indexOf(e.enemyType),
@@ -43,7 +60,7 @@ function exportStage(input,output) {
   infinite:true,width:0,height:0,tilewidth:32,tileheight:32,compressionlevel:-1,
   backgroundcolor:'#101822',nextlayerid:layerId,nextobjectid:objectId,
   properties:[properties('stageName','string',stage.stageName)],
-  tilesets:[{firstgid:1,source:'Tiled/CubeBlockTileset.tsj'},{firstgid:2,source:'Tiled/EnemyPlacements.tsj'}],layers};
+  tilesets:[{firstgid:1,source:'Tiled/CubeBlockTileset.tsj'},{firstgid:2,source:'Tiled/EnemyPlacements.tsj'},{firstgid:11,source:'Tiled/GateTileset.tsj'}],layers};
  fs.writeFileSync(output,JSON.stringify(map,null,2)+'\n');
  console.log(`Tiled: ${output} / ${stage.objects.length} terrain tiles / ${stage.enemies.length} enemies`);
 }

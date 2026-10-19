@@ -1,16 +1,16 @@
 #include "Skinning.hlsli"
 #include "Basic.hlsli"
 
-VS_OUT main(
+VsOutput main(
 	float4 position		: POSITION,
 	float4 boneWeights	: BONE_WEIGHTS,
 	uint4  boneIndices	: BONE_INDICES,
 	float2 texcoord		: TEXCOORD)
 {
-	VS_OUT vout = (VS_OUT)0;
+	VsOutput vout = (VsOutput)0;
 
 	position = SkinningPosition(position, boneWeights, boneIndices);
-	vout.vertex = mul(position, cb_view_projection);
+	vout.vertex = mul(position, cbViewProjection);
 	vout.texcoord = texcoord;
 
 	return vout;

@@ -34,10 +34,10 @@ private:
     std::unique_ptr<LoadingPlayer> player;
     void DrawDescription(float scale, float offsetX, float offsetY);
     void DrawLoadingText(float scale, float offsetX, float offsetY);
-    static constexpr float TypewriterDelay = 0.6f;
-    static constexpr float LetterInterval = 0.06f;
-    static constexpr float MinimalDisplayTime = 0.3f;
-    static constexpr float IntroReadTime = 2.0f;
+    static constexpr float TYPEWRITER_DELAY = 0.6f;
+    static constexpr float LETTER_INTERVAL = 0.06f;
+    static constexpr float MINIMAL_DISPLAY_TIME = 0.3f;
+    static constexpr float INTRO_READ_TIME = 2.0f;
     const std::string description = "He crushes the player's will. At the labolatory";
     std::string displayedDescription;
     std::unique_ptr<Sprite> background;

@@ -12,7 +12,7 @@ public:
 	Model(const Model& other);
 	Model(ID3D11Device* device, const char* filename, float sampleRate = 60);
 
-	static const std::vector<D3D11_INPUT_ELEMENT_DESC> InputElementDescs;
+	static const std::vector<D3D11_INPUT_ELEMENT_DESC> INPUT_ELEMENT_DESCS;
 
 	struct Node
 	{

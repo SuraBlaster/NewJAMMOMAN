@@ -3,119 +3,119 @@
 #include "SphereCast.h"
 
 // 外部の点に対する三角形内部の最近点を算出する
-bool GetClosestPos_PointTriangle(
-	const DirectX::XMVECTOR& Point,
-	const DirectX::XMVECTOR TrianglePos[3],
+bool GetClosestPointOnTriangle(
+	const DirectX::XMVECTOR& point,
+	const DirectX::XMVECTOR trianglePosVector[3],
 	DirectX::XMVECTOR& nearPos,
 	DirectX::XMVECTOR* nearTriPos1,
 	DirectX::XMVECTOR* nearTriPos2)
 {
 	// pointがTrianglePos[0]の外側の頂点領域にあるかチェック
-	DirectX::XMVECTOR Vec01 = DirectX::XMVectorSubtract(TrianglePos[1], TrianglePos[0]);
-	DirectX::XMVECTOR Vec02 = DirectX::XMVectorSubtract(TrianglePos[2], TrianglePos[0]);
-	DirectX::XMVECTOR Vec0P = DirectX::XMVectorSubtract(Point, TrianglePos[0]);
-	float d1 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec01, Vec0P));
-	float d2 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec02, Vec0P));
+	DirectX::XMVECTOR vec01 = DirectX::XMVectorSubtract(trianglePosVector[1], trianglePosVector[0]);
+	DirectX::XMVECTOR vec02 = DirectX::XMVectorSubtract(trianglePosVector[2], trianglePosVector[0]);
+	DirectX::XMVECTOR vec0P = DirectX::XMVectorSubtract(point, trianglePosVector[0]);
+	float d1 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec01, vec0P));
+	float d2 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec02, vec0P));
 
 	if (d1 <= 0.0f && d2 <= 0.0f)
 	{
-		nearPos = TrianglePos[0];
+		nearPos = trianglePosVector[0];
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[0];
+			*nearTriPos1 = trianglePosVector[0];
 		}
 		return false;
 	}
 
 	// pointがTrianglePos[1]の外側の頂点領域にあるかチェック
-	DirectX::XMVECTOR Vec1P = DirectX::XMVectorSubtract(Point, TrianglePos[1]);
-	float d3 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec01, Vec1P));
-	float d4 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec02, Vec1P));
+	DirectX::XMVECTOR vec1P = DirectX::XMVectorSubtract(point, trianglePosVector[1]);
+	float d3 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec01, vec1P));
+	float d4 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec02, vec1P));
 
 	if (d3 >= 0.0f && d4 <= d3)
 	{
-		nearPos = TrianglePos[1];
+		nearPos = trianglePosVector[1];
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[1];
+			*nearTriPos1 = trianglePosVector[1];
 		}
 		return false;
 	}
 
 	// pointがTrianglePos[0]とTrianglePos[1]の外側の辺領域にあるかチェック
-	float scalar3_01 = d1 * d4 - d3 * d2;
+	float scalar301 = d1 * d4 - d3 * d2;
 
-	if (scalar3_01 <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
+	if (scalar301 <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
 	{
 		float t = d1 / (d1 - d3);
-		nearPos = DirectX::XMVectorAdd(TrianglePos[0], DirectX::XMVectorScale(Vec01, t));
+		nearPos = DirectX::XMVectorAdd(trianglePosVector[0], DirectX::XMVectorScale(vec01, t));
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[0];
+			*nearTriPos1 = trianglePosVector[0];
 		}
 		if (nearTriPos2)
 		{
-			*nearTriPos2 = TrianglePos[1];
+			*nearTriPos2 = trianglePosVector[1];
 		}
 		return false;
 	}
 
 	// pointがTrianglePos[2]の外側の頂点領域にあるかチェック
-	DirectX::XMVECTOR Vec2P = DirectX::XMVectorSubtract(Point, TrianglePos[2]);
-	float d5 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec01, Vec2P));
-	float d6 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(Vec02, Vec2P));
+	DirectX::XMVECTOR vec2P = DirectX::XMVectorSubtract(point, trianglePosVector[2]);
+	float d5 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec01, vec2P));
+	float d6 = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vec02, vec2P));
 
 	if (d6 >= 0.0f && d5 <= d6)
 	{
-		nearPos = TrianglePos[2];
+		nearPos = trianglePosVector[2];
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[2];
+			*nearTriPos1 = trianglePosVector[2];
 		}
 		return false;
 	}
 
 	// pointがTrianglePos[0]とTrianglePos[2]の外側の辺領域にあるかチェック
-	float scalar3_02 = d5 * d2 - d1 * d6;
+	float scalar302 = d5 * d2 - d1 * d6;
 
-	if (scalar3_02 <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
+	if (scalar302 <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
 	{
 		float t = d2 / (d2 - d6);
-		nearPos = DirectX::XMVectorAdd(TrianglePos[0], DirectX::XMVectorScale(Vec02, t));
+		nearPos = DirectX::XMVectorAdd(trianglePosVector[0], DirectX::XMVectorScale(vec02, t));
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[0];
+			*nearTriPos1 = trianglePosVector[0];
 		}
 		if (nearTriPos2)
 		{
-			*nearTriPos2 = TrianglePos[2];
+			*nearTriPos2 = trianglePosVector[2];
 		}
 		return false;
 	}
 
 	// pointがTrianglePos[1]とTrianglePos[2]の外側の辺領域にあるかチェック
-	float scalar3_12 = d3 * d6 - d5 * d4;
+	float scalar312 = d3 * d6 - d5 * d4;
 
-	if (scalar3_12 <= 0.0f && d4 >= d3 && d5 >= d6)
+	if (scalar312 <= 0.0f && d4 >= d3 && d5 >= d6)
 	{
 		float t = (d4 - d3) / ((d4 - d3) + (d5 - d6));
-		nearPos = DirectX::XMVectorAdd(TrianglePos[1], DirectX::XMVectorScale(DirectX::XMVectorSubtract(TrianglePos[2], TrianglePos[1]), t));
+		nearPos = DirectX::XMVectorAdd(trianglePosVector[1], DirectX::XMVectorScale(DirectX::XMVectorSubtract(trianglePosVector[2], trianglePosVector[1]), t));
 		if (nearTriPos1)
 		{
-			*nearTriPos1 = TrianglePos[1];
+			*nearTriPos1 = trianglePosVector[1];
 		}
 		if (nearTriPos2)
 		{
-			*nearTriPos2 = TrianglePos[2];
+			*nearTriPos2 = trianglePosVector[2];
 		}
 		return false;
 	}
 
 	// ここまでくれば、nearPosは三角形の内部にある
-	float denom = 1.0f / (scalar3_01 + scalar3_02 + scalar3_12);
-	float t01 = scalar3_02 * denom;
-	float t02 = scalar3_01 * denom;
-	nearPos = DirectX::XMVectorAdd(TrianglePos[0], DirectX::XMVectorAdd(DirectX::XMVectorScale(Vec01, t01), DirectX::XMVectorScale(Vec02, t02)));
+	float denom = 1.0f / (scalar301 + scalar302 + scalar312);
+	float t01 = scalar302 * denom;
+	float t02 = scalar301 * denom;
+	nearPos = DirectX::XMVectorAdd(trianglePosVector[0], DirectX::XMVectorAdd(DirectX::XMVectorScale(vec01, t01), DirectX::XMVectorScale(vec02, t02)));
 	return true;
 }
 
@@ -175,7 +175,7 @@ bool IntersectSphereVsTriangle(
 	SphereCastResult* result)
 {
 	DirectX::XMVECTOR tmpPos = {};
-	GetClosestPos_PointTriangle(spherePos, trianglePos, tmpPos);
+	GetClosestPointOnTriangle(spherePos, trianglePos, tmpPos);
 	DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(spherePos, tmpPos);
 	if (result)
 	{
@@ -268,14 +268,14 @@ bool IntersectRayVsCylinder(
 	// 円柱の表面を表す陰関数方程式と直線の方程式の解を求めて交差判定を行う。
 	float mn = DirectX::XMVectorGetX(DirectX::XMVector3Dot(m, n));
 	float b = dd * mn - nd * md;
-	float D = b * b - a * c;	// 判別式
+	float dVector = b * b - a * c;	// 判別式
 
-	if (D < 0) return false;	// 実数解がないので交差していない
+	if (dVector < 0) return false;	// 実数解がないので交差していない
 
-	float hitDistance = (-b - sqrtf(D)) / a;
+	float hitDistance = (-b - sqrtf(dVector)) / a;
 	if (hitDistance < 0.0f)
 	{
-		hitDistance = (-b + sqrtf(D)) / a;
+		hitDistance = (-b + sqrtf(dVector)) / a;
 		if (hitDistance < 0.0f)
 		{
 			return false;	// 交点が線分の外側にあり交差していない
@@ -283,7 +283,7 @@ bool IntersectRayVsCylinder(
 	}
 	else if (hitDistance > 1.0f)
 	{
-		hitDistance = (-b + sqrtf(D)) / a;
+		hitDistance = (-b + sqrtf(dVector)) / a;
 		if (hitDistance > 1.0f)
 		{
 			return false;	// 交点が線分の外側にあり交差していない
@@ -397,7 +397,7 @@ bool IntersectSphereCastVsTriangleEST(
 
 					// 交点に一番近い三角形内部の点を求める
 					DirectX::XMVECTOR nearPos = {};
-					GetClosestPos_PointTriangle(tmpPosition, trianglePos, nearPos);
+					GetClosestPointOnTriangle(tmpPosition, trianglePos, nearPos);
 
 					// 交点に一番近い三角形内部の点から、逆向きのレイを発射し、レイの始点にある球体と交差するか確認
 					// 交差した場合、交点に一番近い三角形内部の点がスフィアキャストの三角形との交点になる

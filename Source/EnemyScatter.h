@@ -17,8 +17,8 @@ private:
 
 	Player* player = nullptr;
 	State state = State::Scatter;
-	DirectX::XMFLOAT3 move_direction = { 0, 0, 0 };
-	float scatter_time = 0.0f;
-	float scatter_duration = 1.0f;
+	DirectX::XMFLOAT3 moveDirection = { 0, 0, 0 };
+	float scatterTime = 0.0f;
+	float scatterDuration = 1.0f;
 	float speed = 6.0f;
 };

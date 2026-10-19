@@ -81,7 +81,7 @@ void ImGuiRenderer::NewFrame()
 
 #if 0
 	// Docking
-	const ImGuiWindowFlags window_flags = ImGuiWindowFlags_None
+	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None
 		| ImGuiWindowFlags_NoTitleBar
 		| ImGuiWindowFlags_NoResize
 		| ImGuiWindowFlags_NoMove
@@ -90,7 +90,7 @@ void ImGuiRenderer::NewFrame()
 		| ImGuiWindowFlags_NoNavFocus
 		| ImGuiWindowFlags_NoBackground
 		;
-	const ImGuiDockNodeFlags docspace_flags = ImGuiDockNodeFlags_None
+	const ImGuiDockNodeFlags docspaceFlags = ImGuiDockNodeFlags_None
 		//| ImGuiDockNodeFlags_KeepAliveOnly
 		| ImGuiDockNodeFlags_PassthruCentralNode
 		;
@@ -103,13 +103,13 @@ void ImGuiRenderer::NewFrame()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-	bool dock_open = true;
-	if (ImGui::Begin("MainDockspace", &dock_open, window_flags))
+	bool dockOpen = true;
+	if (ImGui::Begin("MainDockspace", &dockOpen, windowFlags))
 	{
 		ImGui::PopStyleVar(3);
 
 		ImGuiID dockspaceId = ImGui::GetID("MyDockspace");
-		ImGui::DockSpace(dockspaceId, ImVec2(0, 0), docspace_flags);
+		ImGui::DockSpace(dockspaceId, ImVec2(0, 0), docspaceFlags);
 	}
 	ImGui::End();
 #endif

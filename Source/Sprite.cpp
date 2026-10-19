@@ -17,15 +17,15 @@ Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB, cons
 	// 頂点バッファの生成
 	{
 		// 頂点バッファを作成するための設定オプション
-		D3D11_BUFFER_DESC buffer_desc = {};
-		buffer_desc.ByteWidth = sizeof(Vertex) * 4;
-		buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-		buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		buffer_desc.MiscFlags = 0;
-		buffer_desc.StructureByteStride = 0;
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = sizeof(Vertex) * 4;
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
 		// 頂点バッファオブジェクトの生成
-		hr = device->CreateBuffer(&buffer_desc, nullptr, vertexBuffer.GetAddressOf());
+		hr = device->CreateBuffer(&bufferDesc, nullptr, vertexBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 	}
 

@@ -58,5 +58,5 @@ private:
 	~EnemyManager() = default;
 
 	std::vector<std::shared_ptr<Enemy>> enemies;
-	std::vector<std::shared_ptr<Enemy>> pending_enemies;
+	std::vector<std::shared_ptr<Enemy>> pendingEnemies;
 };

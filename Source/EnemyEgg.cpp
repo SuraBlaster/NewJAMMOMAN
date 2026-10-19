@@ -17,7 +17,7 @@ EnemyEgg::EnemyEgg(
 	radius = 0.25f;
 	height = 0.4f;
 	health = 1;
-	use_gravity = true;
+	useGravity = true;
 	UpdateTransform();
 }
 
@@ -32,8 +32,8 @@ void EnemyEgg::OnLanding()
 {
 	Destroy();
 	if (!device || !player) return;
-	constexpr int scatterCount = 10;
-	for (int i = 0; i < scatterCount; ++i)
+	constexpr int SCATTER_COUNT = 10;
+	for (int i = 0; i < SCATTER_COUNT; ++i)
 	{
 		EnemyManager::Instance().Register(
 			std::make_shared<EnemyScatter>(device, player, position));

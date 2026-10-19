@@ -45,10 +45,10 @@ StageObject::~StageObject()
 
 void StageObject::UpdateTransform()
 {
-    DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-    DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
-    DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
-    DirectX::XMStoreFloat4x4(&transform, S * R * T);
+    DirectX::XMMATRIX s = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+    DirectX::XMMATRIX r = DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+    DirectX::XMMATRIX t = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+    DirectX::XMStoreFloat4x4(&transform, s * r * t);
 }
 
 void StageObject::BuildCollisionAABB()

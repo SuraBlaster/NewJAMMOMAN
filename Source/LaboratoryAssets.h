@@ -17,5 +17,5 @@ inline const DirectX::BoundingBox bounds[] = {
     {{0.0000000f,0.3750000f,0.0000000f},{0.3710750f,0.3750000f,0.3710750f}},
     {{0.0000000f,1.0000000f,0.0000000f},{0.2809256f,1.0000000f,0.2809256f}}
 };
-inline constexpr int Count = sizeof(names)/sizeof(names[0]);
+inline constexpr int COUNT = sizeof(names)/sizeof(names[0]);
 }

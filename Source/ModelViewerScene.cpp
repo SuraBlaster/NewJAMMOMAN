@@ -117,14 +117,14 @@ void ModelViewerScene::Render(float elapsedTime)
 		{
 			DirectX::XMFLOAT3 p, x, y, z;
 			const float length = 0.1f;
-			DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&selectionNode->worldTransform);
-			DirectX::XMVECTOR X = DirectX::XMVector3Transform(DirectX::XMVectorSet(length, 0, 0, 0), W);
-			DirectX::XMVECTOR Y = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, length, 0, 0), W);
-			DirectX::XMVECTOR Z = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, length, 0), W);
-			DirectX::XMStoreFloat3(&p, W.r[3]);
-			DirectX::XMStoreFloat3(&x, X);
-			DirectX::XMStoreFloat3(&y, Y);
-			DirectX::XMStoreFloat3(&z, Z);
+			DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&selectionNode->worldTransform);
+			DirectX::XMVECTOR xVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(length, 0, 0, 0), w);
+			DirectX::XMVECTOR yVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, length, 0, 0), w);
+			DirectX::XMVECTOR zVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, length, 0), w);
+			DirectX::XMStoreFloat3(&p, w.r[3]);
+			DirectX::XMStoreFloat3(&x, xVector);
+			DirectX::XMStoreFloat3(&y, yVector);
+			DirectX::XMStoreFloat3(&z, zVector);
 			primitiveRenderer->AddVertex(p, { 1, 0, 0, 1 });
 			primitiveRenderer->AddVertex(x, { 1, 0, 0, 1 });
 			primitiveRenderer->AddVertex(p, { 0, 1, 0, 1 });
@@ -157,11 +157,11 @@ void ModelViewerScene::DrawMenuGUI()
 			bool check = false;
 			if (ImGui::MenuItem("Open Model", "", &check))
 			{
-				static const char* filter = "Model Files(*.gltf;*.glb)\0*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
+				static const char* FILTER = "Model Files(*.gltf;*.glb)\0*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
 
 				char filename[256] = { 0 };
 				HWND hWnd = Graphics::Instance().GetWindowHandle();
-				DialogResult result = Dialog::OpenFileName(filename, sizeof(filename), filter, nullptr, hWnd);
+				DialogResult result = Dialog::OpenFileName(filename, sizeof(filename), FILTER, nullptr, hWnd);
 				if (result == DialogResult::OK)
 				{
 					ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -266,11 +266,11 @@ void ModelViewerScene::DrawPropertyGUI()
 				{
 					if (selectionNode->parent != nullptr)
 					{
-						DirectX::XMMATRIX ParentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
-						DirectX::XMMATRIX InverseParentGlobalTransform = DirectX::XMMatrixInverse(nullptr, ParentGlobalTransform);
-						DirectX::XMVECTOR GlobalPosition = DirectX::XMLoadFloat3(&globalPosition);
-						DirectX::XMVECTOR LocalPosition = DirectX::XMVector3Transform(GlobalPosition, InverseParentGlobalTransform);
-						DirectX::XMStoreFloat3(&selectionNode->position, LocalPosition);
+						DirectX::XMMATRIX parentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
+						DirectX::XMMATRIX inverseParentGlobalTransform = DirectX::XMMatrixInverse(nullptr, parentGlobalTransform);
+						DirectX::XMVECTOR globalPositionVector = DirectX::XMLoadFloat3(&globalPosition);
+						DirectX::XMVECTOR localPosition = DirectX::XMVector3Transform(globalPositionVector, inverseParentGlobalTransform);
+						DirectX::XMStoreFloat3(&selectionNode->position, localPosition);
 					}
 					else
 					{
@@ -290,8 +290,8 @@ void ModelViewerScene::DrawPropertyGUI()
 					angle.x = DirectX::XMConvertToRadians(angle.x);
 					angle.y = DirectX::XMConvertToRadians(angle.y);
 					angle.z = DirectX::XMConvertToRadians(angle.z);
-					DirectX::XMVECTOR Rotation = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
-					DirectX::XMStoreFloat4(&selectionNode->rotation, Rotation);
+					DirectX::XMVECTOR rotationVector = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
+					DirectX::XMStoreFloat4(&selectionNode->rotation, rotationVector);
 				}
 
 				TransformUtils::MatrixToRollPitchYaw(selectionNode->globalTransform, angle.x, angle.y, angle.z);
@@ -303,22 +303,22 @@ void ModelViewerScene::DrawPropertyGUI()
 					angle.x = DirectX::XMConvertToRadians(angle.x);
 					angle.y = DirectX::XMConvertToRadians(angle.y);
 					angle.z = DirectX::XMConvertToRadians(angle.z);
-					DirectX::XMVECTOR GlobalRotation = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
+					DirectX::XMVECTOR globalRotation = DirectX::XMQuaternionRotationRollPitchYaw(angle.x, angle.y, angle.z);
 
 					if (selectionNode->parent != nullptr)
 					{
-						DirectX::XMMATRIX ParentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
-						ParentGlobalTransform.r[0] = DirectX::XMVector3Normalize(ParentGlobalTransform.r[0]);
-						ParentGlobalTransform.r[1] = DirectX::XMVector3Normalize(ParentGlobalTransform.r[1]);
-						ParentGlobalTransform.r[2] = DirectX::XMVector3Normalize(ParentGlobalTransform.r[2]);
-						DirectX::XMVECTOR ParentGlobalRotation = DirectX::XMQuaternionRotationMatrix(ParentGlobalTransform);
-						DirectX::XMVECTOR InverseParentGlobalRotation = DirectX::XMQuaternionInverse(ParentGlobalRotation);
-						DirectX::XMVECTOR LocalRotation = DirectX::XMQuaternionMultiply(GlobalRotation, InverseParentGlobalRotation);
-						DirectX::XMStoreFloat4(&selectionNode->rotation, LocalRotation);
+						DirectX::XMMATRIX parentGlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->parent->globalTransform);
+						parentGlobalTransform.r[0] = DirectX::XMVector3Normalize(parentGlobalTransform.r[0]);
+						parentGlobalTransform.r[1] = DirectX::XMVector3Normalize(parentGlobalTransform.r[1]);
+						parentGlobalTransform.r[2] = DirectX::XMVector3Normalize(parentGlobalTransform.r[2]);
+						DirectX::XMVECTOR parentGlobalRotation = DirectX::XMQuaternionRotationMatrix(parentGlobalTransform);
+						DirectX::XMVECTOR inverseParentGlobalRotation = DirectX::XMQuaternionInverse(parentGlobalRotation);
+						DirectX::XMVECTOR localRotation = DirectX::XMQuaternionMultiply(globalRotation, inverseParentGlobalRotation);
+						DirectX::XMStoreFloat4(&selectionNode->rotation, localRotation);
 					}
 					else
 					{
-						DirectX::XMStoreFloat4(&selectionNode->rotation, GlobalRotation);
+						DirectX::XMStoreFloat4(&selectionNode->rotation, globalRotation);
 					}
 					animationPlaying = false;
 				}
@@ -329,12 +329,12 @@ void ModelViewerScene::DrawPropertyGUI()
 					animationPlaying = false;
 				}
 
-				DirectX::XMMATRIX GlobalTransform = DirectX::XMLoadFloat4x4(&selectionNode->globalTransform);
+				DirectX::XMMATRIX globalTransformMatrix = DirectX::XMLoadFloat4x4(&selectionNode->globalTransform);
 				DirectX::XMFLOAT3 globalScale =
 				{
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(GlobalTransform.r[0])),
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(GlobalTransform.r[1])),
-					DirectX::XMVectorGetX(DirectX::XMVector3Length(GlobalTransform.r[2]))
+					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[0])),
+					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[1])),
+					DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[2]))
 				};
 				if (ImGui::DragFloat3("Global Scale", &globalScale.x, 0.1f))
 				{

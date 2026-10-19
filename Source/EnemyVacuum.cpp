@@ -11,12 +11,12 @@ EnemyVacuum::EnemyVacuum(ID3D11Device* device, Player* player)
 	: player(player)
 {
 	model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/lab_spiked_vacuum.gltf");
-	scale = { 0.5f, 0.5f, 0.5f };
+	scale = { 0.75f, 0.75f, 0.75f };
 	rotation.y = DirectX::XMConvertToRadians(-90.0f);
 	radius = 0.6f;
 	height = 0.5f;
 	SetHealth(3);
-	use_gravity = true;
+	useGravity = true;
 	InitializeAnimator();
 	states[static_cast<size_t>(StateId::Move)] = std::make_unique<MoveState>(this);
 	states[static_cast<size_t>(StateId::Pursuit)] = std::make_unique<PursuitState>(this);
@@ -32,7 +32,7 @@ void EnemyVacuum::Update(float elapsedTime)
 		return;
 	}
 
-	wall_turn_timer = (std::max)(0.0f, wall_turn_timer - elapsedTime);
+	wallTurnTimer = (std::max)(0.0f, wallTurnTimer - elapsedTime);
 	UpdateStateMachine(elapsedTime);
 	UpdateWallCollision(elapsedTime);
 
@@ -46,21 +46,21 @@ void EnemyVacuum::Update(float elapsedTime)
 void EnemyVacuum::SetState(StateId stateId)
 {
 	if (stateId == StateId::None || stateId == StateId::EnumCount
-		|| stateId == current_state) return;
-	next_state = stateId;
+		|| stateId == currentState) return;
+	nextState = stateId;
 }
 
 void EnemyVacuum::UpdateStateMachine(float elapsedTime)
 {
 	// Apply transitions on the next update, as in EnemyBoss.
-	if (next_state != StateId::None)
+	if (nextState != StateId::None)
 	{
-		current_state = next_state;
-		next_state = StateId::None;
-		states[static_cast<size_t>(current_state)]->OnEnter();
+		currentState = nextState;
+		nextState = StateId::None;
+		states[static_cast<size_t>(currentState)]->OnEnter();
 	}
-	if (current_state != StateId::None)
-		states[static_cast<size_t>(current_state)]->OnUpdate(elapsedTime);
+	if (currentState != StateId::None)
+		states[static_cast<size_t>(currentState)]->OnUpdate(elapsedTime);
 }
 
 float EnemyVacuum::GetPlayerDistance() const
@@ -74,37 +74,35 @@ float EnemyVacuum::GetPlayerDistance() const
 
 void EnemyVacuum::MoveState::OnEnter()
 {
-	owner->velocity.x = owner->move_direction * owner->move_speed;
+	owner->velocity.x = owner->moveDirection * owner->moveSpeed;
 	owner->velocity.z = 0.0f;
-	owner->rotation.y = DirectX::XMConvertToRadians(owner->move_direction * 90.0f);
+	owner->rotation.y = DirectX::XMConvertToRadians(owner->moveDirection * 90.0f);
 }
 
 void EnemyVacuum::MoveState::OnUpdate(float elapsedTime)
 {
-	// Move along X in the current patrol direction.
-	(void)elapsedTime;
-	owner->velocity.x = owner->move_direction * owner->move_speed;
+	owner->rotation.y += NORMAL_ROTATION_SPEED * elapsedTime;
+	owner->velocity.x = owner->moveDirection * owner->moveSpeed;
 	owner->velocity.z = 0.0f;
-	if (owner->wall_turn_timer <= 0.0f && owner->GetPlayerDistance() <= owner->pursuit_start_distance)
+	if (owner->wallTurnTimer <= 0.0f && owner->GetPlayerDistance() <= owner->pursuitStartDistance)
 		owner->SetState(StateId::Pursuit);
 }
 
 void EnemyVacuum::PursuitState::OnEnter()
 {
-	owner->velocity.x = 0.0f;
+	owner->velocity.x = owner->moveDirection * owner->pursuitSpeed;
 	owner->velocity.z = 0.0f;
 }
 
 void EnemyVacuum::PursuitState::OnUpdate(float elapsedTime)
 {
-	if (owner->wall_turn_timer > 0.0f)
-	{
-		owner->velocity.x = owner->move_direction * owner->pursuit_speed;
-		owner->velocity.z = 0.0f;
-		return;
-	}
+	owner->rotation.y += PURSUIT_ROTATION_SPEED * elapsedTime;
+
+	// Keep the patrol direction; detection only increases movement speed.
+	owner->velocity.x = owner->moveDirection * owner->pursuitSpeed;
+	owner->velocity.z = 0.0f;
 	// Separate thresholds prevent rapid state changes at the detection boundary.
-	if (owner->GetPlayerDistance() >= owner->pursuit_end_distance)
+	if (owner->GetPlayerDistance() >= owner->pursuitEndDistance)
 	{
 		owner->SetState(StateId::Move);
 	}
@@ -124,7 +122,7 @@ void EnemyVacuum::UpdateWallCollision(float elapsedTime)
 	const float direction = displacement < 0.0f ? -1.0f : 1.0f;
 	const float safeDistance = (std::max)(0.0f, std::abs(displacement) * hit.time - 0.003f);
 	velocity.x = direction * safeDistance / elapsedTime;
-	move_direction = -direction;
-	wall_turn_timer = 0.5f;
-	rotation.y = DirectX::XMConvertToRadians(move_direction * 90.0f);
+	moveDirection = -direction;
+	wallTurnTimer = 0.5f;
+	rotation.y = DirectX::XMConvertToRadians(moveDirection * 90.0f);
 }

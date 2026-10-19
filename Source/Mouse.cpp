@@ -1,6 +1,6 @@
 #include "Mouse.h"
 
-static const int KeyMap[] =
+static const int KEY_MAP[] =
 {
 	VK_LBUTTON,		// 左ボタン
 	VK_MBUTTON,		// 中ボタン
@@ -23,9 +23,9 @@ void Mouse::Update()
 	// スイッチ情報
 	MouseButton newButtonState = 0;
 
-	for (int i = 0; i < ARRAYSIZE(KeyMap); ++i)
+	for (int i = 0; i < ARRAYSIZE(KEY_MAP); ++i)
 	{
-		if (::GetAsyncKeyState(KeyMap[i]) & 0x8000)
+		if (::GetAsyncKeyState(KEY_MAP[i]) & 0x8000)
 		{
 			newButtonState |= (1 << i);
 		}

@@ -24,8 +24,8 @@ public:
 	void SetDirection(Direction value);
 	void SetWave(float speed, float amplitude)
 	{
-		wave_speed = speed;
-		wave_amplitude = amplitude;
+		waveSpeed = speed;
+		waveAmplitude = amplitude;
 	}
 
 private:
@@ -36,11 +36,11 @@ private:
 
 	Player* player = nullptr; // Non-owning; GameScene owns Player.
 	Direction direction = Direction::Right;
-	float target_y = 0.0f;
-	bool target_y_initialized = false;
-	float rise_speed = 3.0f;
-	float move_speed = 3.0f;
-	float wave_speed = 4.0f;
-	float wave_amplitude = 0.5f;
-	float wave_time = 0.0f;
+	float targetY = 0.0f;
+	bool targetYInitialized = false;
+	float riseSpeed = 3.0f;
+	float moveSpeed = 3.0f;
+	float waveSpeed = 4.0f;
+	float waveAmplitude = 0.5f;
+	float waveTime = 0.0f;
 };

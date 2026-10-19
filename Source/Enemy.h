@@ -15,8 +15,22 @@ public:
 	virtual void DrawPrimitive(ShapeRenderer*) const {}
 	virtual void DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const;
 
-	void Destroy() { destroy_requested = true; }
-	bool IsDestroyRequested() const { return destroy_requested; }
+	// Visual body placement, independent of the gameplay collider.
+	struct CombatEffectPlacement
+	{
+		DirectX::XMFLOAT3 position;
+		float size;
+	};
+	virtual CombatEffectPlacement GetCombatEffectPlacement() const;
+
+	void Destroy() { destroyRequested = true; }
+	bool IsDestroyRequested() const { return destroyRequested; }
+
+	static constexpr float DAMAGE_INVINCIBLE_DURATION = 0.05f;
+	bool ApplyDamage(int damage, float invincibleDuration = DAMAGE_INVINCIBLE_DURATION)
+	{
+		return Character::ApplyDamage(damage, invincibleDuration);
+	}
 
 protected:
 	Enemy() = default;
@@ -27,5 +41,5 @@ protected:
 		bool destroyOnHit = false);
 
 private:
-	bool destroy_requested = false;
+	bool destroyRequested = false;
 };

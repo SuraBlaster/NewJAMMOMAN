@@ -16,6 +16,6 @@ private:
     enum class State { Idle, WaitingToJump, Jump };
     State state = State::Idle;
     float timer = 0;
-    static constexpr float GroundY = -5.3f;
-    static constexpr float JumpSpeed = 80.0f;
+    static constexpr float GROUND_Y = -5.3f;
+    static constexpr float JUMP_SPEED = 80.0f;
 };

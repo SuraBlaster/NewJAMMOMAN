@@ -56,8 +56,12 @@ public:
         const float clipW = DirectX::XMVectorGetW(point);
         if (clipW <= 0) return;
         Constants data = {{time, viewport.Width / viewport.Height, density, speed},
-            {color.x, color.y, color.z, 1}, {focus.x * 0.018f, -focus.y * 0.018f, scale,
+            {color.x, color.y, color.z, 1}, {0, 0, scale,
             std::clamp(DirectX::XMVectorGetZ(point) / clipW, 0.0f, 1.0f)}};
+        // Use the actual view so the mist stays anchored during camera movement and shake.
+        DirectX::XMStoreFloat4x4(&data.inverseViewProjection, DirectX::XMMatrixTranspose(
+            DirectX::XMMatrixInverse(nullptr, DirectX::XMLoadFloat4x4(&camera.GetView())
+                * DirectX::XMLoadFloat4x4(&camera.GetProjection()))));
         dc->UpdateSubresource(buffer.Get(), 0, nullptr, &data, 0, 0);
         ID3D11Buffer* cb = buffer.Get(); dc->PSSetConstantBuffers(0, 1, &cb);
         dc->IASetInputLayout(nullptr);
@@ -83,7 +87,7 @@ public:
         dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::TestAndWrite), 0);
     }
 private:
-    struct Constants { DirectX::XMFLOAT4 parameters, tint, placement; };
+    struct Constants { DirectX::XMFLOAT4 parameters, tint, placement; DirectX::XMFLOAT4X4 inverseViewProjection; };
     static void Check(HRESULT hr) { if (FAILED(hr)) throw std::runtime_error("Background fog GPU resource creation failed"); }
     void Resize(ID3D11Device* device, UINT w, UINT h)
     {
