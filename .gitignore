@@ -427,3 +427,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# ビルドのたびに作り直されるため管理しない
+Data/Shader/*.cso
+imgui.ini
