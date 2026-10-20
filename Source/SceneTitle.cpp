@@ -18,6 +18,8 @@ void SceneTitle::Initialize()
     introTimer = transitionTimer = blinkTimer = 0.0f;
     firstUpdate = true;
     titleBgmStarted = false;
+    titleBgmDelayTimer = 0.0f;
+    introSoundPhase = -1;
 #ifdef _DEBUG
     introPaused = false;
 #endif
@@ -36,6 +38,9 @@ void SceneTitle::Initialize()
 // 終了処理
 void SceneTitle::Finalize()
 {
+    Audio::Instance().Stop("SE_TITLE_TRIANGLE");
+    Audio::Instance().Stop("SE_TITLE_ROTATION");
+    Audio::Instance().Stop("SE_TITLE_APPEAR");
     Audio::Instance().Stop("BGM_TITLE");
     titleBgmStarted = false;
     triangle.reset();
@@ -71,10 +76,15 @@ void SceneTitle::Update(float elapsedTime)
     const float dt = firstUpdate ? 0.0f : (std::clamp)(elapsedTime, 0.0f, 0.1f);
     const bool acceptInput = !firstUpdate;
     firstUpdate = false;
+    const float previousIntroTimer = introTimer;
 #ifdef _DEBUG
     if (!introPaused)
 #endif
         introTimer = (std::min)(introTimer + dt, TitleAnimation::INTRO_END);
+    if (previousIntroTimer < TitleAnimation::X_END && introTimer >= TitleAnimation::X_END)
+    {
+        Audio::Instance().Play("SE_TITLE_APPEAR");
+    }
     blinkTimer = std::fmod(blinkTimer + dt, 1.0f);
 
     if (LoadingProfile::Automatic() && acceptInput && !isTransitioning)
@@ -87,12 +97,64 @@ void SceneTitle::Update(float elapsedTime)
         UpdateInput();
     }
 
+    UpdateIntroSound();
+    if (!titleBgmStarted && introTimer >= TitleAnimation::X_END)
+    {
+#ifdef _DEBUG
+        if (!introPaused)
+#endif
+        {
+            // XがはまるSEを先に聞かせてからBGMを開始する。
+            constexpr float BGM_DELAY = 0.5f;
+            titleBgmDelayTimer += (std::min)(dt, (std::max)(0.0f, introTimer - TitleAnimation::X_END));
+            if (titleBgmDelayTimer >= BGM_DELAY)
+            {
+                Audio::Instance().Play("BGM_TITLE", true);
+                titleBgmStarted = true;
+            }
+        }
+    }
     UpdateTransition(dt);
 
     if (introTimer >= TitleAnimation::X_END)
     {
         UpdateDecorations(dt);
     }
+}
+
+void SceneTitle::UpdateIntroSound()
+{
+    int phase = TitleAnimation::SoundPhase(introTimer);
+#ifdef _DEBUG
+    if (introPaused)
+    {
+        phase = -1;
+    }
+#endif
+    if (phase == introSoundPhase)
+    {
+        return;
+    }
+
+    auto& audio = Audio::Instance();
+    if (introSoundPhase >= 0 && introSoundPhase < 3)
+    {
+        audio.Stop("SE_TITLE_TRIANGLE");
+    }
+    else if (introSoundPhase == 3)
+    {
+        audio.Stop("SE_TITLE_ROTATION");
+    }
+
+    if (phase >= 0 && phase < 3)
+    {
+        audio.Play("SE_TITLE_TRIANGLE", true);
+    }
+    else if (phase == 3)
+    {
+        audio.Play("SE_TITLE_ROTATION");
+    }
+    introSoundPhase = phase;
 }
 
 // UpdateDecorations の更新処理
@@ -300,12 +362,6 @@ void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::Sta
     if (animation.xAlpha > 0)
     {
 
-        if (!titleBgmStarted && introTimer >= Anim::X_END)
-        {
-            Audio::Instance().Play("BGM_TITLE", true);
-            titleBgmStarted = true;
-        }
-
         const float height = 240 * animation.xScale;
         const float width = height * 760.0f / 1056;
 
@@ -340,17 +396,28 @@ void SceneTitle::DrawDebugGUI()
 
     if (ImGui::Begin("Title animation"))
     {
-        ImGui::Checkbox("Pause intro", &introPaused);
+        if (ImGui::Checkbox("Pause intro", &introPaused))
+        {
+            UpdateIntroSound();
+        }
 
         if (ImGui::SliderFloat("Time", &introTimer, 0, TitleAnimation::INTRO_END, "%.2f s"))
         {
             introPaused = true;
+            UpdateIntroSound();
             isTransitioning = false;
             titlePlayer->Reset();
         }
 
         if (ImGui::Button("Replay intro"))
         {
+            Audio::Instance().Stop("BGM_TITLE");
+            titleBgmStarted = false;
+            titleBgmDelayTimer = 0.0f;
+            Audio::Instance().Stop("SE_TITLE_TRIANGLE");
+            Audio::Instance().Stop("SE_TITLE_ROTATION");
+            Audio::Instance().Stop("SE_TITLE_APPEAR");
+            introSoundPhase = -1;
             introTimer = blinkTimer = 0;
             introPaused = isTransitioning = false;
             titlePlayer->Reset();

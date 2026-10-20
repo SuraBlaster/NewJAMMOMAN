@@ -117,6 +117,32 @@ namespace TitleAnimation
         return state;
     }
 
+    // 描画中の辺 (0～2)、回転中 (3)、それ以外 (-1)。
+    inline int SoundPhase(float time)
+    {
+        if (time >= 0 && time < DRAW_END)
+        {
+            const auto state = Evaluate(0);
+            float lengths[3];
+            float perimeter = 0;
+            for (int edge = 0; edge < 3; ++edge)
+            {
+                perimeter += lengths[edge] = Length(state.vertices[(edge + 1) % 3],
+                                                    state.vertices[(edge + 2) % 3]);
+            }
+            float remaining = perimeter * Progress(time, 0, DRAW_END);
+            for (int edge = 0; edge < 3; ++edge)
+            {
+                if (remaining < lengths[edge])
+                {
+                    return edge;
+                }
+                remaining -= lengths[edge];
+            }
+        }
+        return time >= HOLD_END && time < MORPH_END ? 3 : -1;
+    }
+
     struct Segment
     {
         Point from, to;

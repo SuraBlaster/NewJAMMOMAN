@@ -8,6 +8,30 @@ int main()
     const auto start = A::Evaluate(0);
     assert(!A::VisibleEdge(start, 0).visible && start.xAlpha == 0);
     const auto drawn = A::Evaluate(A::DRAW_END);
+    assert(A::SoundPhase(0) == 0);
+    float perimeter = 0;
+    float edgeLengths[3];
+    for (int edge = 0; edge < 3; ++edge)
+    {
+        perimeter += edgeLengths[edge] =
+            A::Length(start.vertices[(edge + 1) % 3], start.vertices[(edge + 2) % 3]);
+    }
+    float distance = 0;
+    for (int edge = 0; edge < 3; ++edge)
+    {
+        const float midpoint = A::DRAW_END * (distance + edgeLengths[edge] * 0.5f) / perimeter;
+        assert(A::SoundPhase(midpoint) == edge);
+        distance += edgeLengths[edge];
+        const float end = A::DRAW_END * distance / perimeter;
+        assert(A::SoundPhase(end - 0.0001f) == edge);
+        assert(A::SoundPhase(end + 0.0001f) == (edge < 2 ? edge + 1 : -1));
+    }
+    assert(A::SoundPhase(A::DRAW_END) == -1);
+    assert(A::SoundPhase(A::HOLD_END - 0.0001f) == -1);
+    assert(A::SoundPhase(A::HOLD_END) == 3);
+    assert(A::SoundPhase(A::MORPH_END - 0.0001f) == 3);
+    assert(A::SoundPhase(A::MORPH_END) == -1);
+    assert(A::SoundPhase(A::INTRO_END) == -1);
 
     for (int edge = 0; edge < 3; ++edge)
     {

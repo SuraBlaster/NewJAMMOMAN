@@ -88,7 +88,7 @@ void SceneLoading::Initialize()
         profile.Step("background");
         boss = std::make_unique<LoadingBoss>();
         profile.Step("boss");
-        Audio::Instance().Play("BGM_LOADING");
+        Audio::Instance().Play("SE_LOADING");
     }
 
     player = std::make_unique<LoadingPlayer>();

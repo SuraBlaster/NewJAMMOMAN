@@ -169,6 +169,7 @@ void CameraController::Update(float elapsedTime, const DirectX::XMFLOAT3& player
 // ImGuiメニューの描画
 void CameraController::DrawMenuBar()
 {
+#ifdef _DEBUG
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("Camera"))
@@ -191,6 +192,8 @@ void CameraController::DrawMenuBar()
 
         ImGui::EndMainMenuBar();
     }
+
+#endif
 }
 
 // UpdateFixed2D の更新処理

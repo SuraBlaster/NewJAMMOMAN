@@ -30,6 +30,7 @@ class BackgroundCity
     // デバッグ画面の描画処理
     void DrawGUI()
     {
+#ifdef _DEBUG
         if (ImGui::Begin("Distant City"))
         {
             ImGui::Checkbox("Enabled", &enabled);
@@ -49,6 +50,8 @@ class BackgroundCity
         }
 
         ImGui::End();
+
+#endif
     }
 
     // 描画処理

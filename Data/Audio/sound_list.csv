@@ -5,6 +5,10 @@ BGM_BOSS,Data/Audio/Scene/BossBGM.wav,0.3
 BGM_ENDING,Data/Audio/Scene/Ending.wav,0.3
 SE_CLEAR,Data/Audio/Scene/Clear.wav,0.3
 SE_LOADING,Data/Audio/Scene/Loading.wav,0.25
+SE_TITLE_TRIANGLE,Data/Audio/Scene/TitleTriangle.wav,0.25
+SE_TITLE_ROTATION,Data/Audio/Scene/TitleRotation.wav,0.25
+SE_TITLE_APPEAR,Data/Audio/Scene/TitleAppear.wav,0.5
+
 
 // Character (Common)
 SE_DEATH_GENERIC,Data/Audio/Character/Death.wav,0.8

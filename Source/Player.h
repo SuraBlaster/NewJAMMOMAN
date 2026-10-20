@@ -65,6 +65,9 @@ class Player final : public Character
     // UpdateDash の更新処理
     void UpdateDash();
 
+    // ジャンプ(コヨーテタイム)の更新処理
+    void UpdateJump(float elapsedTime);
+
     // 残像の更新処理
     void UpdateMotionTrail(float elapsedTime);
 
@@ -99,6 +102,8 @@ class Player final : public Character
     float airControl = 0.3f;
     float inputMoveX = 0.0f;
     float inputMoveZ = 0.0f;
+    const float coyoteTime = 0.1f;
+    float coyoteTimer = 0.0f;
 
     AnimationLayerMask upperBodyMask;
     float upperBodyWeight = 0.0f;
@@ -198,7 +203,7 @@ class Player final : public Character
         return trail.GetMotionSnapshots();
     }
 
-  public:
+public:
 
     class State
     {
@@ -335,7 +340,7 @@ class Player final : public Character
 
     class WallSlideState : public State
     {
-      public:
+    public:
 
         // コンストラクタ
         WallSlideState(Player* owner) : State(owner)
@@ -358,7 +363,7 @@ class Player final : public Character
 
     class WallKickState : public State
     {
-      public:
+    public:
 
         // コンストラクタ
         WallKickState(Player* owner) : State(owner)
@@ -390,7 +395,7 @@ class Player final : public Character
 
     class DeathState : public State
     {
-      public:
+    public:
 
         // コンストラクタ
         DeathState(Player* owner) : State(owner)
@@ -437,7 +442,7 @@ class Player final : public Character
         // 状態を抜けるときの処理
         void OnExit() override;
 
-      private:
+    private:
 
         static constexpr float CLEAR_AUDIO_TIME = 5.0f;
         static constexpr float EXIT_EFFECT_TIME = 11.0f;

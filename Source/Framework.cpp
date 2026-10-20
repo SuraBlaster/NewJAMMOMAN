@@ -127,6 +127,7 @@ template <class T> void Framework::ChangeSceneButtonGUI(const char* name)
 // シーン切り替えGUI
 void Framework::SceneSelectGUI()
 {
+#ifdef _DEBUG
     ImVec2 displaySize = ImGui::GetIO().DisplaySize;
     ImVec2 pos = ImGui::GetMainViewport()->GetWorkPos();
     float width = 210;
@@ -143,6 +144,8 @@ void Framework::SceneSelectGUI()
     }
 
     ImGui::End();
+
+#endif
 }
 
 // フレームレート計算

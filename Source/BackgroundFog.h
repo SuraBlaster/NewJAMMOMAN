@@ -32,6 +32,7 @@ class BackgroundFog
     // デバッグ画面の描画処理
     void DrawGUI()
     {
+#ifdef _DEBUG
         if (ImGui::Begin("Background Fog"))
         {
             ImGui::Checkbox("Enabled", &enabled);
@@ -51,6 +52,8 @@ class BackgroundFog
         }
 
         ImGui::End();
+
+#endif
     }
 
     // 描画処理

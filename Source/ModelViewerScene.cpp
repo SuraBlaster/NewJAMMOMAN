@@ -141,11 +141,14 @@ void ModelViewerScene::Render(float elapsedTime)
 // GUI描画処理
 void ModelViewerScene::DrawGUI()
 {
+#ifdef _DEBUG
     DrawMenuGUI();
     DrawHierarchyGUI();
     DrawPropertyGUI();
     DrawAnimationGUI();
     DrawMaterialGUI();
+
+#endif
 }
 
 // メニューGUI描画

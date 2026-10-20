@@ -16,10 +16,14 @@ void ImGuiRenderer::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceCont
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
 
+#ifdef _DEBUG
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#else
+    io.IniFilename = nullptr;
+#endif
 
 #if 1
     io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;

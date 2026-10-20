@@ -107,6 +107,8 @@ void Player::Update(float elapsedTime)
         SetState(StateId::Clear);
     }
 
+    UpdateJump(elapsedTime);
+
     UpdateStateMachine(elapsedTime);
 
     if (IsClearing() || currentState == StateId::Death)
@@ -179,6 +181,7 @@ void Player::DebugWarp(const DirectX::XMFLOAT3& destination, float facingDirecti
 // デバッグ画面の描画処理
 void Player::DrawGUI()
 {
+#ifdef _DEBUG
     ImGui::Begin("Player");
     {
         ImGui::Text(debugStateNames[static_cast<int>(currentState)].c_str());
@@ -214,6 +217,8 @@ void Player::DrawGUI()
 
         ImGui::EndMainMenuBar();
     }
+
+#endif
 }
 
 // 当たり判定などのデバッグ描画処理
@@ -467,6 +472,18 @@ void Player::UpdateDash()
     velocity.z = dir.z * 10;
 }
 
+void Player::UpdateJump(float elapsedTime)
+{
+    if (IsGround())
+    {
+        coyoteTimer = coyoteTime;
+    }
+    else
+    {
+        coyoteTimer -= elapsedTime;
+    }
+}
+
 // 残像の更新処理
 void Player::UpdateMotionTrail(float elapsedTime)
 {
@@ -619,12 +636,13 @@ bool Player::InputJump()
         return false;
     }
 
-    if (!IsGround() && currentState != StateId::WallSlide)
+    if (!IsGround() && currentState != StateId::WallSlide && coyoteTimer <= 0.0f)
     {
         return false;
     }
 
     isDashJump = (gamePad.GetButton() & InputManager::BTN_B) != 0;
+    coyoteTimer = 0.0f;
     velocity.y = jumpSpeed * (isDashJump ? 1.2f : 1.0f);
     return true;
 }

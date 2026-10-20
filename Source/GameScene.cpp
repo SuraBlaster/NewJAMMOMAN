@@ -363,6 +363,7 @@ void GameScene::Render(float elapsedTime)
 // GUI描画処理
 void GameScene::DrawGUI()
 {
+#ifdef _DEBUG
     backgroundFog->DrawGUI();
     backgroundCity->DrawGUI();
 
@@ -425,6 +426,8 @@ void GameScene::DrawGUI()
     player->DrawGUI();
 
     cameraController.DrawMenuBar();
+
+#endif
 }
 
 // XY座標が長方形の4境界すべてに収まっている場合だけ、範囲内と判定する
@@ -764,6 +767,8 @@ void GameScene::TryStartBossEncounter()
         activeBossArena = zone;
         lastSafePosition = playerPosition;
         pendingBossSpawnData.reset();
+        Audio::Instance().Stop("BGM_STAGE");
+        Audio::Instance().Play("BGM_BOSS", true);
         return;
     }
 }

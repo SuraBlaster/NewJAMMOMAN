@@ -27,6 +27,7 @@ class SceneTitle : public Scene
   private:
 
     void StartGame();
+    void UpdateIntroSound();
 
     // UpdateInput の更新処理
     void UpdateInput();
@@ -73,6 +74,8 @@ class SceneTitle : public Scene
     float introTimer = 0.0f;
     bool firstUpdate = true;
     bool titleBgmStarted = false;
+    float titleBgmDelayTimer = 0.0f;
+    int introSoundPhase = -1;
 #ifdef _DEBUG
     bool introPaused = false;
 #endif

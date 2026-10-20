@@ -856,6 +856,7 @@ void BackgroundEditor::SetEditing(bool enabled)
 // 更新処理
 bool BackgroundEditor::Update(float)
 {
+#ifdef _DEBUG
     auto& io = ImGui::GetIO();
     auto& camera = Camera::Instance();
     bool enabled = editing;
@@ -942,6 +943,10 @@ bool BackgroundEditor::Update(float)
 
     DrawGizmoAndPick();
     return true;
+
+#else
+    return false;
+#endif
 }
 
 // 操作画面の描画処理

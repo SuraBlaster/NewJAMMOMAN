@@ -58,8 +58,10 @@ namespace stage_converter
         constexpr std::string_view DEFAULT_ENEMY_DIRECTION = "Right";
 
         // ゲーム側に実装済みの敵名だけを許可し、入力ミスを変換時に検出する
-        constexpr std::array<std::string_view, 10> SUPPORTED_ENEMY_TYPES{
-            "Wave", "Scatter", "Mage", "Fan", "Hover", "Fly", "Egg", "Boss", "Vacuum", "Walker"};
+        constexpr std::array<std::string_view, 10> SUPPORTED_ENEMY_TYPES
+        {
+            "Wave", "Scatter", "Mage", "Fan", "Hover", "Fly", "Egg", "Boss", "Vacuum", "Walker"
+        };
 
         // タイルセット内の1タイルから、ゲームへ出力する情報だけを保持する
         struct TileDefinition

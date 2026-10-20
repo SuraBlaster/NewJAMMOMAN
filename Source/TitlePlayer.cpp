@@ -1,5 +1,6 @@
 ﻿#include "ModelManager.h"
 #include "TitlePlayer.h"
+#include "Audio/Audio.h"
 #include "Graphics.h"
 #include "ModelRenderer.h"
 #include <algorithm>
@@ -57,6 +58,7 @@ void TitlePlayer::Update(float elapsedTime)
             jumpTime = -timer;
             state = State::Jump;
             velocity.y = JUMP_SPEED;
+            Audio::Instance().Play("SE_PLAYER_RETURN");
             PlayAnimation(model->GetAnimationIndex("Jump_Start_0_Seq_0"), false, 0.1f);
         }
     }
