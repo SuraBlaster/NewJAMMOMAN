@@ -432,3 +432,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+/tmp/check_attack_reach.py
