@@ -1,30 +1,55 @@
-#pragma once
+﻿#pragma once
 
 #include "Effect/Effect.h"
 
 class Player;
 class ShapeRenderer;
 
-// Shared implementation for the former ProjectileSideL / ProjectileSideR.
 class BossSideProjectile final
 {
-public:
-    enum class Motion { ScatterAndAccelerate, Continuous };
-    BossSideProjectile(const DirectX::XMFLOAT3& start,
-        const DirectX::XMFLOAT3& scatterTarget, float directionX,
-        Motion motion = Motion::ScatterAndAccelerate);
+  public:
+
+    enum class Motion
+    {
+        ScatterAndAccelerate,
+        Continuous
+    };
+
+    // コンストラクタ
+    BossSideProjectile(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& scatterTarget,
+                       float directionX, Motion motion = Motion::ScatterAndAccelerate);
+
+    // デストラクタ
     ~BossSideProjectile();
+
+    // コンストラクタ
     BossSideProjectile(const BossSideProjectile&) = delete;
     BossSideProjectile& operator=(const BossSideProjectile&) = delete;
 
+    // 更新処理
     void Update(float elapsedTime);
     void HitPlayer(Player& player);
-    void DrawDebugPrimitive(ShapeRenderer* renderer) const;
-    bool IsActive() const { return active; }
-    static constexpr float GetRadius() { return RADIUS; }
 
-private:
-    enum class Phase { Scattering, Moving };
+    // 当たり判定などのデバッグ描画処理
+    void DrawDebugPrimitive(ShapeRenderer* renderer) const;
+
+    bool IsActive() const
+    {
+        return active;
+    }
+
+    static constexpr float GetRadius()
+    {
+        return RADIUS;
+    }
+
+  private:
+
+    enum class Phase
+    {
+        Scattering,
+        Moving
+    };
     void Destroy();
 
     static constexpr float SCATTER_SPEED = 20.0f;
@@ -48,6 +73,6 @@ private:
     float currentSpeed = 0.0f;
     Phase phase = Phase::Scattering;
     bool active = true;
-    Effect windEffect{ "Data/Effect/wind.efkefc" };
+    Effect windEffect{"Data/Effect/wind.efkefc"};
     Effekseer::Handle windHandle = -1;
 };

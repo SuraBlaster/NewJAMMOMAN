@@ -1,4 +1,4 @@
-#include "StageLoader.h"
+﻿#include "StageLoader.h"
 #include "TileTypeManager.h"
 #include <cassert>
 #include <fstream>
@@ -19,7 +19,8 @@ int main()
     std::ifstream input("Data/Stage/ConvertedStage.stage.json");
     json root;
     input >> root;
-    const auto writeFixture = [&root]() {
+    const auto writeFixture = [&root]()
+    {
         std::ofstream output("obj/CameraBoundsTests/loading.stage.json");
         output << root.dump(2);
     };
@@ -35,5 +36,6 @@ int main()
     writeFixture();
     assert(StageLoader::Load("obj/CameraBoundsTests/loading.stage.json", tileTypes, stage));
     assert(stage.cameraLimitZones.empty());
-    std::cout << "PASS: actual stage camera bounds load; invalid array rejected; empty and omitted bounds supported.\n";
+    std::cout
+        << "PASS: actual stage camera bounds load; invalid array rejected; empty and omitted bounds supported.\n";
 }

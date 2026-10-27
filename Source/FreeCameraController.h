@@ -1,25 +1,27 @@
-#pragma once
+ï»¿#pragma once
 #include "Camera.h"
 
 class FreeCameraController
 {
-public:
-	// ƒJƒƒ‰‚©‚çƒRƒ“ƒgƒ[ƒ‰[‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
-	void SyncCameraToController(const Camera& camera);
+  public:
 
-	// ƒRƒ“ƒgƒ[ƒ‰[‚©‚çƒJƒƒ‰‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
-	void SyncControllerToCamera(Camera& camera);
+    // ã‚«ãƒ¡ãƒ©ã‹ã‚‰ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
+    void SyncCameraToController(const Camera& camera);
 
-	// XVˆ—
-	void Update();
+    // ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
+    void SyncControllerToCamera(Camera& camera);
 
-private:
-	DirectX::XMFLOAT3		eye;
-	DirectX::XMFLOAT3		focus;
-	DirectX::XMFLOAT3		up;
-	DirectX::XMFLOAT3		right;
-	float					distance;
+    // æ›´æ–°å‡¦ç†
+    void Update();
 
-	float					angleX;
-	float					angleY;
+  private:
+
+    DirectX::XMFLOAT3 eye;
+    DirectX::XMFLOAT3 focus;
+    DirectX::XMFLOAT3 up;
+    DirectX::XMFLOAT3 right;
+    float distance;
+
+    float angleX;
+    float angleY;
 };

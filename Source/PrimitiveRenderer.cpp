@@ -1,229 +1,222 @@
-#include "Misc.h"
+Ôªø#include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "PrimitiveRenderer.h"
 
-// ÉRÉìÉXÉgÉâÉNÉ^
+// „Ç≥„É≥„Çπ„Éà„É©„ÇØ„Çø
 PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)
 {
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[]
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	// í∏ì_ÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadVertexShader(
-		device,
-		"Data/Shader/PrimitiveRendererVS.cso",
-		inputElementDesc,
-		_countof(inputElementDesc),
-		inputLayout.GetAddressOf(),
-		vertexShader.GetAddressOf());
+    D3D11_INPUT_ELEMENT_DESC inputElementDesc[]{
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+    // È†ÇÁÇπ„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadVertexShader(device, "Data/Shader/PrimitiveRendererVS.cso", inputElementDesc,
+                                       _countof(inputElementDesc), inputLayout.GetAddressOf(),
+                                       vertexShader.GetAddressOf());
 
-	// ÉsÉNÉZÉãÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadPixelShader(
-		device,
-		"Data/Shader/PrimitiveRendererPS.cso",
-		pixelShader.GetAddressOf());
+    // „Éî„ÇØ„Çª„É´„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadPixelShader(device, "Data/Shader/PrimitiveRendererPS.cso",
+                                      pixelShader.GetAddressOf());
 
-	// íËêîÉoÉbÉtÉ@
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbScene),
-		constantBuffer.GetAddressOf());
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°
+    GpuResourceUtils::CreateConstantBuffer(device, sizeof(CbScene), constantBuffer.GetAddressOf());
 
-	// í∏ì_ÉoÉbÉtÉ@
-	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(Vertex) * VERTEX_CAPACITY;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-	HRESULT hr = device->CreateBuffer(&desc, nullptr, vertexBuffer.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // È†ÇÁÇπ„Éê„ÉÉ„Éï„Ç°
+    D3D11_BUFFER_DESC desc;
+    desc.ByteWidth = sizeof(Vertex) * VERTEX_CAPACITY;
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+    HRESULT hr = device->CreateBuffer(&desc, nullptr, vertexBuffer.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 }
 
-// í∏ì_í«â¡
+// È†ÇÁÇπËøΩÂä†
 void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color)
 {
-	AddVertex(position, color, { 0.0f, 0.0f });
+    AddVertex(position, color, {0.0f, 0.0f});
 }
 
-void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color, const DirectX::XMFLOAT2& texcoord)
+void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT4& color,
+                                  const DirectX::XMFLOAT2& texcoord)
 {
-	Vertex& v = vertices.emplace_back();
-	v.position = position;
-	v.color = color;
-	v.texcoord = texcoord;
+    Vertex& v = vertices.emplace_back();
+    v.position = position;
+    v.color = color;
+    v.texcoord = texcoord;
 }
 
-// é≤ï`âÊ
+// Ëª∏ÊèèÁîª
 void PrimitiveRenderer::DrawAxis(const DirectX::XMFLOAT4X4& transform, const DirectX::XMFLOAT4& color)
 {
-	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&transform);
-	DirectX::XMFLOAT3 p, x, y, z;
-	DirectX::XMStoreFloat3(&p, w.r[3]);
-	DirectX::XMStoreFloat3(&x, DirectX::XMVector3Transform(DirectX::XMVectorSet(1, 0, 0, 0), w));
-	DirectX::XMStoreFloat3(&y, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 1, 0, 0), w));
-	DirectX::XMStoreFloat3(&z, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, 1, 0), w));
-	AddVertex(p, { 1, 0, 0, 1 });
-	AddVertex(x, { 1, 0, 0, 1 });
-	AddVertex(p, { 0, 1, 0, 1 });
-	AddVertex(y, { 0, 1, 0, 1 });
-	AddVertex(p, { 0, 0, 1, 1 });
-	AddVertex(z, { 0, 0, 1, 1 });
+    DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(&transform);
+    DirectX::XMFLOAT3 p, x, y, z;
+    DirectX::XMStoreFloat3(&p, w.r[3]);
+    DirectX::XMStoreFloat3(&x, DirectX::XMVector3Transform(DirectX::XMVectorSet(1, 0, 0, 0), w));
+    DirectX::XMStoreFloat3(&y, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 1, 0, 0), w));
+    DirectX::XMStoreFloat3(&z, DirectX::XMVector3Transform(DirectX::XMVectorSet(0, 0, 1, 0), w));
+    AddVertex(p, {1, 0, 0, 1});
+    AddVertex(x, {1, 0, 0, 1});
+    AddVertex(p, {0, 1, 0, 1});
+    AddVertex(y, {0, 1, 0, 1});
+    AddVertex(p, {0, 0, 1, 1});
+    AddVertex(z, {0, 0, 1, 1});
 }
 
-// ÉOÉäÉbÉhï`âÊ
+// „Ç∞„É™„ÉÉ„ÉâÊèèÁîª
 void PrimitiveRenderer::DrawGrid(int subdivisions, float scale)
 {
-	int numLines = (subdivisions + 1) * 2;
-	int vertexCount = numLines * 2;
+    int numLines = (subdivisions + 1) * 2;
+    int vertexCount = numLines * 2;
 
-	float corner = 0.5f;
-	float step = 1.0f / static_cast<float>(subdivisions);
+    float corner = 0.5f;
+    float step = 1.0f / static_cast<float>(subdivisions);
 
-	int index = 0;
-	float s = -corner;
+    int index = 0;
+    float s = -corner;
 
-	const DirectX::XMFLOAT4 white = DirectX::XMFLOAT4(1, 1, 1, 1);
+    const DirectX::XMFLOAT4 white = DirectX::XMFLOAT4(1, 1, 1, 1);
 
-	// Create vertical lines
-	float scaling = static_cast<float>(subdivisions) * scale;
-	DirectX::XMMATRIX m = DirectX::XMMatrixScaling(scaling, scaling, scaling);
-	DirectX::XMVECTOR vMatrix, pMatrix;
-	DirectX::XMFLOAT3 position;
-	for (int i = 0; i <= subdivisions; i++)
-	{
-		vMatrix = DirectX::XMVectorSet(s, 0, corner, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, white);
+    float scaling = static_cast<float>(subdivisions) * scale;
+    DirectX::XMMATRIX m = DirectX::XMMatrixScaling(scaling, scaling, scaling);
+    DirectX::XMVECTOR vMatrix, pMatrix;
+    DirectX::XMFLOAT3 position;
 
-		vMatrix = DirectX::XMVectorSet(s, 0, -corner, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, white);
+    for (int i = 0; i <= subdivisions; i++)
+    {
+        vMatrix = DirectX::XMVectorSet(s, 0, corner, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, white);
 
-		s += step;
-	}
+        vMatrix = DirectX::XMVectorSet(s, 0, -corner, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, white);
 
-	// Create horizontal lines
-	s = -corner;
-	for (int i = 0; i <= subdivisions; i++)
-	{
-		vMatrix = DirectX::XMVectorSet(corner, 0, s, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, white);
+        s += step;
+    }
 
-		vMatrix = DirectX::XMVectorSet(-corner, 0, s, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, white);
+    s = -corner;
 
-		s += step;
-	}
+    for (int i = 0; i <= subdivisions; i++)
+    {
+        vMatrix = DirectX::XMVectorSet(corner, 0, s, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, white);
 
-	// Xé≤
-	{
-		const DirectX::XMFLOAT4 red = DirectX::XMFLOAT4(1, 0, 0, 1);
-		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, red);
+        vMatrix = DirectX::XMVectorSet(-corner, 0, s, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, white);
 
-		vMatrix = DirectX::XMVectorSet(corner, 0, 0, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, red);
-	}
+        s += step;
+    }
 
-	// Yé≤
-	{
-		const DirectX::XMFLOAT4 green = DirectX::XMFLOAT4(0, 1, 0, 1);
-		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, green);
+    // XËª∏
+    {
+        const DirectX::XMFLOAT4 red = DirectX::XMFLOAT4(1, 0, 0, 1);
+        vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, red);
 
-		vMatrix = DirectX::XMVectorSet(0, corner, 0, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, green);
-	}
+        vMatrix = DirectX::XMVectorSet(corner, 0, 0, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, red);
+    }
 
-	// Zé≤
-	{
-		const DirectX::XMFLOAT4 blue = DirectX::XMFLOAT4(0, 0, 1, 1);
-		vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, blue);
+    // YËª∏
+    {
+        const DirectX::XMFLOAT4 green = DirectX::XMFLOAT4(0, 1, 0, 1);
+        vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, green);
 
-		vMatrix = DirectX::XMVectorSet(0, 0, corner, 0);
-		pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
-		DirectX::XMStoreFloat3(&position, pMatrix);
-		AddVertex(position, blue);
-	}
+        vMatrix = DirectX::XMVectorSet(0, corner, 0, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, green);
+    }
+
+    // ZËª∏
+    {
+        const DirectX::XMFLOAT4 blue = DirectX::XMFLOAT4(0, 0, 1, 1);
+        vMatrix = DirectX::XMVectorSet(0, 0, 0, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, blue);
+
+        vMatrix = DirectX::XMVectorSet(0, 0, corner, 0);
+        pMatrix = DirectX::XMVector3TransformCoord(vMatrix, m);
+        DirectX::XMStoreFloat3(&position, pMatrix);
+        AddVertex(position, blue);
+    }
 }
 
-// ï`âÊé¿çs
-void PrimitiveRenderer::Render(
-	ID3D11DeviceContext* dc,
-	const DirectX::XMFLOAT4X4& view,
-	const DirectX::XMFLOAT4X4& projection,
-	D3D11_PRIMITIVE_TOPOLOGY primitiveTopology)
+// ÊèèÁîªÂÆüË°å
+void PrimitiveRenderer::Render(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
+                               const DirectX::XMFLOAT4X4& projection,
+                               D3D11_PRIMITIVE_TOPOLOGY primitiveTopology)
 {
-	// ÉVÉFÅ[É_Å[ê›íË
-	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
-	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
-	dc->IASetInputLayout(inputLayout.Get());
+    // „Ç∑„Çß„Éº„ÉÄ„ÉºË®≠ÂÆö
+    dc->VSSetShader(vertexShader.Get(), nullptr, 0);
+    dc->PSSetShader(pixelShader.Get(), nullptr, 0);
+    dc->IASetInputLayout(inputLayout.Get());
 
-	// íËêîÉoÉbÉtÉ@ê›íË
-	dc->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆö
+    dc->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 
-	// ÉrÉÖÅ[ÉvÉçÉWÉFÉNÉVÉáÉìçsóÒçÏê¨
-	DirectX::XMMATRIX vMatrix = DirectX::XMLoadFloat4x4(&view);
-	DirectX::XMMATRIX pMatrix = DirectX::XMLoadFloat4x4(&projection);
-	DirectX::XMMATRIX vp = vMatrix * pMatrix;
+    // „Éì„É•„Éº„Éó„É≠„Ç∏„Çß„ÇØ„Ç∑„Éß„É≥Ë°åÂàó‰ΩúÊàê
+    DirectX::XMMATRIX vMatrix = DirectX::XMLoadFloat4x4(&view);
+    DirectX::XMMATRIX pMatrix = DirectX::XMLoadFloat4x4(&projection);
+    DirectX::XMMATRIX vp = vMatrix * pMatrix;
 
-	// íËêîÉoÉbÉtÉ@çXêV
-	CbScene cbScene;
-	DirectX::XMStoreFloat4x4(&cbScene.viewProjection, vp);
-	dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbScene, 0, 0);
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Êõ¥Êñ∞
+    CbScene cbScene;
+    DirectX::XMStoreFloat4x4(&cbScene.viewProjection, vp);
+    dc->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 
-	// í∏ì_ÉoÉbÉtÉ@ê›íË
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	dc->IASetPrimitiveTopology(primitiveTopology);
-	dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
-	dc->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+    // È†ÇÁÇπ„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆö
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    dc->IASetPrimitiveTopology(primitiveTopology);
+    dc->IASetIndexBuffer(nullptr, DXGI_FORMAT_R32_UINT, 0);
+    dc->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 
-	// ï`âÊ
-	UINT totalVertexCount = static_cast<UINT>(vertices.size());
-	UINT start = 0;
-	UINT count = (totalVertexCount < VERTEX_CAPACITY) ? totalVertexCount : VERTEX_CAPACITY;
+    // ÊèèÁîª
+    UINT totalVertexCount = static_cast<UINT>(vertices.size());
+    UINT start = 0;
+    UINT count = (totalVertexCount < VERTEX_CAPACITY) ? totalVertexCount : VERTEX_CAPACITY;
 
-	while (start < totalVertexCount)
-	{
-		D3D11_MAPPED_SUBRESOURCE mappedSubresource;
-		HRESULT hr = dc->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    while (start < totalVertexCount)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+        HRESULT hr = dc->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		memcpy(mappedSubresource.pData, &vertices[start], sizeof(Vertex) * count);
+        memcpy(mappedSubresource.pData, &vertices[start], sizeof(Vertex) * count);
 
-		dc->Unmap(vertexBuffer.Get(), 0);
+        dc->Unmap(vertexBuffer.Get(), 0);
 
-		dc->Draw(count, 0);
+        dc->Draw(count, 0);
 
-		start += count;
-		if ((start + count) > totalVertexCount)
-		{
-			count = totalVertexCount - start;
-		}
-	}
+        start += count;
 
-	vertices.clear();
+        if ((start + count) > totalVertexCount)
+        {
+            count = totalVertexCount - start;
+        }
+    }
+
+    vertices.clear();
 }

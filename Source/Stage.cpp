@@ -1,4 +1,4 @@
-#include "LoadingProfile.h"
+ï»¿#include "LoadingProfile.h"
 #include "Stage.h"
 #include "BossGate.h"
 #include <stdexcept>
@@ -8,130 +8,113 @@
 
 namespace
 {
-    bool TryMergeTerrainBoxes(
-        const AABB& a,
-        const AABB& b,
-        int mergeAxis,
-        AABB& merged)
+    bool TryMergeTerrainBoxes(const AABB& a, const AABB& b, int mergeAxis, AABB& merged)
     {
-        // À•W•ÏŠ·‚É‚æ‚é”÷¬‚ÈŒë·‚¾‚¯‚ğ‹–—e‚·‚éB
+        // åº§æ¨™å¤‰æ›ã«ã‚ˆã‚‹å¾®å°ãªèª¤å·®ã ã‘ã‚’è¨±å®¹ã™ã‚‹
         constexpr float TOLERANCE = 0.00001f;
 
-        const float aMin[3] = {
-            a.min.x, a.min.y, a.min.z
-        };
+        const float aMin[3] = {a.min.x, a.min.y, a.min.z};
 
-        const float aMax[3] = {
-            a.max.x, a.max.y, a.max.z
-        };
+        const float aMax[3] = {a.max.x, a.max.y, a.max.z};
 
-        const float bMin[3] = {
-            b.min.x, b.min.y, b.min.z
-        };
+        const float bMin[3] = {b.min.x, b.min.y, b.min.z};
 
-        const float bMax[3] = {
-            b.max.x, b.max.y, b.max.z
-        };
+        const float bMax[3] = {b.max.x, b.max.y, b.max.z};
 
         for (int axis = 0; axis < 3; ++axis)
         {
             if (axis == mergeAxis)
             {
-                // “‡•ûŒü‚ÉŒ„ŠÔ‚ª‚ ‚ê‚ÎA‚Ü‚Æ‚ß‚È‚¢B
-                if (aMax[axis] < bMin[axis] - TOLERANCE ||
-                    bMax[axis] < aMin[axis] - TOLERANCE)
+                // çµ±åˆæ–¹å‘ã«éš™é–“ãŒã‚ã‚Œã°ã€ã¾ã¨ã‚ãªã„
+                if (aMax[axis] < bMin[axis] - TOLERANCE || bMax[axis] < aMin[axis] - TOLERANCE)
                 {
                     return false;
                 }
             }
             else
             {
-                // ‘¼‚Ì2²‚ÍA”ÍˆÍ‚ªˆê’v‚·‚é•K—v‚ª‚ ‚éB
-                if (std::abs(aMin[axis] - bMin[axis])
-                    > TOLERANCE ||
-                    std::abs(aMax[axis] - bMax[axis])
-                > TOLERANCE)
+                // ä»–ã®2è»¸ã¯ã€ç¯„å›²ãŒä¸€è‡´ã™ã‚‹å¿…è¦ãŒã‚ã‚‹
+                if (std::abs(aMin[axis] - bMin[axis]) > TOLERANCE ||
+                    std::abs(aMax[axis] - bMax[axis]) > TOLERANCE)
                 {
                     return false;
                 }
             }
         }
 
-        merged.min = {
-            (std::min)(a.min.x, b.min.x),
-            (std::min)(a.min.y, b.min.y),
-            (std::min)(a.min.z, b.min.z)
-        };
+        merged.min = {(std::min)(a.min.x, b.min.x), (std::min)(a.min.y, b.min.y),
+                      (std::min)(a.min.z, b.min.z)};
 
-        merged.max = {
-            (std::max)(a.max.x, b.max.x),
-            (std::max)(a.max.y, b.max.y),
-            (std::max)(a.max.z, b.max.z)
-        };
+        merged.max = {(std::max)(a.max.x, b.max.x), (std::max)(a.max.y, b.max.y),
+                      (std::max)(a.max.z, b.max.z)};
 
         return true;
     }
 }
 
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Stage::Stage(ID3D11Device* device, const StageData& stageData, const TileTypeManager& tileTypeManager)
 {
-	LoadingProfile::Scope profile("Stage");
+    LoadingProfile::Scope profile("Stage");
     constexpr float FIXED_POSITION_Z = 0.0f;
 
-	stageObjects.reserve(stageData.objects.size());
+    stageObjects.reserve(stageData.objects.size());
 
-	for (const auto& objectData : stageData.objects)
-	{
-        // Gates own their animated rendering and dynamic collision in GameScene.
-        if (BossGate::IsGateType(objectData.typeId)) continue;
-		const TileInfo* tileInfo = tileTypeManager.GetTileInfo(objectData.typeId);
+    for (const auto& objectData : stageData.objects)
+    {
 
-		if (tileInfo == nullptr)
-		{
-			throw std::runtime_error("Failed to load TileInfo.");
-		}
+        if (BossGate::IsGateType(objectData.typeId))
+        {
+            continue;
+        }
 
-		auto cacheIt = modelPrototypeCache.find(tileInfo->modelPath);
+        const TileInfo* tileInfo = tileTypeManager.GetTileInfo(objectData.typeId);
 
-		std::shared_ptr<Model> prototypeModel;
+        if (tileInfo == nullptr)
+        {
+            throw std::runtime_error("Failed to load TileInfo.");
+        }
 
-		if (cacheIt == modelPrototypeCache.end())
-		{
-			// ƒLƒƒƒbƒVƒ…‚É‚È‚¢‚Ì‚ÅAGLB‚©‚çŒ´–{‚ğ“Ç‚İ‚Ş
-			prototypeModel = std::make_shared<Model>(device, tileInfo->modelPath.c_str());
+        auto cacheIt = modelPrototypeCache.find(tileInfo->modelPath);
 
-			// Ÿ‰ñ‚©‚çÄ—˜—p‚Å‚«‚é‚æ‚¤‚ÉŒ´–{‚ğ•Û‘¶‚·‚é
-			modelPrototypeCache.emplace(tileInfo->modelPath, prototypeModel);
-		}
-		else
-		{
-			// ƒLƒƒƒbƒVƒ…‚É‚ ‚éŒ´–{‚ğæ“¾‚·‚é
-			prototypeModel = cacheIt->second;
-		}
+        std::shared_ptr<Model> prototypeModel;
 
-		std::shared_ptr<Model> instanceModel = std::make_shared<Model>(*prototypeModel);
+        if (cacheIt == modelPrototypeCache.end())
+        {
+            // ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã«ãªã„ã®ã§ã€GLBã‹ã‚‰åŸæœ¬ã‚’èª­ã¿è¾¼ã‚€
+            prototypeModel = std::make_shared<Model>(device, tileInfo->modelPath.c_str());
+
+            // æ¬¡å›ã‹ã‚‰å†åˆ©ç”¨ã§ãã‚‹ã‚ˆã†ã«åŸæœ¬ã‚’ä¿å­˜ã™ã‚‹
+            modelPrototypeCache.emplace(tileInfo->modelPath, prototypeModel);
+        }
+        else
+        {
+            // ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã«ã‚ã‚‹åŸæœ¬ã‚’å–å¾—ã™ã‚‹
+            prototypeModel = cacheIt->second;
+        }
+
+        std::shared_ptr<Model> instanceModel = std::make_shared<Model>(*prototypeModel);
 
         std::shared_ptr<Model> collisionModel;
+
         if (tileInfo->collision && !tileInfo->collisionModelPath.empty())
         {
             auto it = modelPrototypeCache.find(tileInfo->collisionModelPath);
+
             if (it == modelPrototypeCache.end())
             {
                 auto prototype = std::make_shared<Model>(device, tileInfo->collisionModelPath.c_str());
                 it = modelPrototypeCache.emplace(tileInfo->collisionModelPath, prototype).first;
             }
+
             collisionModel = std::make_shared<Model>(*it->second);
         }
 
-		stageObjects.push_back(
-			std::make_unique<StageObject>(
-				instanceModel,
-				objectData,
-				*tileInfo,
-				FIXED_POSITION_Z, collisionModel));
-	}
+        stageObjects.push_back(std::make_unique<StageObject>(instanceModel, objectData, *tileInfo,
+                                                             FIXED_POSITION_Z, collisionModel));
+    }
 
-    // ‘SƒuƒƒbƒN‚Ì¶¬Œã‚ÉAÕ“Ë—p‚Ì” ‚ğ‚Ü‚Æ‚ß‚éB
+    // å…¨ãƒ–ãƒ­ãƒƒã‚¯ã®ç”Ÿæˆå¾Œã«ã€è¡çªç”¨ã®ç®±ã‚’ã¾ã¨ã‚ã‚‹
     profile.Step("objects_including_model_and_aabbs");
     BuildTerrainAABBs();
     profile.Step("merge_terrain_aabbs");
@@ -141,7 +124,7 @@ void Stage::BuildTerrainAABBs()
 {
     terrainBoxes.clear();
 
-    // 1. Õ“Ë‚ª—LŒø‚ÈƒIƒuƒWƒFƒNƒg‚Ì” ‚ğW‚ß‚éB
+    // 1. è¡çªãŒæœ‰åŠ¹ãªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç®±ã‚’é›†ã‚ã‚‹
     for (const auto& object : stageObjects)
     {
         AABB box;
@@ -152,47 +135,69 @@ void Stage::BuildTerrainAABBs()
         }
     }
 
-    // 2. cA‰¡A‰œs‚«‚Ì‡‚Å“‡‚ğ‚·B
-    const int axisOrder[3] = { 1, 0, 2 };
+    // 2. ç¸¦ã€æ¨ªã€å¥¥è¡Œãã®é †ã§çµ±åˆã‚’è©¦ã™
+    const int axisOrder[3] = {1, 0, 2};
 
-    // Group equal cross-sections and merge consecutive intervals in one pass.
-    // Sorting uses exact comparisons (a strict ordering); tolerance is applied
-    // only by TryMergeTerrainBoxes. Unmerged near-equal boxes remain valid.
     bool changed;
     std::vector<AABB> compact;
     compact.reserve(terrainBoxes.size());
     do
     {
         changed = false;
+
         for (int axis : axisOrder)
         {
-            const auto component = [](const DirectX::XMFLOAT3& v, int a) {
+            const auto component = [](const DirectX::XMFLOAT3& v, int a)
+            {
                 return a == 0 ? v.x : a == 1 ? v.y : v.z;
             };
-            std::sort(terrainBoxes.begin(), terrainBoxes.end(), [&](const AABB& a, const AABB& b) {
-                for (int offset = 1; offset <= 2; ++offset)
-                {
-                    const int cross = (axis + offset) % 3;
-                    const float amin = component(a.min, cross), bmin = component(b.min, cross);
-                    if (amin != bmin) return amin < bmin;
-                    const float amax = component(a.max, cross), bmax = component(b.max, cross);
-                    if (amax != bmax) return amax < bmax;
-                }
-                const float amin = component(a.min, axis), bmin = component(b.min, axis);
-                if (amin != bmin) return amin < bmin;
-                return component(a.max, axis) < component(b.max, axis);
-            });
+            std::sort(terrainBoxes.begin(), terrainBoxes.end(),
+                      [&](const AABB& a, const AABB& b)
+                      {
+                          for (int offset = 1; offset <= 2; ++offset)
+                          {
+                              const int cross = (axis + offset) % 3;
+                              const float amin = component(a.min, cross), bmin = component(b.min, cross);
+
+                              if (amin != bmin)
+                              {
+                                  return amin < bmin;
+                              }
+
+                              const float amax = component(a.max, cross), bmax = component(b.max, cross);
+
+                              if (amax != bmax)
+                              {
+                                  return amax < bmax;
+                              }
+                          }
+
+                          const float amin = component(a.min, axis), bmin = component(b.min, axis);
+
+                          if (amin != bmin)
+                          {
+                              return amin < bmin;
+                          }
+
+                          return component(a.max, axis) < component(b.max, axis);
+                      });
             compact.clear();
+
             for (const auto& box : terrainBoxes)
             {
                 AABB merged;
+
                 if (!compact.empty() && TryMergeTerrainBoxes(compact.back(), box, axis, merged))
                 {
                     compact.back() = merged;
                     changed = true;
                 }
-                else compact.push_back(box);
+                else
+                {
+                    compact.push_back(box);
+                }
             }
+
             terrainBoxes.swap(compact);
         }
     } while (changed);

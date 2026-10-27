@@ -1,74 +1,103 @@
-#pragma once
+ï»¿#pragma once
 
 #include <DirectXMath.h>
 
-// ƒJƒƒ‰
+// ã‚«ãƒ¡ãƒ©
 class Camera
 {
-private:
-	Camera();
-	~Camera() = default;
+  private:
 
-public:
-	// ƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
-	static Camera& Instance()
-	{
-		static Camera instance;
-		return instance;
-	}
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Camera();
 
-	// w’è•ûŒü‚ğŒü‚­
-	void SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up);
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~Camera() = default;
 
-	// ƒp[ƒXƒyƒNƒeƒBƒuİ’è
-	void SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ);
+  public:
 
-	// ƒJƒƒ‰ƒVƒFƒCƒNŠJn
-	void StartShake(float magnitude, float duration);
+    // ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
+    static Camera& Instance()
+    {
+        static Camera instance;
+        return instance;
+    }
 
-	// ƒVƒFƒCƒN‚ÌƒIƒtƒZƒbƒg‚ğ‰ÁZ‚·‚éSetLookAt
-	void SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up);
+    // æŒ‡å®šæ–¹å‘ã‚’å‘ã
+    void SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up);
 
-	// ƒVƒFƒCƒNXV
-	void ShakeUpdate(float elapsedTime);
+    // ãƒ‘ãƒ¼ã‚¹ãƒšã‚¯ãƒ†ã‚£ãƒ–è¨­å®š
+    void SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ);
 
-	// ƒrƒ…[s—ñæ“¾
-	const DirectX::XMFLOAT4X4& GetView() const { return view; }
+    // ã‚«ãƒ¡ãƒ©ã‚·ã‚§ã‚¤ã‚¯é–‹å§‹
+    void StartShake(float magnitude, float duration);
 
-	// ƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñæ“¾
-	const DirectX::XMFLOAT4X4& GetProjection() const { return projection; }
+    // ã‚·ã‚§ã‚¤ã‚¯ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åŠ ç®—ã™ã‚‹SetLookAt
+    void SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus,
+                            const DirectX::XMFLOAT3& up);
 
-	// ‹“_æ“¾
-	const DirectX::XMFLOAT3& GetEye() const { return eye; }
+    // ã‚·ã‚§ã‚¤ã‚¯æ›´æ–°
+    void ShakeUpdate(float elapsedTime);
 
-	// ’‹“_æ“¾
-	const DirectX::XMFLOAT3& GetFocus() const { return focus; }
+    // ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—å–å¾—
+    const DirectX::XMFLOAT4X4& GetView() const
+    {
+        return view;
+    }
 
-	// ã•ûŒüæ“¾
-	const DirectX::XMFLOAT3& GetUp() const { return up; }
+    // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—å–å¾—
+    const DirectX::XMFLOAT4X4& GetProjection() const
+    {
+        return projection;
+    }
 
-	// ‘O•ûŒüæ“¾
-	const DirectX::XMFLOAT3& GetFront() const { return front; }
+    // è¦–ç‚¹å–å¾—
+    const DirectX::XMFLOAT3& GetEye() const
+    {
+        return eye;
+    }
 
-	// ‰E•ûŒüæ“¾
-	const DirectX::XMFLOAT3& GetRight() const { return right; }
+    // æ³¨è¦–ç‚¹å–å¾—
+    const DirectX::XMFLOAT3& GetFocus() const
+    {
+        return focus;
+    }
 
-private:
-	DirectX::XMFLOAT4X4		view;
-	DirectX::XMFLOAT4X4		projection;
+    // ä¸Šæ–¹å‘å–å¾—
+    const DirectX::XMFLOAT3& GetUp() const
+    {
+        return up;
+    }
 
-	DirectX::XMFLOAT3		eye;
-	DirectX::XMFLOAT3		focus;
+    // å‰æ–¹å‘å–å¾—
+    const DirectX::XMFLOAT3& GetFront() const
+    {
+        return front;
+    }
 
-	DirectX::XMFLOAT3		up;
-	DirectX::XMFLOAT3		front;
-	DirectX::XMFLOAT3		right;
+    // å³æ–¹å‘å–å¾—
+    const DirectX::XMFLOAT3& GetRight() const
+    {
+        return right;
+    }
 
-private:
-	float orthoWeight;
-	float perspectiveWeight;
+  private:
 
-	float shakeTimer = 0.0f;
-	float shakeMagnitude = 0.0f;
-	DirectX::XMFLOAT3 shakeOffset = { 0.0f, 0.0f, 0.0f };
+    DirectX::XMFLOAT4X4 view;
+    DirectX::XMFLOAT4X4 projection;
+
+    DirectX::XMFLOAT3 eye;
+    DirectX::XMFLOAT3 focus;
+
+    DirectX::XMFLOAT3 up;
+    DirectX::XMFLOAT3 front;
+    DirectX::XMFLOAT3 right;
+
+  private:
+
+    float orthoWeight;
+    float perspectiveWeight;
+
+    float shakeTimer = 0.0f;
+    float shakeMagnitude = 0.0f;
+    DirectX::XMFLOAT3 shakeOffset = {0.0f, 0.0f, 0.0f};
 };

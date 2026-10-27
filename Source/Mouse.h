@@ -1,71 +1,118 @@
-#pragma once
+ï»¿#pragma once
 
 #include <Windows.h>
 
 using MouseButton = unsigned int;
 
-// ƒ}ƒEƒX
+// ãƒã‚¦ã‚¹
 class Mouse
 {
-public:
-	static const MouseButton BTN_LEFT = (1 << 0);
-	static const MouseButton BTN_MIDDLE = (1 << 1);
-	static const MouseButton BTN_RIGHT = (1 << 2);
+  public:
 
-public:
-	Mouse(HWND hWnd);
-	~Mouse() {}
+    static const MouseButton BTN_LEFT = (1 << 0);
+    static const MouseButton BTN_MIDDLE = (1 << 1);
+    static const MouseButton BTN_RIGHT = (1 << 2);
 
-	// XV
-	void Update();
+  public:
 
-	// ƒ{ƒ^ƒ““ü—Íó‘Ô‚Ìæ“¾
-	MouseButton GetButton() const { return buttonState[0]; }
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Mouse(HWND hWnd);
 
-	// ƒ{ƒ^ƒ“‰Ÿ‰ºó‘Ô‚Ìæ“¾
-	MouseButton GetButtonDown() const { return buttonDown; }
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    ~Mouse()
+    {
+    }
 
-	// ƒ{ƒ^ƒ“‰Ÿãó‘Ô‚Ìæ“¾
-	MouseButton GetButtonUp() const { return buttonUp; }
+    // æ›´æ–°
+    void Update();
 
-	// ƒzƒC[ƒ‹’l‚Ìİ’è
-	void SetWheel(int wheel) { this->wheel[0] += wheel; }
+    // ãƒœã‚¿ãƒ³å…¥åŠ›çŠ¶æ…‹ã®å–å¾—
+    MouseButton GetButton() const
+    {
+        return buttonState[0];
+    }
 
-	// ƒzƒC[ƒ‹’l‚Ìæ“¾
-	int GetWheel() const { return wheel[1]; }
+    // ãƒœã‚¿ãƒ³æŠ¼ä¸‹çŠ¶æ…‹ã®å–å¾—
+    MouseButton GetButtonDown() const
+    {
+        return buttonDown;
+    }
 
-	// ƒ}ƒEƒXƒJ[ƒ\ƒ‹XÀ•Wæ“¾
-	int GetPositionX() const { return positionX[0]; }
+    // ãƒœã‚¿ãƒ³æŠ¼ä¸ŠçŠ¶æ…‹ã®å–å¾—
+    MouseButton GetButtonUp() const
+    {
+        return buttonUp;
+    }
 
-	// ƒ}ƒEƒXƒJ[ƒ\ƒ‹YÀ•Wæ“¾
-	int GetPositionY() const { return positionY[0]; }
+    // ãƒ›ã‚¤ãƒ¼ãƒ«å€¤ã®è¨­å®š
+    void SetWheel(int wheel)
+    {
+        this->wheel[0] += wheel;
+    }
 
-	// ‘O‰ñ‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹XÀ•Wæ“¾
-	int GetOldPositionX() const { return positionX[1]; }
+    // ãƒ›ã‚¤ãƒ¼ãƒ«å€¤ã®å–å¾—
+    int GetWheel() const
+    {
+        return wheel[1];
+    }
 
-	// ‘O‰ñ‚Ìƒ}ƒEƒXƒJ[ƒ\ƒ‹YÀ•Wæ“¾
-	int GetOldPositionY() const { return positionY[1]; }
+    // ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«Xåº§æ¨™å–å¾—
+    int GetPositionX() const
+    {
+        return positionX[0];
+    }
 
-	// ƒXƒNƒŠ[ƒ“•İ’è
-	void SetScreenWidth(int width) { screenWidth = width; }
+    // ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«Yåº§æ¨™å–å¾—
+    int GetPositionY() const
+    {
+        return positionY[0];
+    }
 
-	// ƒXƒNƒŠ[ƒ“‚‚³İ’è
-	void SetScreenHeight(int height) { screenHeight = height; }
+    // å‰å›ã®ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«Xåº§æ¨™å–å¾—
+    int GetOldPositionX() const
+    {
+        return positionX[1];
+    }
 
-	// ƒXƒNƒŠ[ƒ“•æ“¾
-	int GetScreenWidth() const { return screenWidth; }
+    // å‰å›ã®ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«Yåº§æ¨™å–å¾—
+    int GetOldPositionY() const
+    {
+        return positionY[1];
+    }
 
-	// ƒXƒNƒŠ[ƒ“‚‚³æ“¾
-	int GetScreenHeight() const { return screenHeight; }
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¹…è¨­å®š
+    void SetScreenWidth(int width)
+    {
+        screenWidth = width;
+    }
 
-private:
-	MouseButton		buttonState[2] = { 0 };
-	MouseButton		buttonDown = 0;
-	MouseButton		buttonUp = 0;
-	int				positionX[2] = { 0 };
-	int				positionY[2] = { 0 };
-	int				wheel[2] = { 0 };
-	int				screenWidth = 0;
-	int				screenHeight = 0;
-	HWND			hWnd = nullptr;
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³é«˜ã•è¨­å®š
+    void SetScreenHeight(int height)
+    {
+        screenHeight = height;
+    }
+
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³å¹…å–å¾—
+    int GetScreenWidth() const
+    {
+        return screenWidth;
+    }
+
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³é«˜ã•å–å¾—
+    int GetScreenHeight() const
+    {
+        return screenHeight;
+    }
+
+  private:
+
+    MouseButton buttonState[2] = {0};
+    MouseButton buttonDown = 0;
+    MouseButton buttonUp = 0;
+    int positionX[2] = {0};
+    int positionY[2] = {0};
+    int wheel[2] = {0};
+    int screenWidth = 0;
+    int screenHeight = 0;
+    HWND hWnd = nullptr;
 };

@@ -1,4 +1,4 @@
-#include <algorithm>
+ï»¿#include <algorithm>
 #include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "ModelRenderer.h"
@@ -7,224 +7,237 @@
 #include "OutlineShader.h"
 #include "StylizedShading.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 ModelRenderer::ModelRenderer(ID3D11Device* device)
 {
-	// ƒV[ƒ“—p’è”ƒoƒbƒtƒ@
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbScene),
-		sceneConstantBuffer.GetAddressOf());
+    // ã‚·ãƒ¼ãƒ³ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
+    GpuResourceUtils::CreateConstantBuffer(device, sizeof(CbScene), sceneConstantBuffer.GetAddressOf());
 
-	// ƒXƒPƒ‹ƒgƒ“—p’è”ƒoƒbƒtƒ@
-	// g‚¤ƒ{[ƒ“”•ª‚¾‚¯‘‚«‚ß‚é‚æ‚¤‚ÉMap‰Â”\‚É‚µ‚Ä‚¨‚­
-	{
-		D3D11_BUFFER_DESC desc{};
-		desc.Usage = D3D11_USAGE_DYNAMIC;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		desc.ByteWidth = sizeof(CbSkeleton);
-		HRESULT hr = device->CreateBuffer(&desc, nullptr, skeletonConstantBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+    // ã‚¹ã‚±ãƒ«ãƒˆãƒ³ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡
+    // ä½¿ã†ãƒœãƒ¼ãƒ³æ•°åˆ†ã ã‘æ›¸ãè¾¼ã‚ã‚‹ã‚ˆã†ã«Mapå¯èƒ½ã«ã—ã¦ãŠã
+    {
+        D3D11_BUFFER_DESC desc{};
+        desc.Usage = D3D11_USAGE_DYNAMIC;
+        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        desc.ByteWidth = sizeof(CbSkeleton);
+        HRESULT hr = device->CreateBuffer(&desc, nullptr, skeletonConstantBuffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbTransparency),
-		transparencyConstantBuffer.GetAddressOf());
+    GpuResourceUtils::CreateConstantBuffer(device, sizeof(CbTransparency),
+                                           transparencyConstantBuffer.GetAddressOf());
 
-	// ƒVƒF[ƒ_[¶¬
-	shaders[static_cast<int>(ShaderId::Basic)] = std::make_unique<BasicShader>(device);
-	shaders[static_cast<int>(ShaderId::Model)] = std::make_unique<ModelShader>(device);
-	outlineShader = std::make_unique<OutlineShader>(device);
+    // ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç”Ÿæˆ
+    shaders[static_cast<int>(ShaderId::Basic)] = std::make_unique<BasicShader>(device);
+    shaders[static_cast<int>(ShaderId::Model)] = std::make_unique<ModelShader>(device);
+    outlineShader = std::make_unique<OutlineShader>(device);
 }
 
-// ” •`‰æ
+// ç®±æç”»
 void ModelRenderer::Draw(ShaderId shaderId, std::shared_ptr<Model> model)
 {
-	DrawInfo& drawInfo = drawInfos.emplace_back();
-	drawInfo.shaderId = shaderId;
-	drawInfo.model = model;
+    DrawInfo& drawInfo = drawInfos.emplace_back();
+    drawInfo.shaderId = shaderId;
+    drawInfo.model = model;
 }
 
-void ModelRenderer::Draw(ShaderId shaderId, std::shared_ptr<Model> model, const DirectX::XMFLOAT4& color, float alpha)
+void ModelRenderer::Draw(ShaderId shaderId, std::shared_ptr<Model> model, const DirectX::XMFLOAT4& color,
+                         float alpha)
 {
-	DrawInfo& drawInfo = drawInfos.emplace_back();
-	drawInfo.shaderId = shaderId;
-	drawInfo.model = model;
-	drawInfo.alpha = alpha;
-	drawInfo.color = color;
+    DrawInfo& drawInfo = drawInfos.emplace_back();
+    drawInfo.shaderId = shaderId;
+    drawInfo.model = model;
+    drawInfo.alpha = alpha;
+    drawInfo.color = color;
 }
 
-// •`‰æÀs
+// æç”»å®Ÿè¡Œ
 void ModelRenderer::Render(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ƒV[ƒ“—p’è”ƒoƒbƒtƒ@XV
-	{
-		CbScene cbScene{};
-		DirectX::XMMATRIX v = DirectX::XMLoadFloat4x4(&rc.camera->GetView());
-		DirectX::XMMATRIX p = DirectX::XMLoadFloat4x4(&rc.camera->GetProjection());
-		DirectX::XMStoreFloat4x4(&cbScene.viewProjection, v * p);
-		const DirectionalLight& directionalLight = rc.lightManager->GetDirectionalLight();
-		cbScene.lightDirection.x = directionalLight.direction.x;
-		cbScene.lightDirection.y = directionalLight.direction.y;
-		cbScene.lightDirection.z = directionalLight.direction.z;
-		cbScene.lightColor.x = directionalLight.color.x;
-		cbScene.lightColor.y = directionalLight.color.y;
-		cbScene.lightColor.z = directionalLight.color.z;
-		const DirectX::XMFLOAT3& eye = rc.camera->GetEye();
-		cbScene.cameraPosition.x = eye.x;
-		cbScene.cameraPosition.y = eye.y;
-		cbScene.cameraPosition.z = eye.z;
-		cbScene.skyColor = rc.lightManager->GetSkyColor();
-		cbScene.groundColor = rc.lightManager->GetGroundColor();
-		cbScene.hemisphereWeight = rc.lightManager->GetHemisphereWeight();
-		dc->UpdateSubresource(sceneConstantBuffer.Get(), 0, 0, &cbScene, 0, 0);
-	}
+    // ã‚·ãƒ¼ãƒ³ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
+    {
+        CbScene cbScene{};
+        DirectX::XMMATRIX v = DirectX::XMLoadFloat4x4(&rc.camera->GetView());
+        DirectX::XMMATRIX p = DirectX::XMLoadFloat4x4(&rc.camera->GetProjection());
+        DirectX::XMStoreFloat4x4(&cbScene.viewProjection, v * p);
+        const DirectionalLight& directionalLight = rc.lightManager->GetDirectionalLight();
+        cbScene.lightDirection.x = directionalLight.direction.x;
+        cbScene.lightDirection.y = directionalLight.direction.y;
+        cbScene.lightDirection.z = directionalLight.direction.z;
+        cbScene.lightColor.x = directionalLight.color.x;
+        cbScene.lightColor.y = directionalLight.color.y;
+        cbScene.lightColor.z = directionalLight.color.z;
+        const DirectX::XMFLOAT3& eye = rc.camera->GetEye();
+        cbScene.cameraPosition.x = eye.x;
+        cbScene.cameraPosition.y = eye.y;
+        cbScene.cameraPosition.z = eye.z;
+        cbScene.skyColor = rc.lightManager->GetSkyColor();
+        cbScene.groundColor = rc.lightManager->GetGroundColor();
+        cbScene.hemisphereWeight = rc.lightManager->GetHemisphereWeight();
+        dc->UpdateSubresource(sceneConstantBuffer.Get(), 0, 0, &cbScene, 0, 0);
+    }
 
-	// ƒTƒ“ƒvƒ‰ƒXƒe[ƒgİ’è
-	ID3D11SamplerState* samplerStates[] = { rc.renderState->GetSamplerState(SamplerState::LinearWrap) };
-	dc->PSSetSamplers(0, _countof(samplerStates), samplerStates);
+    // ã‚µãƒ³ãƒ—ãƒ©ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
+    ID3D11SamplerState* samplerStates[] = {rc.renderState->GetSamplerState(SamplerState::LinearWrap)};
+    dc->PSSetSamplers(0, _countof(samplerStates), samplerStates);
 
-	// ƒŒƒ“ƒ_[ƒXƒe[ƒgİ’è
-	dc->OMSetDepthStencilState(rc.renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
-	dc->RSSetState(rc.renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+    // ãƒ¬ãƒ³ãƒ€ãƒ¼ã‚¹ãƒ†ãƒ¼ãƒˆè¨­å®š
+    dc->OMSetDepthStencilState(rc.renderState->GetDepthStencilState(DepthState::TestAndWrite), 0);
+    dc->RSSetState(rc.renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 
-	// ƒƒbƒVƒ…•`‰æŠÖ”
-	auto drawMesh = [&](const Model::Mesh& mesh, Shader* shader, const DirectX::XMFLOAT4& color, float alpha)
-		{
-			UINT stride = sizeof(Model::Vertex);
-			UINT offset = 0;
-			dc->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
-			dc->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-			dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // ãƒ¡ãƒƒã‚·ãƒ¥æç”»é–¢æ•°
+    auto drawMesh = [&](const Model::Mesh& mesh, Shader* shader, const DirectX::XMFLOAT4& color, float alpha)
+    {
 
-			// “§–¾“x’è”ƒoƒbƒtƒ@XV
-			CbTransparency cbTransparency{};
-			cbTransparency.alpha = alpha;
-			cbTransparency.color = color;
-			dc->UpdateSubresource(transparencyConstantBuffer.Get(), 0, nullptr, &cbTransparency, 0, 0);
+        UINT stride = sizeof(Model::Vertex);
+        UINT offset = 0;
+        dc->IASetVertexBuffers(0, 1, mesh.vertexBuffer.GetAddressOf(), &stride, &offset);
+        dc->IASetIndexBuffer(mesh.indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+        dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			// ƒXƒPƒ‹ƒgƒ“—p’è”ƒoƒbƒtƒ@XV
-			// –ˆ‰ñ256–{•ª‘—‚é‚Æd‚¢‚Ì‚ÅAg‚¤•ª‚¾‚¯‘‚«‚Ş
-			D3D11_MAPPED_SUBRESOURCE mapped{};
-			HRESULT hr = dc->Map(skeletonConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-			_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-			CbSkeleton* cbSkeleton = static_cast<CbSkeleton*>(mapped.pData);
-			if (mesh.bones.size() > 0)
-			{
-				const size_t boneCount = (std::min)(mesh.bones.size(), _countof(cbSkeleton->boneTransforms));
-				for (size_t i = 0; i < boneCount; ++i)
-				{
-					const Model::Bone& bone = mesh.bones.at(i);
-					DirectX::XMMATRIX worldTransformMatrix = DirectX::XMLoadFloat4x4(&bone.node->worldTransform);
-					DirectX::XMMATRIX offsetTransformMatrix = DirectX::XMLoadFloat4x4(&bone.offsetTransform);
-					DirectX::XMMATRIX boneTransform = offsetTransformMatrix * worldTransformMatrix;
-					DirectX::XMStoreFloat4x4(&cbSkeleton->boneTransforms[i], boneTransform);
-				}
-			}
-			else
-			{
-				cbSkeleton->boneTransforms[0] = mesh.node->worldTransform;
-			}
-			dc->Unmap(skeletonConstantBuffer.Get(), 0);
+        // é€æ˜åº¦å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
+        CbTransparency cbTransparency{};
+        cbTransparency.alpha = alpha;
+        cbTransparency.color = color;
+        dc->UpdateSubresource(transparencyConstantBuffer.Get(), 0, nullptr, &cbTransparency, 0, 0);
 
-			// •`‰æ’¼‘O‚Å’è”ƒoƒbƒtƒ@‚ğŠmÀ‚ÉƒXƒƒbƒg‚ÖƒoƒCƒ“ƒh‚·‚é
-			ID3D11Buffer* vsConstantBuffers[] = { skeletonConstantBuffer.Get(), sceneConstantBuffer.Get(), nullptr, transparencyConstantBuffer.Get() };
-			ID3D11Buffer* psConstantBuffers[] = { sceneConstantBuffer.Get(), nullptr, transparencyConstantBuffer.Get() }; // PointLight‚Í¡‰ñg—p‚µ‚È‚¢‚½‚ßnullptr
-			dc->VSSetConstantBuffers(6, _countof(vsConstantBuffers), vsConstantBuffers);
-			dc->PSSetConstantBuffers(7, _countof(psConstantBuffers), psConstantBuffers);
+        // ã‚¹ã‚±ãƒ«ãƒˆãƒ³ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡æ›´æ–°
+        // æ¯å›256æœ¬åˆ†é€ã‚‹ã¨é‡ã„ã®ã§ã€ä½¿ã†åˆ†ã ã‘æ›¸ãè¾¼ã‚€
+        D3D11_MAPPED_SUBRESOURCE mapped{};
+        HRESULT hr = dc->Map(skeletonConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        CbSkeleton* cbSkeleton = static_cast<CbSkeleton*>(mapped.pData);
 
-			shader->Update(rc, mesh);
-			dc->DrawIndexed(static_cast<UINT>(mesh.indices.size()), 0, 0);
-		};
+        if (mesh.bones.size() > 0)
+        {
+            const size_t boneCount = (std::min)(mesh.bones.size(), _countof(cbSkeleton->boneTransforms));
+            for (size_t i = 0; i < boneCount; ++i)
+            {
+                const Model::Bone& bone = mesh.bones.at(i);
+                DirectX::XMMATRIX worldTransformMatrix = DirectX::XMLoadFloat4x4(&bone.node->worldTransform);
+                DirectX::XMMATRIX offsetTransformMatrix = DirectX::XMLoadFloat4x4(&bone.offsetTransform);
+                DirectX::XMMATRIX boneTransform = offsetTransformMatrix * worldTransformMatrix;
+                DirectX::XMStoreFloat4x4(&cbSkeleton->boneTransforms[i], boneTransform);
+            }
+        }
+        else
+        {
+            cbSkeleton->boneTransforms[0] = mesh.node->worldTransform;
+        }
 
-	// ”¼“§–¾‚Æ‚µ‚ÄŒã‚©‚ç•`‚­ƒƒbƒVƒ…‚©
-	auto isTransparentMesh = [](const Model::Mesh& mesh, float alpha)
-		{
-			return (alpha < 1.0f) ||
-				(mesh.material->alphaMode == Model::AlphaMode::Blend) ||
-				(mesh.material->baseColor.w > 0.01f && mesh.material->baseColor.w < 0.99f);
-		};
+        dc->Unmap(skeletonConstantBuffer.Get(), 0);
 
-	DirectX::XMVECTOR cameraPositionVector = DirectX::XMLoadFloat3(&rc.camera->GetEye());
-	DirectX::XMVECTOR cameraFront = DirectX::XMLoadFloat3(&rc.camera->GetFront());
+        // æç”»ç›´å‰ã§å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚’ç¢ºå®Ÿã«ã‚¹ãƒ­ãƒƒãƒˆã¸ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
+        ID3D11Buffer* vsConstantBuffers[] = {skeletonConstantBuffer.Get(), sceneConstantBuffer.Get(), nullptr,
+                                             transparencyConstantBuffer.Get()};
+        ID3D11Buffer* psConstantBuffers[] = {
+            sceneConstantBuffer.Get(), nullptr,
+            transparencyConstantBuffer.Get()}; // PointLightã¯ä»Šå›ä½¿ç”¨ã—ãªã„ãŸã‚nullptr
+        dc->VSSetConstantBuffers(6, _countof(vsConstantBuffers), vsConstantBuffers);
+        dc->PSSetConstantBuffers(7, _countof(psConstantBuffers), psConstantBuffers);
 
-	dc->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+        shader->Update(rc, mesh);
+        dc->DrawIndexed(static_cast<UINT>(mesh.indices.size()), 0, 0);
+    };
 
-	// •s“§–¾•`‰æˆ—
-	for (DrawInfo& drawInfo : drawInfos)
-	{
-		Shader* shader = shaders[static_cast<int>(drawInfo.shaderId)].get();
-		shader->Begin(rc);
+    // åŠé€æ˜ã¨ã—ã¦å¾Œã‹ã‚‰æããƒ¡ãƒƒã‚·ãƒ¥ã‹
+    auto isTransparentMesh = [](const Model::Mesh& mesh, float alpha)
+    {
+        return (alpha < 1.0f) || (mesh.material->alphaMode == Model::AlphaMode::Blend) ||
+               (mesh.material->baseColor.w > 0.01f && mesh.material->baseColor.w < 0.99f);
+    };
 
-		for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
-		{
-			if (isTransparentMesh(mesh, drawInfo.alpha))
-			{
-				TransparencyDrawInfo& info = transparencyDrawInfos.emplace_back();
-				info.shaderId = drawInfo.shaderId;
-				info.mesh = &mesh;
-				info.alpha = drawInfo.alpha;
-				info.color = drawInfo.color;
+    DirectX::XMVECTOR cameraPositionVector = DirectX::XMLoadFloat3(&rc.camera->GetEye());
+    DirectX::XMVECTOR cameraFront = DirectX::XMLoadFloat3(&rc.camera->GetFront());
 
-				DirectX::XMVECTOR position = DirectX::XMVectorSet(
-					mesh.node->worldTransform._41,
-					mesh.node->worldTransform._42,
-					mesh.node->worldTransform._43,
-					0.0f);
-				DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(position, cameraPositionVector);
-				info.distance = DirectX::XMVectorGetX(DirectX::XMVector3Dot(cameraFront, vec));
-				continue;
-			}
+    dc->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
 
-			drawMesh(mesh, shader, drawInfo.color, drawInfo.alpha);
-		}
+    // ä¸é€æ˜æç”»å‡¦ç†
+    for (DrawInfo& drawInfo : drawInfos)
+    {
+        Shader* shader = shaders[static_cast<int>(drawInfo.shaderId)].get();
+        shader->Begin(rc);
 
-		shader->End(rc);
+        for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
+        {
+            if (isTransparentMesh(mesh, drawInfo.alpha))
+            {
+                TransparencyDrawInfo& info = transparencyDrawInfos.emplace_back();
+                info.shaderId = drawInfo.shaderId;
+                info.mesh = &mesh;
+                info.alpha = drawInfo.alpha;
+                info.color = drawInfo.color;
 
-		// ” Œ^‚ÌƒXƒe[ƒW‚ÍŠp‚Åü‚ªŠ„‚ê‚é‚Ì‚ÅAŠî–{‚ÍƒLƒƒƒ‰‚¾‚¯‚É•`‚­
-		const StylizedShading::OutlineSettings& outlineSettings = StylizedShading::Instance().GetOutlineSettings();
-		if (drawInfo.shaderId == ShaderId::Model && outlineSettings.enabled && outlineSettings.width > 0.0f)
-		{
-			outlineShader->Begin(rc);
-			for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
-			{
-				if (isTransparentMesh(mesh, drawInfo.alpha)) continue;
-				if (mesh.bones.empty() && !outlineSettings.drawOnStatic) continue;
+                DirectX::XMVECTOR position =
+                    DirectX::XMVectorSet(mesh.node->worldTransform._41, mesh.node->worldTransform._42,
+                                         mesh.node->worldTransform._43, 0.0f);
+                DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(position, cameraPositionVector);
+                info.distance = DirectX::XMVectorGetX(DirectX::XMVector3Dot(cameraFront, vec));
+                continue;
+            }
 
-				drawMesh(mesh, outlineShader.get(), drawInfo.color, drawInfo.alpha);
-			}
-			outlineShader->End(rc);
-		}
-	}
-	drawInfos.clear();
+            drawMesh(mesh, shader, drawInfo.color, drawInfo.alpha);
+        }
 
-	dc->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+        shader->End(rc);
 
-	std::sort(transparencyDrawInfos.begin(), transparencyDrawInfos.end(),
-		[](const TransparencyDrawInfo& lhs, const TransparencyDrawInfo& rhs)
-		{
-			return lhs.distance > rhs.distance;
-		});
+        // ç®±å‹ã®ã‚¹ãƒ†ãƒ¼ã‚¸ã¯è§’ã§ç·šãŒå‰²ã‚Œã‚‹ã®ã§ã€åŸºæœ¬ã¯ã‚­ãƒ£ãƒ©ã ã‘ã«æã
+        const StylizedShading::OutlineSettings& outlineSettings =
+            StylizedShading::Instance().GetOutlineSettings();
+        if (drawInfo.shaderId == ShaderId::Model && outlineSettings.enabled && outlineSettings.width > 0.0f)
+        {
+            outlineShader->Begin(rc);
 
-	// ”¼“§–¾•`‰æˆ—
-	for (const TransparencyDrawInfo& info : transparencyDrawInfos)
-	{
-		Shader* shader = shaders[static_cast<int>(info.shaderId)].get();
-		shader->Begin(rc);
-		drawMesh(*info.mesh, shader, info.color, info.alpha);
-		shader->End(rc);
-	}
-	transparencyDrawInfos.clear();
+            for (const Model::Mesh& mesh : drawInfo.model->GetMeshes())
+            {
+                if (isTransparentMesh(mesh, drawInfo.alpha))
+                {
+                    continue;
+                }
 
-	// Œãˆ—iƒoƒCƒ“ƒh‰ğœj
-	ID3D11Buffer* nullBuffers[] = { nullptr, nullptr, nullptr, nullptr };
-	dc->VSSetConstantBuffers(6, 4, nullBuffers);
-	dc->PSSetConstantBuffers(7, 3, nullBuffers);
+                if (mesh.bones.empty() && !outlineSettings.drawOnStatic)
+                {
+                    continue;
+                }
 
-	for (ID3D11SamplerState*& samplerState : samplerStates) { samplerState = nullptr; }
-	dc->PSSetSamplers(0, _countof(samplerStates), samplerStates);
+                drawMesh(mesh, outlineShader.get(), drawInfo.color, drawInfo.alpha);
+            }
+
+            outlineShader->End(rc);
+        }
+    }
+
+    drawInfos.clear();
+
+    dc->OMSetBlendState(rc.renderState->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+
+    std::sort(transparencyDrawInfos.begin(), transparencyDrawInfos.end(),
+              [](const TransparencyDrawInfo& lhs, const TransparencyDrawInfo& rhs)
+              { return lhs.distance > rhs.distance; });
+
+    // åŠé€æ˜æç”»å‡¦ç†
+    for (const TransparencyDrawInfo& info : transparencyDrawInfos)
+    {
+        Shader* shader = shaders[static_cast<int>(info.shaderId)].get();
+        shader->Begin(rc);
+        drawMesh(*info.mesh, shader, info.color, info.alpha);
+        shader->End(rc);
+    }
+
+    transparencyDrawInfos.clear();
+
+    // å¾Œå‡¦ç†ï¼ˆãƒã‚¤ãƒ³ãƒ‰è§£é™¤ï¼‰
+    ID3D11Buffer* nullBuffers[] = {nullptr, nullptr, nullptr, nullptr};
+    dc->VSSetConstantBuffers(6, 4, nullBuffers);
+    dc->PSSetConstantBuffers(7, 3, nullBuffers);
+
+    for (ID3D11SamplerState*& samplerState : samplerStates)
+    {
+        samplerState = nullptr;
+    }
+
+    dc->PSSetSamplers(0, _countof(samplerStates), samplerStates);
 }

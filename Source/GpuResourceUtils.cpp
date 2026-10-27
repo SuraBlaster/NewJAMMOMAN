@@ -1,279 +1,274 @@
-#include <filesystem>
+ï»¿#include <filesystem>
 #include <wrl.h>
 #include <DirectXTex.h>
 #include "Misc.h"
 #include "GpuResourceUtils.h"
 
-// ’¸“_ƒVƒF[ƒ_[“Ç‚İ‚İ
-HRESULT GpuResourceUtils::LoadVertexShader(
-	ID3D11Device* device,
-	const char* filename,
-	const D3D11_INPUT_ELEMENT_DESC inputElementDescs[],
-	UINT inputElementCount,
-	ID3D11InputLayout** inputLayout,
-	ID3D11VertexShader** vertexShader)
+// é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼èª­ã¿è¾¼ã¿
+HRESULT GpuResourceUtils::LoadVertexShader(ID3D11Device* device, const char* filename,
+                                           const D3D11_INPUT_ELEMENT_DESC inputElementDescs[],
+                                           UINT inputElementCount, ID3D11InputLayout** inputLayout,
+                                           ID3D11VertexShader** vertexShader)
 {
-	// ƒtƒ@ƒCƒ‹‚ğŠJ‚­
-	FILE* fp = nullptr;
-	fopen_s(&fp, filename, "rb");
-	_ASSERT_EXPR_A(fp, "Vertex Shader File not found");
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
+    FILE* fp = nullptr;
+    fopen_s(&fp, filename, "rb");
+    _ASSERT_EXPR_A(fp, "Vertex Shader File not found");
 
-	// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğ‹‚ß‚é
-	fseek(fp, 0, SEEK_END);
-	long size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-	// ƒƒ‚ƒŠã‚É’¸“_ƒVƒF[ƒ_[ƒf[ƒ^‚ğŠi”[‚·‚é—Ìˆæ‚ğ—pˆÓ‚·‚é
-	std::unique_ptr<u_char[]> data = std::make_unique<u_char[]>(size);
-	fread(data.get(), size, 1, fp);
-	fclose(fp);
+    // ãƒ¡ãƒ¢ãƒªä¸Šã«é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’æ ¼ç´ã™ã‚‹é ˜åŸŸã‚’ç”¨æ„ã™ã‚‹
+    std::unique_ptr<u_char[]> data = std::make_unique<u_char[]>(size);
+    fread(data.get(), size, 1, fp);
+    fclose(fp);
 
-	// ’¸“_ƒVƒF[ƒ_[¶¬
-	HRESULT hr = device->CreateVertexShader(data.get(), size, nullptr, vertexShader);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç”Ÿæˆ
+    HRESULT hr = device->CreateVertexShader(data.get(), size, nullptr, vertexShader);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	// “ü—ÍƒŒƒCƒAƒEƒg
-	if (inputLayout != nullptr)
-	{
-		hr = device->CreateInputLayout(inputElementDescs, inputElementCount, data.get(), size, inputLayout);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+    // å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
+    if (inputLayout != nullptr)
+    {
+        hr = device->CreateInputLayout(inputElementDescs, inputElementCount, data.get(), size, inputLayout);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	return hr;
+    return hr;
 }
 
-// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[“Ç‚İ‚İ
-HRESULT GpuResourceUtils::LoadPixelShader(
-	ID3D11Device* device,
-	const char* filename,
-	ID3D11PixelShader** pixelShader)
+// ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼èª­ã¿è¾¼ã¿
+HRESULT GpuResourceUtils::LoadPixelShader(ID3D11Device* device, const char* filename,
+                                          ID3D11PixelShader** pixelShader)
 {
-	// ƒtƒ@ƒCƒ‹‚ğŠJ‚­
-	FILE* fp = nullptr;
-	fopen_s(&fp, filename, "rb");
-	_ASSERT_EXPR_A(fp, "Pixel Shader File not found");
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã
+    FILE* fp = nullptr;
+    fopen_s(&fp, filename, "rb");
+    _ASSERT_EXPR_A(fp, "Pixel Shader File not found");
 
-	// ƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY‚ğ‹‚ß‚é
-	fseek(fp, 0, SEEK_END);
-	long size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+    // ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-	// ƒƒ‚ƒŠã‚É’¸“_ƒVƒF[ƒ_[ƒf[ƒ^‚ğŠi”[‚·‚é—Ìˆæ‚ğ—pˆÓ‚·‚é
-	std::unique_ptr<u_char[]> data = std::make_unique<u_char[]>(size);
-	fread(data.get(), size, 1, fp);
-	fclose(fp);
+    // ãƒ¡ãƒ¢ãƒªä¸Šã«é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’æ ¼ç´ã™ã‚‹é ˜åŸŸã‚’ç”¨æ„ã™ã‚‹
+    std::unique_ptr<u_char[]> data = std::make_unique<u_char[]>(size);
+    fread(data.get(), size, 1, fp);
+    fclose(fp);
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[¶¬
-	HRESULT hr = device->CreatePixelShader(data.get(), size, nullptr, pixelShader);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ç”Ÿæˆ
+    HRESULT hr = device->CreatePixelShader(data.get(), size, nullptr, pixelShader);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	return hr;
+    return hr;
 }
 
-// ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
-HRESULT GpuResourceUtils::LoadTexture(
-	ID3D11Device* device,
-	const char* filename,
-	ID3D11ShaderResourceView** shaderResourceView,
-	D3D11_TEXTURE2D_DESC* texture2dDesc,
-	bool ignoreSRGB)
+// ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
+HRESULT GpuResourceUtils::LoadTexture(ID3D11Device* device, const char* filename,
+                                      ID3D11ShaderResourceView** shaderResourceView,
+                                      D3D11_TEXTURE2D_DESC* texture2dDesc, bool ignoreSRGB)
 {
-	// Šg’£q‚ğæ“¾
-	std::filesystem::path filepath(filename);
-	std::string extension = filepath.extension().string();
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);	// ¬•¶š‰»
+    // æ‹¡å¼µå­ã‚’å–å¾—
+    std::filesystem::path filepath(filename);
+    std::string extension = filepath.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(), tolower); // å°æ–‡å­—åŒ–
 
-	// ƒƒCƒh•¶š‚É•ÏŠ·
-	std::wstring wfilename = filepath.wstring();
+    // ãƒ¯ã‚¤ãƒ‰æ–‡å­—ã«å¤‰æ›
+    std::wstring wfilename = filepath.wstring();
 
-	// ƒtƒH[ƒ}ƒbƒg–ˆ‚É‰æ‘œ“Ç‚İ‚İˆ—
-	HRESULT hr;
-	DirectX::TexMetadata metadata;
-	DirectX::ScratchImage scratchImage;
-	if (extension == ".tga")
-	{
-		hr = DirectX::GetMetadataFromTGAFile(wfilename.c_str(), metadata);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆæ¯ã«ç”»åƒèª­ã¿è¾¼ã¿å‡¦ç†
+    HRESULT hr;
+    DirectX::TexMetadata metadata;
+    DirectX::ScratchImage scratchImage;
 
-		hr = DirectX::LoadFromTGAFile(wfilename.c_str(), &metadata, scratchImage);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
-	else if (extension == ".dds")
-	{
-		hr = DirectX::GetMetadataFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, metadata);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    if (extension == ".tga")
+    {
+        hr = DirectX::GetMetadataFromTGAFile(wfilename.c_str(), metadata);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
-	else if (extension == ".hdr")
-	{
-		hr = DirectX::GetMetadataFromHDRFile(wfilename.c_str(), metadata);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = DirectX::LoadFromTGAFile(wfilename.c_str(), &metadata, scratchImage);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
+    else if (extension == ".dds")
+    {
+        hr = DirectX::GetMetadataFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, metadata);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromHDRFile(wfilename.c_str(), &metadata, scratchImage);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
-	else
-	{
-		hr = DirectX::GetMetadataFromWICFile(wfilename.c_str(), DirectX::WIC_FLAGS_NONE, metadata);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = DirectX::LoadFromDDSFile(wfilename.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
+    else if (extension == ".hdr")
+    {
+        hr = DirectX::GetMetadataFromHDRFile(wfilename.c_str(), metadata);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		hr = DirectX::LoadFromWICFile(wfilename.c_str(), ignoreSRGB ? DirectX::WIC_FLAGS_IGNORE_SRGB : DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+        hr = DirectX::LoadFromHDRFile(wfilename.c_str(), &metadata, scratchImage);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
+    else
+    {
+        hr = DirectX::GetMetadataFromWICFile(wfilename.c_str(), DirectX::WIC_FLAGS_NONE, metadata);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	// ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[ì¬
-	hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
-		metadata, shaderResourceView);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = DirectX::LoadFromWICFile(wfilename.c_str(),
+                                      ignoreSRGB ? DirectX::WIC_FLAGS_IGNORE_SRGB : DirectX::WIC_FLAGS_NONE,
+                                      &metadata, scratchImage);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// ƒeƒNƒXƒ`ƒƒî•ñæ“¾
-	if (texture2dDesc != nullptr)
-	{
-		Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-		(*shaderResourceView)->GetResource(resource.GetAddressOf());
+    // ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ä½œæˆ
+    hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
+                                           metadata, shaderResourceView);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
-		hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		texture2d->GetDesc(texture2dDesc);
-	}
-	return hr;
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±å–å¾—
+    if (texture2dDesc != nullptr)
+    {
+        Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+        (*shaderResourceView)->GetResource(resource.GetAddressOf());
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        texture2d->GetDesc(texture2dDesc);
+    }
+
+    return hr;
 }
 
-// ƒeƒNƒXƒ`ƒƒ“Ç‚İ‚İ
-HRESULT GpuResourceUtils::LoadTexture(
-	ID3D11Device* device,
-	const void* data,
-	size_t size,
-	ID3D11ShaderResourceView** shaderResourceView,
-	D3D11_TEXTURE2D_DESC* texture2dDesc)
+// ãƒ†ã‚¯ã‚¹ãƒãƒ£èª­ã¿è¾¼ã¿
+HRESULT GpuResourceUtils::LoadTexture(ID3D11Device* device, const void* data, size_t size,
+                                      ID3D11ShaderResourceView** shaderResourceView,
+                                      D3D11_TEXTURE2D_DESC* texture2dDesc)
 {
-	// ƒtƒH[ƒ}ƒbƒg–ˆ‚É‰æ‘œ“Ç‚İ‚İˆ—
-	HRESULT hr = E_FAIL;
-	DirectX::TexMetadata metadata;
-	DirectX::ScratchImage scratchImage;
+    // ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆæ¯ã«ç”»åƒèª­ã¿è¾¼ã¿å‡¦ç†
+    HRESULT hr = E_FAIL;
+    DirectX::TexMetadata metadata;
+    DirectX::ScratchImage scratchImage;
 
-	// .tga
-	{
-		hr = DirectX::GetMetadataFromTGAMemory(data, size, metadata);
-		if (SUCCEEDED(hr))
-		{
-			hr = DirectX::LoadFromTGAMemory(data, size, &metadata, scratchImage);
-		}
-	}
-	// .dds
-	if (FAILED(hr))
-	{
-		hr = DirectX::GetMetadataFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, metadata);
-		if (SUCCEEDED(hr))
-		{
-			hr = DirectX::LoadFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
-		}
-	}
-	// .hdr
-	if (FAILED(hr))
-	{
-		hr = DirectX::GetMetadataFromHDRMemory(data, size, metadata);
-		if (SUCCEEDED(hr))
-		{
-			hr = DirectX::LoadFromHDRMemory(data, size, &metadata, scratchImage);
-		}
-	}
-	if (FAILED(hr))
-	{
-		hr = DirectX::GetMetadataFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, metadata);
-		if (SUCCEEDED(hr))
-		{
-			hr = DirectX::LoadFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
-		}
-	}
-	if (FAILED(hr))
-	{
-		return hr;
-	}
+    {
+        hr = DirectX::GetMetadataFromTGAMemory(data, size, metadata);
 
-	// ƒVƒF[ƒ_[ƒŠƒ\[ƒXƒrƒ…[ì¬
-	hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
-		metadata, shaderResourceView);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        if (SUCCEEDED(hr))
+        {
+            hr = DirectX::LoadFromTGAMemory(data, size, &metadata, scratchImage);
+        }
+    }
 
-	// ƒeƒNƒXƒ`ƒƒî•ñæ“¾
-	if (texture2dDesc != nullptr)
-	{
-		Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-		(*shaderResourceView)->GetResource(resource.GetAddressOf());
+    if (FAILED(hr))
+    {
+        hr = DirectX::GetMetadataFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, metadata);
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
-		hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		texture2d->GetDesc(texture2dDesc);
-	}
-	return hr;
+        if (SUCCEEDED(hr))
+        {
+            hr = DirectX::LoadFromDDSMemory(data, size, DirectX::DDS_FLAGS_NONE, &metadata, scratchImage);
+        }
+    }
+
+    if (FAILED(hr))
+    {
+        hr = DirectX::GetMetadataFromHDRMemory(data, size, metadata);
+
+        if (SUCCEEDED(hr))
+        {
+            hr = DirectX::LoadFromHDRMemory(data, size, &metadata, scratchImage);
+        }
+    }
+
+    if (FAILED(hr))
+    {
+        hr = DirectX::GetMetadataFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, metadata);
+
+        if (SUCCEEDED(hr))
+        {
+            hr = DirectX::LoadFromWICMemory(data, size, DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
+        }
+    }
+
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    // ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ãƒªã‚½ãƒ¼ã‚¹ãƒ“ãƒ¥ãƒ¼ä½œæˆ
+    hr = DirectX::CreateShaderResourceView(device, scratchImage.GetImages(), scratchImage.GetImageCount(),
+                                           metadata, shaderResourceView);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±å–å¾—
+    if (texture2dDesc != nullptr)
+    {
+        Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+        (*shaderResourceView)->GetResource(resource.GetAddressOf());
+
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        texture2d->GetDesc(texture2dDesc);
+    }
+
+    return hr;
 }
 
-// ƒ_ƒ~[ƒeƒNƒXƒ`ƒƒì¬
-HRESULT GpuResourceUtils::CreateDummyTexture(
-	ID3D11Device* device,
-	UINT color,
-	ID3D11ShaderResourceView** shaderResourceView,
-	D3D11_TEXTURE2D_DESC* texture2dDesc)
+// ãƒ€ãƒŸãƒ¼ãƒ†ã‚¯ã‚¹ãƒãƒ£ä½œæˆ
+HRESULT GpuResourceUtils::CreateDummyTexture(ID3D11Device* device, UINT color,
+                                             ID3D11ShaderResourceView** shaderResourceView,
+                                             D3D11_TEXTURE2D_DESC* texture2dDesc)
 {
-	D3D11_TEXTURE2D_DESC desc = { 0 };
-	desc.Width = 1;
-	desc.Height = 1;
-	desc.MipLevels = 1;
-	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
-	D3D11_SUBRESOURCE_DATA data{};
-	data.pSysMem = &color;
-	data.SysMemPitch = desc.Width;
+    D3D11_TEXTURE2D_DESC desc = {0};
+    desc.Width = 1;
+    desc.Height = 1;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_IMMUTABLE;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    D3D11_SUBRESOURCE_DATA data{};
+    data.pSysMem = &color;
+    data.SysMemPitch = desc.Width;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D>	texture;
-	HRESULT hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    HRESULT hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	hr = device->CreateShaderResourceView(texture.Get(), nullptr, shaderResourceView);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    hr = device->CreateShaderResourceView(texture.Get(), nullptr, shaderResourceView);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	// ƒeƒNƒXƒ`ƒƒî•ñæ“¾
-	if (texture2dDesc != nullptr)
-	{
-		Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-		(*shaderResourceView)->GetResource(resource.GetAddressOf());
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±å–å¾—
+    if (texture2dDesc != nullptr)
+    {
+        Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+        (*shaderResourceView)->GetResource(resource.GetAddressOf());
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
-		hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-		texture2d->GetDesc(texture2dDesc);
-	}
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        hr = resource->QueryInterface<ID3D11Texture2D>(texture2d.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        texture2d->GetDesc(texture2dDesc);
+    }
 
-	return hr;
+    return hr;
 }
 
-// ’è”ƒoƒbƒtƒ@ì¬
-HRESULT GpuResourceUtils::CreateConstantBuffer(
-	ID3D11Device* device,
-	UINT bufferSize,
-	ID3D11Buffer** constantBuffer)
+// å®šæ•°ãƒãƒƒãƒ•ã‚¡ä½œæˆ
+HRESULT GpuResourceUtils::CreateConstantBuffer(ID3D11Device* device, UINT bufferSize,
+                                               ID3D11Buffer** constantBuffer)
 {
-	D3D11_BUFFER_DESC desc{};
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
-	desc.ByteWidth = bufferSize;
-	desc.StructureByteStride = 0;
+    D3D11_BUFFER_DESC desc{};
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    desc.ByteWidth = bufferSize;
+    desc.StructureByteStride = 0;
 
-	HRESULT hr = device->CreateBuffer(&desc, 0, constantBuffer);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    HRESULT hr = device->CreateBuffer(&desc, 0, constantBuffer);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	return hr;
+    return hr;
 }

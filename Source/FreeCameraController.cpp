@@ -1,139 +1,147 @@
-#include <imgui.h>
+ï»¿#include <imgui.h>
 #include "FreeCameraController.h"
 
-// ƒJƒƒ‰‚©‚çƒRƒ“ƒgƒ[ƒ‰[‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
+// ã‚«ãƒ¡ãƒ©ã‹ã‚‰ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
 void FreeCameraController::SyncCameraToController(const Camera& camera)
 {
-	eye = camera.GetEye();
-	focus = camera.GetFocus();
-	up = camera.GetUp();
-	right = camera.GetRight();
+    eye = camera.GetEye();
+    focus = camera.GetFocus();
+    up = camera.GetUp();
+    right = camera.GetRight();
 
-	// ‹“_‚©‚ç’‹“_‚Ü‚Å‚Ì‹——£‚ğZo
-	DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&eye);
-	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
-	DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(focusVector, eyeVector);
-	DirectX::XMVECTOR distanceVector = DirectX::XMVector3Length(vec);
-	DirectX::XMStoreFloat(&distance, distanceVector);
+    // è¦–ç‚¹ã‹ã‚‰æ³¨è¦–ç‚¹ã¾ã§ã®è·é›¢ã‚’ç®—å‡º
+    DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&eye);
+    DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
+    DirectX::XMVECTOR vec = DirectX::XMVectorSubtract(focusVector, eyeVector);
+    DirectX::XMVECTOR distanceVector = DirectX::XMVector3Length(vec);
+    DirectX::XMStoreFloat(&distance, distanceVector);
 
-	// ‰ñ“]Šp“x‚ğZo
-	const DirectX::XMFLOAT3& front = camera.GetFront();
-	angleX = ::asinf(-front.y);
-	if (up.y < 0)
-	{
-		if (front.y > 0)
-		{
-			angleX = -DirectX::XM_PI - angleX;
-		}
-		else
-		{
-			angleX = DirectX::XM_PI - angleX;
-		}
-		angleY = ::atan2f(front.x, front.z);
-	}
-	else
-	{
-		angleY = ::atan2f(-front.x, -front.z);
-	}
+    // å›è»¢è§’åº¦ã‚’ç®—å‡º
+    const DirectX::XMFLOAT3& front = camera.GetFront();
+    angleX = ::asinf(-front.y);
 
+    if (up.y < 0)
+    {
+        if (front.y > 0)
+        {
+            angleX = -DirectX::XM_PI - angleX;
+        }
+        else
+        {
+            angleX = DirectX::XM_PI - angleX;
+        }
+
+        angleY = ::atan2f(front.x, front.z);
+    }
+    else
+    {
+        angleY = ::atan2f(-front.x, -front.z);
+    }
 }
 
-// ƒRƒ“ƒgƒ[ƒ‰[‚©‚çƒJƒƒ‰‚Öƒpƒ‰ƒ[ƒ^‚ğ“¯Šú‚·‚é
+// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‹ã‚‰ã‚«ãƒ¡ãƒ©ã¸ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’åŒæœŸã™ã‚‹
 void FreeCameraController::SyncControllerToCamera(Camera& camera)
 {
-	camera.SetLookAt(eye, focus, up);
+    camera.SetLookAt(eye, focus, up);
 }
 
-// XVˆ—
+// æ›´æ–°å‡¦ç†
 void FreeCameraController::Update()
 {
-	// ƒfƒoƒbƒOƒEƒCƒ“ƒhƒE‘€ì’†‚Íˆ—‚µ‚È‚¢
-	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
-	{
-		return;
-	}
+    // ãƒ‡ãƒãƒƒã‚°ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦æ“ä½œä¸­ã¯å‡¦ç†ã—ãªã„
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+    {
+        return;
+    }
 
-	// IMGUI‚Ìƒ}ƒEƒX“ü—Í’l‚ğg‚Á‚ÄƒJƒƒ‰‘€ì‚·‚é
-	ImGuiIO io = ImGui::GetIO();
+    // IMGUIã®ãƒã‚¦ã‚¹å…¥åŠ›å€¤ã‚’ä½¿ã£ã¦ã‚«ãƒ¡ãƒ©æ“ä½œã™ã‚‹
+    ImGuiIO io = ImGui::GetIO();
 
-	// ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ÌˆÚ“®—Ê‚ğ‹‚ß‚é
-	float moveX = io.MouseDelta.x * 0.02f;
-	float moveY = io.MouseDelta.y * 0.02f;
+    // ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã®ç§»å‹•é‡ã‚’æ±‚ã‚ã‚‹
+    float moveX = io.MouseDelta.x * 0.02f;
+    float moveY = io.MouseDelta.y * 0.02f;
 
-	// ƒ}ƒEƒX¶ƒ{ƒ^ƒ“‰Ÿ‰º’†
-	if (io.MouseDown[ImGuiMouseButton_Right])
-	{
-		// Y²‰ñ“]
-		angleY += moveX * 0.5f;
-		if (angleY > DirectX::XM_PI)
-		{
-			angleY -= DirectX::XM_2PI;
-		}
-		else if (angleY < -DirectX::XM_PI)
-		{
-			angleY += DirectX::XM_2PI;
-		}
-		// X²‰ñ“]
-		angleX += moveY * 0.5f;
-		if (angleX > DirectX::XM_PI)
-		{
-			angleX -= DirectX::XM_2PI;
-		}
-		else if (angleX < -DirectX::XM_PI)
-		{
-			angleX += DirectX::XM_2PI;
-		}
-	}
-	// ƒ}ƒEƒX’†ƒ{ƒ^ƒ“‰Ÿ‰º’†
-	else if (io.MouseDown[ImGuiMouseButton_Middle])
-	{
-		// •½sˆÚ“®
-		float s = distance * 0.035f;
-		float x = moveX * s;
-		float y = moveY * s;
+    // ãƒã‚¦ã‚¹å·¦ãƒœã‚¿ãƒ³æŠ¼ä¸‹ä¸­
+    if (io.MouseDown[ImGuiMouseButton_Right])
+    {
+        // Yè»¸å›è»¢
+        angleY += moveX * 0.5f;
 
-		focus.x -= right.x * x;
-		focus.y -= right.y * x;
-		focus.z -= right.z * x;
+        if (angleY > DirectX::XM_PI)
+        {
+            angleY -= DirectX::XM_2PI;
+        }
+        else if (angleY < -DirectX::XM_PI)
+        {
+            angleY += DirectX::XM_2PI;
+        }
 
-		focus.x += up.x * y;
-		focus.y += up.y * y;
-		focus.z += up.z * y;
-	}
-	// ƒ}ƒEƒX‰Eƒ{ƒ^ƒ“‰Ÿ‰º’†
-	else if (io.MouseDown[ImGuiMouseButton_Left] && io.MouseDown[ImGuiMouseButton_Right])
-	{
-		// ƒY[ƒ€
-		distance += (-moveY - moveX) * distance * 0.1f;
-	}
-	// ƒ}ƒEƒXƒzƒC[ƒ‹
-	else if (io.MouseWheel != 0)
-	{
-		// ƒY[ƒ€
-		distance -= io.MouseWheel * distance * 0.1f;
-	}
+        // Xè»¸å›è»¢
+        angleX += moveY * 0.5f;
 
-	float sx = ::sinf(angleX);
-	float cx = ::cosf(angleX);
-	float sy = ::sinf(angleY);
-	float cy = ::cosf(angleY);
+        if (angleX > DirectX::XM_PI)
+        {
+            angleX -= DirectX::XM_2PI;
+        }
+        else if (angleX < -DirectX::XM_PI)
+        {
+            angleX += DirectX::XM_2PI;
+        }
+    }
 
-	// ƒJƒƒ‰‚Ì•ûŒü‚ğZo
-	DirectX::XMVECTOR frontVector = DirectX::XMVectorSet(-cx * sy, -sx, -cx * cy, 0.0f);
-	DirectX::XMVECTOR rightVector = DirectX::XMVectorSet(cy, 0, -sy, 0.0f);
-	DirectX::XMVECTOR upVector = DirectX::XMVector3Cross(rightVector, frontVector);
-	// ƒJƒƒ‰‚Ì‹“_•’‹“_‚ğZo
-	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
-	DirectX::XMVECTOR distanceVector = DirectX::XMVectorSet(distance, distance, distance, 0.0f);
-	DirectX::XMVECTOR eyeVector = DirectX::XMVectorSubtract(focusVector, DirectX::XMVectorMultiply(frontVector, distanceVector));
-	// ƒrƒ…[s—ñ‚©‚çƒ[ƒ‹ƒhs—ñ‚ğZo
-	DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
-	DirectX::XMMATRIX world = DirectX::XMMatrixTranspose(view);
-	// ƒ[ƒ‹ƒhs—ñ‚©‚ç•ûŒü‚ğZo
-	rightVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(1, 0, 0, 0), world);
-	upVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0, 1, 0, 0), world);
-	// Œ‹‰Ê‚ğŠi”[
-	DirectX::XMStoreFloat3(&eye, eyeVector);
-	DirectX::XMStoreFloat3(&up, upVector);
-	DirectX::XMStoreFloat3(&right, rightVector);
+    // ãƒã‚¦ã‚¹ä¸­ãƒœã‚¿ãƒ³æŠ¼ä¸‹ä¸­
+    else if (io.MouseDown[ImGuiMouseButton_Middle])
+    {
+        // å¹³è¡Œç§»å‹•
+        float s = distance * 0.035f;
+        float x = moveX * s;
+        float y = moveY * s;
+
+        focus.x -= right.x * x;
+        focus.y -= right.y * x;
+        focus.z -= right.z * x;
+
+        focus.x += up.x * y;
+        focus.y += up.y * y;
+        focus.z += up.z * y;
+    }
+
+    // ãƒã‚¦ã‚¹å³ãƒœã‚¿ãƒ³æŠ¼ä¸‹ä¸­
+    else if (io.MouseDown[ImGuiMouseButton_Left] && io.MouseDown[ImGuiMouseButton_Right])
+    {
+        // ã‚ºãƒ¼ãƒ 
+        distance += (-moveY - moveX) * distance * 0.1f;
+    }
+
+    // ãƒã‚¦ã‚¹ãƒ›ã‚¤ãƒ¼ãƒ«
+    else if (io.MouseWheel != 0)
+    {
+        // ã‚ºãƒ¼ãƒ 
+        distance -= io.MouseWheel * distance * 0.1f;
+    }
+
+    float sx = ::sinf(angleX);
+    float cx = ::cosf(angleX);
+    float sy = ::sinf(angleY);
+    float cy = ::cosf(angleY);
+
+    // ã‚«ãƒ¡ãƒ©ã®æ–¹å‘ã‚’ç®—å‡º
+    DirectX::XMVECTOR frontVector = DirectX::XMVectorSet(-cx * sy, -sx, -cx * cy, 0.0f);
+    DirectX::XMVECTOR rightVector = DirectX::XMVectorSet(cy, 0, -sy, 0.0f);
+    DirectX::XMVECTOR upVector = DirectX::XMVector3Cross(rightVector, frontVector);
+    // ã‚«ãƒ¡ãƒ©ã®è¦–ç‚¹ï¼†æ³¨è¦–ç‚¹ã‚’ç®—å‡º
+    DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&focus);
+    DirectX::XMVECTOR distanceVector = DirectX::XMVectorSet(distance, distance, distance, 0.0f);
+    DirectX::XMVECTOR eyeVector =
+        DirectX::XMVectorSubtract(focusVector, DirectX::XMVectorMultiply(frontVector, distanceVector));
+    // ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‹ã‚‰ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã‚’ç®—å‡º
+    DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
+    DirectX::XMMATRIX world = DirectX::XMMatrixTranspose(view);
+    // ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã‹ã‚‰æ–¹å‘ã‚’ç®—å‡º
+    rightVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(1, 0, 0, 0), world);
+    upVector = DirectX::XMVector3TransformNormal(DirectX::XMVectorSet(0, 1, 0, 0), world);
+    // çµæœã‚’æ ¼ç´
+    DirectX::XMStoreFloat3(&eye, eyeVector);
+    DirectX::XMStoreFloat3(&up, upVector);
+    DirectX::XMStoreFloat3(&right, rightVector);
 }

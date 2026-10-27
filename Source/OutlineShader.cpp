@@ -1,106 +1,96 @@
-#include "Misc.h"
+Ôªø#include "Misc.h"
 #include "GpuResourceUtils.h"
 #include "OutlineShader.h"
 #include "StylizedShading.h"
 
 OutlineShader::OutlineShader(ID3D11Device* device)
 {
-	// í∏ì_ÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadVertexShader(
-		device,
-		"Data/Shader/OutlineVS.cso",
-		Model::INPUT_ELEMENT_DESCS.data(),
-		static_cast<UINT>(Model::INPUT_ELEMENT_DESCS.size()),
-		inputLayout.GetAddressOf(),
-		vertexShader.GetAddressOf());
+    // È†ÇÁÇπ„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadVertexShader(device, "Data/Shader/OutlineVS.cso", Model::INPUT_ELEMENT_DESCS.data(),
+                                       static_cast<UINT>(Model::INPUT_ELEMENT_DESCS.size()),
+                                       inputLayout.GetAddressOf(), vertexShader.GetAddressOf());
 
-	// ÉsÉNÉZÉãÉVÉFÅ[É_Å[
-	GpuResourceUtils::LoadPixelShader(
-		device,
-		"Data/Shader/OutlinePS.cso",
-		pixelShader.GetAddressOf());
+    // „Éî„ÇØ„Çª„É´„Ç∑„Çß„Éº„ÉÄ„Éº
+    GpuResourceUtils::LoadPixelShader(device, "Data/Shader/OutlinePS.cso", pixelShader.GetAddressOf());
 
-	// ó÷äsê¸ópíËêîÉoÉbÉtÉ@
-	GpuResourceUtils::CreateConstantBuffer(
-		device,
-		sizeof(CbOutline),
-		outlineConstantBuffer.GetAddressOf());
+    // Ëº™ÈÉ≠Á∑öÁî®ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°
+    GpuResourceUtils::CreateConstantBuffer(device, sizeof(CbOutline), outlineConstantBuffer.GetAddressOf());
 
-	// ï\ñ ÉJÉäÉìÉOÅió†ñ ÇæÇØÇï`Ç≠Åj
-	{
-		D3D11_RASTERIZER_DESC desc{};
-		desc.FrontCounterClockwise = false;
-		desc.DepthClipEnable = true;
-		desc.MultisampleEnable = true;
-		desc.FillMode = D3D11_FILL_SOLID;
-		desc.CullMode = D3D11_CULL_FRONT;
-		HRESULT hr = device->CreateRasterizerState(&desc, cullFrontRasterizerState.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+    // Ë°®Èù¢„Ç´„É™„É≥„Ç∞ÔºàË£èÈù¢„Å†„Åë„ÇíÊèè„ÅèÔºâ
+    {
+        D3D11_RASTERIZER_DESC desc{};
+        desc.FrontCounterClockwise = false;
+        desc.DepthClipEnable = true;
+        desc.MultisampleEnable = true;
+        desc.FillMode = D3D11_FILL_SOLID;
+        desc.CullMode = D3D11_CULL_FRONT;
+        HRESULT hr = device->CreateRasterizerState(&desc, cullFrontRasterizerState.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 }
 
-// äJénèàóù
+// ÈñãÂßãÂá¶ÁêÜ
 void OutlineShader::Begin(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ê¸ÇÃëæÇ≥ÇÉsÉNÉZÉãéwíËÇ…Ç∑ÇÈÇΩÇﬂÅAåªç›ÇÃâÊñ ÉTÉCÉYÇéÊìæÇ∑ÇÈ
-	D3D11_VIEWPORT viewport{};
-	UINT viewportCount = 1;
-	dc->RSGetViewports(&viewportCount, &viewport);
+    // Á∑ö„ÅÆÂ§™„Åï„Çí„Éî„ÇØ„Çª„É´ÊåáÂÆö„Å´„Åô„Çã„Åü„ÇÅ„ÄÅÁèæÂú®„ÅÆÁîªÈù¢„Çµ„Ç§„Ç∫„ÇíÂèñÂæó„Åô„Çã
+    D3D11_VIEWPORT viewport{};
+    UINT viewportCount = 1;
+    dc->RSGetViewports(&viewportCount, &viewport);
 
-	// ó÷äsê¸ópíËêîÉoÉbÉtÉ@çXêV
-	const StylizedShading::OutlineSettings& settings = StylizedShading::Instance().GetOutlineSettings();
-	CbOutline cbOutline{};
-	cbOutline.color = { settings.color.x, settings.color.y, settings.color.z, 1.0f };
-	cbOutline.width = settings.width;
-	cbOutline.albedoMix = settings.albedoMix;
-	cbOutline.viewportSize = { viewport.Width, viewport.Height };
-	dc->UpdateSubresource(outlineConstantBuffer.Get(), 0, 0, &cbOutline, 0, 0);
+    // Ëº™ÈÉ≠Á∑öÁî®ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Êõ¥Êñ∞
+    const StylizedShading::OutlineSettings& settings = StylizedShading::Instance().GetOutlineSettings();
+    CbOutline cbOutline{};
+    cbOutline.color = {settings.color.x, settings.color.y, settings.color.z, 1.0f};
+    cbOutline.width = settings.width;
+    cbOutline.albedoMix = settings.albedoMix;
+    cbOutline.viewportSize = {viewport.Width, viewport.Height};
+    dc->UpdateSubresource(outlineConstantBuffer.Get(), 0, 0, &cbOutline, 0, 0);
 
-	// ÉVÉFÅ[É_Å[ê›íË
-	dc->IASetInputLayout(inputLayout.Get());
-	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
-	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
+    // „Ç∑„Çß„Éº„ÉÄ„ÉºË®≠ÂÆö
+    dc->IASetInputLayout(inputLayout.Get());
+    dc->VSSetShader(vertexShader.Get(), nullptr, 0);
+    dc->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-	// íËêîÉoÉbÉtÉ@ê›íË
-	ID3D11Buffer* cbs[] = { outlineConstantBuffer.Get() };
-	dc->VSSetConstantBuffers(1, _countof(cbs), cbs);
-	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆö
+    ID3D11Buffer* cbs[] = {outlineConstantBuffer.Get()};
+    dc->VSSetConstantBuffers(1, _countof(cbs), cbs);
+    dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
 
-	// ó†ñ ÇæÇØÇï`Ç≠
-	dc->RSSetState(cullFrontRasterizerState.Get());
+    // Ë£èÈù¢„Å†„Åë„ÇíÊèè„Åè
+    dc->RSSetState(cullFrontRasterizerState.Get());
 }
 
-// çXêVèàóù
+// Êõ¥Êñ∞Âá¶ÁêÜ
 void OutlineShader::Update(const RenderContext& rc, const Model::Mesh& mesh)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ê¸ÇÃêFÇ…ÉÇÉfÉãÇÃêFÇç¨Ç∫ÇÈÇΩÇﬂÅAÉxÅ[ÉXÉeÉNÉXÉ`ÉÉÇê›íËÇ∑ÇÈ
-	ID3D11ShaderResourceView* srvs[] = { mesh.material->baseMap.Get() };
-	dc->PSSetShaderResources(0, _countof(srvs), srvs);
+    // Á∑ö„ÅÆËâ≤„Å´„É¢„Éá„É´„ÅÆËâ≤„ÇíÊ∑∑„Åú„Çã„Åü„ÇÅ„ÄÅ„Éô„Éº„Çπ„ÉÜ„ÇØ„Çπ„ÉÅ„É£„ÇíË®≠ÂÆö„Åô„Çã
+    ID3D11ShaderResourceView* srvs[] = {mesh.material->baseMap.Get()};
+    dc->PSSetShaderResources(0, _countof(srvs), srvs);
 }
 
-// èIóπèàóù
+// ÁµÇ‰∫ÜÂá¶ÁêÜ
 void OutlineShader::End(const RenderContext& rc)
 {
-	ID3D11DeviceContext* dc = rc.deviceContext;
+    ID3D11DeviceContext* dc = rc.deviceContext;
 
-	// ÉVÉFÅ[É_Å[ê›íËâèú
-	dc->VSSetShader(nullptr, nullptr, 0);
-	dc->PSSetShader(nullptr, nullptr, 0);
-	dc->IASetInputLayout(nullptr);
+    // „Ç∑„Çß„Éº„ÉÄ„ÉºË®≠ÂÆöËß£Èô§
+    dc->VSSetShader(nullptr, nullptr, 0);
+    dc->PSSetShader(nullptr, nullptr, 0);
+    dc->IASetInputLayout(nullptr);
 
-	// íËêîÉoÉbÉtÉ@ê›íËâèú
-	ID3D11Buffer* cbs[] = { nullptr };
-	dc->VSSetConstantBuffers(1, _countof(cbs), cbs);
-	dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
+    // ÂÆöÊï∞„Éê„ÉÉ„Éï„Ç°Ë®≠ÂÆöËß£Èô§
+    ID3D11Buffer* cbs[] = {nullptr};
+    dc->VSSetConstantBuffers(1, _countof(cbs), cbs);
+    dc->PSSetConstantBuffers(1, _countof(cbs), cbs);
 
-	// ÉVÉFÅ[É_Å[ÉäÉ\Å[ÉXÉrÉÖÅ[ê›íËâèú
-	ID3D11ShaderResourceView* srvs[] = { nullptr };
-	dc->PSSetShaderResources(0, _countof(srvs), srvs);
+    // „Ç∑„Çß„Éº„ÉÄ„Éº„É™„ÇΩ„Éº„Çπ„Éì„É•„ÉºË®≠ÂÆöËß£Èô§
+    ID3D11ShaderResourceView* srvs[] = {nullptr};
+    dc->PSSetShaderResources(0, _countof(srvs), srvs);
 
-	// ModelRendererÇÃí èÌê›íËÅió†ñ ÉJÉäÉìÉOÅjÇ…ñﬂÇ∑
-	dc->RSSetState(rc.renderState->GetRasterizerState(RasterizerState::SolidCullBack));
+    // ModelRenderer„ÅÆÈÄöÂ∏∏Ë®≠ÂÆöÔºàË£èÈù¢„Ç´„É™„É≥„Ç∞Ôºâ„Å´Êàª„Åô
+    dc->RSSetState(rc.renderState->GetRasterizerState(RasterizerState::SolidCullBack));
 }

@@ -1,12 +1,14 @@
-#include "ModelManager.h"
+﻿#include "ModelManager.h"
 #include "LoadingBoss.h"
 #include "Graphics.h"
 #include "ModelRenderer.h"
 #include <algorithm>
 
+// コンストラクタ
 LoadingBoss::LoadingBoss()
 {
-    model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(), "Data/Model/Enemy/Boss.gltf");
+    model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
+                                                    "Data/Model/Enemy/Boss.gltf");
     position = {8.0f, -4.7f, 0};
     rotation = {0, DirectX::XMConvertToRadians(180), 0};
     scale = {0.06f, 0.06f, 0.06f};
@@ -14,19 +16,27 @@ LoadingBoss::LoadingBoss()
     Update(0);
 }
 
+// 更新処理
 void LoadingBoss::Update(float elapsedTime)
 {
     const float dt = (std::max)(0.0f, elapsedTime);
     attackTimer -= dt;
+
     if (!attacking && attackTimer <= 0)
     {
         attacking = true;
         PlayAnimation(model->GetAnimationIndex("Anim_ZMIKE_FireL"), false);
     }
-    if (animator) animator->Update(dt);
+
+    if (animator)
+    {
+        animator->Update(dt);
+    }
+
     UpdateTransform();
 }
 
+// 描画処理
 void LoadingBoss::Render(ModelRenderer* renderer)
 {
     renderer->Draw(ShaderId::Model, model);

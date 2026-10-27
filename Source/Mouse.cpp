@@ -1,64 +1,77 @@
-#include "Mouse.h"
+ï»¿#include "Mouse.h"
 
-static const int KEY_MAP[] =
-{
-	VK_LBUTTON,		// ¶ƒ{ƒ^ƒ“
-	VK_MBUTTON,		// ’†ƒ{ƒ^ƒ“
-	VK_RBUTTON,		// ‰Eƒ{ƒ^ƒ“
+static const int KEY_MAP[] = {
+    VK_LBUTTON, // å·¦ãƒœã‚¿ãƒ³
+    VK_MBUTTON, // ä¸­ãƒœã‚¿ãƒ³
+    VK_RBUTTON, // å³ãƒœã‚¿ãƒ³
 };
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-Mouse::Mouse(HWND hWnd)
-	: hWnd(hWnd)
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+Mouse::Mouse(HWND hWnd) : hWnd(hWnd)
 {
-	RECT rc{};
-	if (hWnd) GetClientRect(hWnd, &rc);
-	screenWidth = rc.right - rc.left;
-	screenHeight = rc.bottom - rc.top;
+    RECT rc{};
+
+    if (hWnd)
+    {
+        GetClientRect(hWnd, &rc);
+    }
+
+    screenWidth = rc.right - rc.left;
+    screenHeight = rc.bottom - rc.top;
 }
 
-// XV
+// æ›´æ–°
 void Mouse::Update()
 {
-	// ƒXƒCƒbƒ`î•ñ
-	MouseButton newButtonState = 0;
+    // ã‚¹ã‚¤ãƒƒãƒæƒ…å ±
+    MouseButton newButtonState = 0;
 
-	for (int i = 0; i < ARRAYSIZE(KEY_MAP); ++i)
-	{
-		if (::GetAsyncKeyState(KEY_MAP[i]) & 0x8000)
-		{
-			newButtonState |= (1 << i);
-		}
-	}
+    for (int i = 0; i < ARRAYSIZE(KEY_MAP); ++i)
+    {
+        if (::GetAsyncKeyState(KEY_MAP[i]) & 0x8000)
+        {
+            newButtonState |= (1 << i);
+        }
+    }
 
-	// ƒzƒC[ƒ‹
-	wheel[1] = wheel[0];
-	wheel[0] = 0;
+    // ãƒ›ã‚¤ãƒ¼ãƒ«
+    wheel[1] = wheel[0];
+    wheel[0] = 0;
 
-	// ƒ{ƒ^ƒ“î•ñXV
-	buttonState[1] = buttonState[0];	// ƒXƒCƒbƒ`—š—ğ
-	buttonState[0] = newButtonState;
+    // ãƒœã‚¿ãƒ³æƒ…å ±æ›´æ–°
+    buttonState[1] = buttonState[0]; // ã‚¹ã‚¤ãƒƒãƒå±¥æ­´
+    buttonState[0] = newButtonState;
 
-	buttonDown = ~buttonState[1] & newButtonState;	// ‰Ÿ‚µ‚½uŠÔ
-	buttonUp = ~newButtonState & buttonState[1];	// —£‚µ‚½uŠÔ
+    buttonDown = ~buttonState[1] & newButtonState; // æŠ¼ã—ãŸç¬é–“
+    buttonUp = ~newButtonState & buttonState[1];   // é›¢ã—ãŸç¬é–“
 
-	// ƒJ[ƒ\ƒ‹ˆÊ’u‚Ìæ“¾
-	POINT cursor{};
-	::GetCursorPos(&cursor);
-	if (hWnd) ::ScreenToClient(hWnd, &cursor);
+    // ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®ã®å–å¾—
+    POINT cursor{};
+    ::GetCursorPos(&cursor);
 
-	// ‰æ–Ê‚ÌƒTƒCƒY‚ğæ“¾‚·‚éB
-	RECT rc{};
-	if (hWnd) GetClientRect(hWnd, &rc);
-	UINT screenW = rc.right - rc.left;
-	UINT screenH = rc.bottom - rc.top;
-	UINT viewportW = screenWidth;
-	UINT viewportH = screenHeight;
+    if (hWnd)
+    {
+        ::ScreenToClient(hWnd, &cursor);
+    }
 
-	// ‰æ–Ê•â³
-	positionX[1] = positionX[0];
-	positionY[1] = positionY[0];
-	positionX[0] = (LONG)(screenW > 0 ? cursor.x * static_cast<float>(viewportW) / static_cast<float>(screenW) : 0);
-	positionY[0] = (LONG)(screenH > 0 ? cursor.y * static_cast<float>(viewportH) / static_cast<float>(screenH) : 0);
+    // ç”»é¢ã®ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
+    RECT rc{};
 
+    if (hWnd)
+    {
+        GetClientRect(hWnd, &rc);
+    }
+
+    UINT screenW = rc.right - rc.left;
+    UINT screenH = rc.bottom - rc.top;
+    UINT viewportW = screenWidth;
+    UINT viewportH = screenHeight;
+
+    // ç”»é¢è£œæ­£
+    positionX[1] = positionX[0];
+    positionY[1] = positionY[0];
+    positionX[0] =
+        (LONG)(screenW > 0 ? cursor.x * static_cast<float>(viewportW) / static_cast<float>(screenW) : 0);
+    positionY[0] =
+        (LONG)(screenH > 0 ? cursor.y * static_cast<float>(viewportH) / static_cast<float>(screenH) : 0);
 }

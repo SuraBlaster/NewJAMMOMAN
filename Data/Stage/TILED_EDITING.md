@@ -1,14 +1,14 @@
 # 研究所ステージの編集
 
-Tiledで `LaboratoryCourse.tmj` を開いてください。タイルセットと画像は隣の `Tiled` フォルダーにあります。
+現在のゲーム用マップは **`LaboratoryCombinedCourse.tmj`** です。Tiledでこのファイルを開いてください。タイルセットと画像は隣の `Tiled` フォルダーにあります。
 
-1. 地形は `01_Switchback` ～ `07_BossArena` のタイルレイヤーで編集します。1マスはゲーム内1mです。
+1. 地形は `Terrain` タイルレイヤーで編集します。1マスはゲーム内1mです。
 2. 敵は `Enemies` のタイルオブジェクトを移動・複製します。向きはカスタムプロパティ `direction` の `Left` / `Right` で設定します。
 3. `FallRespawnZones` は落下検出、`BossApproachCameraZone` はボス前通路のカメラ、`BossEncounterZone` はボス戦開始範囲です。長方形で編集します。
 4. JSONマップ（`.tmj`）、タイルデータはCSV/配列形式で保存します。
-5. `ConvertLaboratory.cmd` をダブルクリックしてゲーム用 `ConvertedStage.stage.json` を更新し、ゲームを起動し直します。変換前のJSONは `ConvertedStage.before-tiled.stage.json` に保存されます。
+5. `ConvertLaboratoryCombined.cmd` をダブルクリックしてゲーム用 `LaboratoryCombinedCourse.stage.json` を更新し、ゲームを起動し直します。変換前のJSONは `LaboratoryCombinedCourse.before-tiled.stage.json` に保存されます。
 
-StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** にしてください。出力先はこのフォルダーの `ConvertedStage.stage.json` です。レイヤーを非表示にすると、そのレイヤーは変換から除外されます。
+StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** にしてください。出力先はこのフォルダーの `LaboratoryCombinedCourse.stage.json` です。レイヤーを非表示にすると、そのレイヤーは変換から除外されます。
 
 研究所の背景壁・柱・設備はゲーム内の **F6 背景エディタ** で編集し、Saveで `Background.stage.json` に保存します。Tiledの地形には当たり判定があり、背景壁にはありません。
 
@@ -30,4 +30,21 @@ StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** に�
 
 タイルレイヤー Gates を選び、タイルセット OneWayGates の右矢印／左矢印を描いてください。1マスは通常ブロックと同じ1mです。同じ向きのタイルを縦に並べると一緒に開閉し、プレイヤー全体が矢印方向に通過すると閉じて戻れなくなります。通路入口とボス部屋入口には幅1マス・高さ3マスの右向きゲートを配置済みです。保存後は通常の ConvertLaboratory.cmd で変換します。詳しい仕様は ../../BOSS_GATE.md を参照してください。
 
-ゲームが読み込むマップはこのフォルダーの LaboratoryCourse.tmj を変換した ConvertedStage.stage.json です。Tools/StageConverter/Sample/LaboratoryCourse.tmj は別のサンプルファイルです。普段の編集は Data/Stage/LaboratoryCourse.tmj に統一してください。GUI変換でも、このData側マップを選ぶとゲーム用の ConvertedStage.stage.json が出力先候補になります。
+ゲームは `LaboratoryCombinedCourse.stage.json` を読み込みます。旧 `LaboratoryCourse.tmj` は `ConvertLaboratory.cmd` で `ConvertedStage.stage.json` に変換する別マップです。統合版の変換では旧版JSONを上書きしません。
+
+## 地形ブロックのバリエーション
+
+Tiledで `LaboratoryCombinedCourse.tmj` を開き、タイルセット **LaboratoryBlocks** を選びます。
+左から「オレンジ床（101）」「補強パネル（102）」「換気口（103）」です。
+既存の地形レイヤーで通常ブロックと同様に描画・置換し、保存後に `ConvertLaboratoryCombined.cmd` で変換してください。
+パレットが表示されない場合は、マップを開き直してください。
+
+全種類が1×1×1で、当たり判定は既存ブロックと同じCubeです。
+オレンジ床は上面のみ（横方向につながるよう90度回転）、補強パネルは上面と正面、換気口は正面に模様があります。
+地形の位置・数・サイズは維持し、床の上端をオレンジ、縦の端と支柱模様を補強パネル、内部の一部を換気口に置き換えています。
+背景の装飾壁とは異なり、これらは足場・壁キックに使う地形として配置します。
+
+再出力ツール `Tools/export_stage_tiled.cjs` もID 100～103を保持します。
+統合版の新ブロックGIDは15～17です（14はWalker）。旧版・再出力ツールでは14～16です。既存の敵・ゲートのGIDは変更していません。
+
+検証: `node Tests/LaboratoryStageSyncTests.cjs` で両マップと各JSONの一致・地形形状の維持を確認します。

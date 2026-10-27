@@ -1,61 +1,74 @@
-#pragma once
+ï»¿#pragma once
 
 #include <DirectXMath.h>
 
-// ƒXƒ^ƒCƒ‰ƒCƒYƒhPBRiƒgƒD[ƒ“Šñ‚èj‚Ì’²®’l‚ğŠÇ—‚·‚é
+// ã‚¹ã‚¿ã‚¤ãƒ©ã‚¤ã‚ºãƒ‰PBRï¼ˆãƒˆã‚¥ãƒ¼ãƒ³å¯„ã‚Šï¼‰ã®èª¿æ•´å€¤ã‚’ç®¡ç†ã™ã‚‹
 class StylizedShading
 {
-private:
-	StylizedShading() = default;
-	~StylizedShading() = default;
+  private:
 
-public:
-	// Shader/Stylized.hlsli ‚Ì CbStylize ‚Æ“¯‚¶•À‚Ñ‚É‚·‚é‚±‚Æ
-	struct Settings
-	{
-		DirectX::XMFLOAT3	shadowColor = { 0.55f, 0.55f, 0.75f };
-		float				stylizeBlend = 1.0f;
-		DirectX::XMFLOAT3	rimColor = { 0.6f, 0.8f, 1.0f };
-		float				rimIntensity = 0.5f;
-		float				toonThreshold = 0.5f;
-		float				toonSoftness = 0.03f;
-		float				specularThreshold = 0.5f;
-		float				specularSoftness = 0.05f;
-		float				specularIntensity = 1.0f;
-		float				rimThreshold = 0.6f;
-		float				rimSoftness = 0.05f;
-		float				ambientStrength = 0.5f;
-	};
-	static_assert(sizeof(Settings) % 16 == 0, "constant buffer size must be a multiple of 16");
+    StylizedShading() = default;
+    ~StylizedShading() = default;
 
-	// —ÖŠsüi”w–Ê–@j‚Ì’²®’l
-	struct OutlineSettings
-	{
-		bool				enabled = true;
-		bool				drawOnStatic = false;	// ƒ{[ƒ“‚ğ‚½‚È‚¢ƒ‚ƒfƒ‹iƒXƒe[ƒW“™j‚É‚à•`‚­‚©
-		float				width = 2.0f;			// ü‚Ì‘¾‚³iƒsƒNƒZƒ‹j
-		DirectX::XMFLOAT3	color = { 0.08f, 0.06f, 0.1f };
-		float				albedoMix = 0.5f;		// 0:ü‚ÌF‚»‚Ì‚Ü‚Ü 1:ƒ‚ƒfƒ‹‚ÌF‚ğˆÃ‚­‚µ‚½F
-	};
+  public:
 
-	static StylizedShading& Instance()
-	{
-		static StylizedShading instance;
-		return instance;
-	}
+    // Shader/Stylized.hlsli ã® CbStylize ã¨åŒã˜ä¸¦ã³ã«ã™ã‚‹ã“ã¨
+    struct Settings
+    {
+        DirectX::XMFLOAT3 shadowColor = {0.55f, 0.55f, 0.75f};
+        float stylizeBlend = 1.0f;
+        DirectX::XMFLOAT3 rimColor = {0.6f, 0.8f, 1.0f};
+        float rimIntensity = 0.5f;
+        float toonThreshold = 0.5f;
+        float toonSoftness = 0.03f;
+        float specularThreshold = 0.5f;
+        float specularSoftness = 0.05f;
+        float specularIntensity = 1.0f;
+        float rimThreshold = 0.6f;
+        float rimSoftness = 0.05f;
+        float ambientStrength = 0.5f;
+    };
 
-	const Settings& GetSettings() const { return settings; }
+    static_assert(sizeof(Settings) % 16 == 0, "constant buffer size must be a multiple of 16");
 
-	// ƒ{[ƒ“‚ğ‚½‚È‚¢ƒ‚ƒfƒ‹iƒXƒe[ƒW“™j‚É‚©‚¯‚éƒŠƒ€ƒ‰ƒCƒg‚Ì”{—¦
-	float GetStaticRimScale() const { return staticRimScale; }
+    // è¼ªéƒ­ç·šï¼ˆèƒŒé¢æ³•ï¼‰ã®èª¿æ•´å€¤
+    struct OutlineSettings
+    {
+        bool enabled = true;
+        bool drawOnStatic = false; // ãƒœãƒ¼ãƒ³ã‚’æŒãŸãªã„ãƒ¢ãƒ‡ãƒ«ï¼ˆã‚¹ãƒ†ãƒ¼ã‚¸ç­‰ï¼‰ã«ã‚‚æãã‹
+        float width = 2.0f;        // ç·šã®å¤ªã•ï¼ˆãƒ”ã‚¯ã‚»ãƒ«ï¼‰
+        DirectX::XMFLOAT3 color = {0.08f, 0.06f, 0.1f};
+        float albedoMix = 0.5f; // 0:ç·šã®è‰²ãã®ã¾ã¾ 1:ãƒ¢ãƒ‡ãƒ«ã®è‰²ã‚’æš—ãã—ãŸè‰²
+    };
 
-	const OutlineSettings& GetOutlineSettings() const { return outlineSettings; }
+    static StylizedShading& Instance()
+    {
+        static StylizedShading instance;
+        return instance;
+    }
 
-	// ’²®—pGUI
-	void DrawGUI();
+    const Settings& GetSettings() const
+    {
+        return settings;
+    }
 
-private:
-	Settings	settings;
-	float		staticRimScale = 0.0f;
-	OutlineSettings	outlineSettings;
+    // ãƒœãƒ¼ãƒ³ã‚’æŒãŸãªã„ãƒ¢ãƒ‡ãƒ«ï¼ˆã‚¹ãƒ†ãƒ¼ã‚¸ç­‰ï¼‰ã«ã‹ã‘ã‚‹ãƒªãƒ ãƒ©ã‚¤ãƒˆã®å€ç‡
+    float GetStaticRimScale() const
+    {
+        return staticRimScale;
+    }
+
+    const OutlineSettings& GetOutlineSettings() const
+    {
+        return outlineSettings;
+    }
+
+    // èª¿æ•´ç”¨GUI
+    void DrawGUI();
+
+  private:
+
+    Settings settings;
+    float staticRimScale = 0.0f;
+    OutlineSettings outlineSettings;
 };

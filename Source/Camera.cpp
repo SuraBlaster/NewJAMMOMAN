@@ -1,113 +1,108 @@
-#include "Camera.h"
+ï»¿#include "Camera.h"
 #include <cstdlib>
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Camera::Camera()
 {
-	// ƒJƒƒ‰İ’è
-	SetPerspectiveFov(
-		DirectX::XMConvertToRadians(45),	// ‰æŠp
-		1280.0f / 720.0f,					// ‰æ–ÊƒAƒXƒyƒNƒg”ä
-		0.1f,								// ƒjƒAƒNƒŠƒbƒv
-		1000.0f								// ƒtƒ@[ƒNƒŠƒbƒv
-	);
-	SetLookAt(
-		{ 0, 0, -5 },		// ‹“_
-		{ 0, 0, 0 },		// ’‹“_
-		{ 0, 1, 0 }			// ãƒxƒNƒgƒ‹
-	);
+    // ã‚«ãƒ¡ãƒ©è¨­å®š
+    SetPerspectiveFov(DirectX::XMConvertToRadians(45), // ç”»è§’
+                      1280.0f / 720.0f,                // ç”»é¢ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+                      0.1f,                            // ãƒ‹ã‚¢ã‚¯ãƒªãƒƒãƒ—
+                      1000.0f                          // ãƒ•ã‚¡ãƒ¼ã‚¯ãƒªãƒƒãƒ—
+    );
+    SetLookAt({0, 0, -5}, // è¦–ç‚¹
+              {0, 0, 0},  // æ³¨è¦–ç‚¹
+              {0, 1, 0}   // ä¸Šãƒ™ã‚¯ãƒˆãƒ«
+    );
 }
 
-// w’è•ûŒü‚ğŒü‚­
-void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
+// æŒ‡å®šæ–¹å‘ã‚’å‘ã
+void Camera::SetLookAt(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus,
+                       const DirectX::XMFLOAT3& up)
 {
-	DirectX::XMFLOAT3 finalEye = {
-		eye.x + shakeOffset.x,
-		eye.y + shakeOffset.y,
-		eye.z + shakeOffset.z
-	};
+    DirectX::XMFLOAT3 finalEye = {eye.x + shakeOffset.x, eye.y + shakeOffset.y, eye.z + shakeOffset.z};
 
-	DirectX::XMFLOAT3 finalFocus = {
-		focus.x + shakeOffset.x,
-		focus.y + shakeOffset.y,
-		focus.z + shakeOffset.z
-	};
+    DirectX::XMFLOAT3 finalFocus = {focus.x + shakeOffset.x, focus.y + shakeOffset.y,
+                                    focus.z + shakeOffset.z};
 
-	// ‹“_A’‹“_Aã•ûŒü‚©‚çƒrƒ…[s—ñ‚ğì¬
-	DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&finalEye);
-	DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&finalFocus);
-	DirectX::XMVECTOR upVector = DirectX::XMLoadFloat3(&up);
-	DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
-	DirectX::XMStoreFloat4x4(&view, viewMatrix);
+    // è¦–ç‚¹ã€æ³¨è¦–ç‚¹ã€ä¸Šæ–¹å‘ã‹ã‚‰ãƒ“ãƒ¥ãƒ¼è¡Œåˆ—ã‚’ä½œæˆ
+    DirectX::XMVECTOR eyeVector = DirectX::XMLoadFloat3(&finalEye);
+    DirectX::XMVECTOR focusVector = DirectX::XMLoadFloat3(&finalFocus);
+    DirectX::XMVECTOR upVector = DirectX::XMLoadFloat3(&up);
+    DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eyeVector, focusVector, upVector);
+    DirectX::XMStoreFloat4x4(&view, viewMatrix);
 
-	// ƒrƒ…[‚ğ‹ts—ñ‰»‚µAƒ[ƒ‹ƒhs—ñ‚É–ß‚·
-	DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixInverse(nullptr, viewMatrix);
-	DirectX::XMFLOAT4X4 world;
-	DirectX::XMStoreFloat4x4(&world, worldMatrix);
+    // ãƒ“ãƒ¥ãƒ¼ã‚’é€†è¡Œåˆ—åŒ–ã—ã€ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã«æˆ»ã™
+    DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixInverse(nullptr, viewMatrix);
+    DirectX::XMFLOAT4X4 world;
+    DirectX::XMStoreFloat4x4(&world, worldMatrix);
 
-	// ƒJƒƒ‰‚Ì•ûŒü‚ğæ‚èo‚·
-	this->right.x = world._11;
-	this->right.y = world._12;
-	this->right.z = world._13;
+    // ã‚«ãƒ¡ãƒ©ã®æ–¹å‘ã‚’å–ã‚Šå‡ºã™
+    this->right.x = world._11;
+    this->right.y = world._12;
+    this->right.z = world._13;
 
-	this->up.x = world._21;
-	this->up.y = world._22;
-	this->up.z = world._23;
+    this->up.x = world._21;
+    this->up.y = world._22;
+    this->up.z = world._23;
 
-	this->front.x = world._31;
-	this->front.y = world._32;
-	this->front.z = world._33;
+    this->front.x = world._31;
+    this->front.y = world._32;
+    this->front.z = world._33;
 
-	// ‹“_A’‹“_‚ğ•Û‘¶
-	this->eye = eye;
-	this->focus = focus;
+    // è¦–ç‚¹ã€æ³¨è¦–ç‚¹ã‚’ä¿å­˜
+    this->eye = eye;
+    this->focus = focus;
 }
 
-// ƒp[ƒXƒyƒNƒeƒBƒuİ’è
+// ãƒ‘ãƒ¼ã‚¹ãƒšã‚¯ãƒ†ã‚£ãƒ–è¨­å®š
 void Camera::SetPerspectiveFov(float fovY, float aspect, float nearZ, float farZ)
 {
-	// ‰æŠpA‰æ–Ê”ä—¦AƒNƒŠƒbƒv‹——£‚©‚çƒvƒƒWƒFƒNƒVƒ‡ƒ“s—ñ‚ğì¬
-	DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
+    // ç”»è§’ã€ç”»é¢æ¯”ç‡ã€ã‚¯ãƒªãƒƒãƒ—è·é›¢ã‹ã‚‰ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³è¡Œåˆ—ã‚’ä½œæˆ
+    DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fovY, aspect, nearZ, farZ);
 
-	//‰œs‚«‚ª‹C‚É‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é(orthoWeight‚Ì’l‚ğ‘å‚«‚­‚·‚é‚ÆŒø‰Ê‚ ‚è)
-	DirectX::XMMATRIX ortho = DirectX::XMMatrixOrthographicLH(1920 * 0.01f, 1080 * 0.01f, nearZ, farZ);
-	orthoWeight = 0.8f;
-	perspectiveWeight = 1.0f - orthoWeight;
+    //å¥¥è¡ŒããŒæ°—ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹(orthoWeightã®å€¤ã‚’å¤§ããã™ã‚‹ã¨åŠ¹æœã‚ã‚Š)
+    DirectX::XMMATRIX ortho = DirectX::XMMatrixOrthographicLH(1920 * 0.01f, 1080 * 0.01f, nearZ, farZ);
+    orthoWeight = 0.8f;
+    perspectiveWeight = 1.0f - orthoWeight;
 
-	DirectX::XMMATRIX s = DirectX::XMMatrixSet(orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight);
-	DirectX::XMMATRIX a = DirectX::XMMatrixSet(perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0, perspectiveWeight);
-	DirectX::XMStoreFloat4x4(&projection, projectionMatrix * a + ortho * s);
+    DirectX::XMMATRIX s = DirectX::XMMatrixSet(orthoWeight, 0, 0, 0, 0, orthoWeight, 0, 0, 0, 0, orthoWeight,
+                                               0, 0, 0, 0, orthoWeight);
+    DirectX::XMMATRIX a = DirectX::XMMatrixSet(perspectiveWeight, 0, 0, 0, 0, perspectiveWeight, 0, 0, 0, 0,
+                                               perspectiveWeight, 0, 0, 0, 0, perspectiveWeight);
+    DirectX::XMStoreFloat4x4(&projection, projectionMatrix * a + ortho * s);
 }
 
 void Camera::StartShake(float magnitude, float duration)
 {
-	this->shakeMagnitude = magnitude;
-	this->shakeTimer = duration;
+    this->shakeMagnitude = magnitude;
+    this->shakeTimer = duration;
 }
 
-void Camera::SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus, const DirectX::XMFLOAT3& up)
+void Camera::SetLookAtWithShake(const DirectX::XMFLOAT3& eye, const DirectX::XMFLOAT3& focus,
+                                const DirectX::XMFLOAT3& up)
 {
-	// SetLookAt applies the shake once and preserves the unshaken position.
-	SetLookAt(eye, focus, up);
+
+    SetLookAt(eye, focus, up);
 }
 
 void Camera::ShakeUpdate(float elapsedTime)
 {
-	if (shakeTimer > 0.0f)
-	{
-		shakeTimer -= elapsedTime;
+    if (shakeTimer > 0.0f)
+    {
+        shakeTimer -= elapsedTime;
 
-		// -1.0f ` 1.0f ‚Ìƒ‰ƒ“ƒ_ƒ€’l * ‹­“x
-		float rX = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
-		float rY = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
-		float rZ = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+        // -1.0f ï½ 1.0f ã®ãƒ©ãƒ³ãƒ€ãƒ å€¤ * å¼·åº¦
+        float rX = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+        float rY = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
+        float rZ = ((float)rand() / RAND_MAX * 2.0f - 1.0f) * shakeMagnitude;
 
-		shakeOffset = { rX, rY, rZ };
+        shakeOffset = {rX, rY, rZ};
 
-		if (shakeTimer <= 0.0f)
-		{
-			shakeTimer = 0.0f;
-			shakeOffset = { 0.0f, 0.0f, 0.0f };
-		}
-	}
+        if (shakeTimer <= 0.0f)
+        {
+            shakeTimer = 0.0f;
+            shakeOffset = {0.0f, 0.0f, 0.0f};
+        }
+    }
 }

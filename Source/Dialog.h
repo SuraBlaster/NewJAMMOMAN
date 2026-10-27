@@ -1,23 +1,27 @@
-#pragma once
+ï»¿#pragma once
 
 #include <Windows.h>
 
-// ƒ_ƒCƒAƒƒOƒŠƒUƒ‹ƒg
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒªã‚¶ãƒ«ãƒˆ
 enum class DialogResult
 {
-	Yes,
-	No,
-	OK,
-	Cancel
+    Yes,
+    No,
+    OK,
+    Cancel
 };
 
-// ƒ_ƒCƒAƒƒO
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 class Dialog
 {
-public:
-	// [ƒtƒ@ƒCƒ‹‚ğŠJ‚­]ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚ğ•\¦
-	static DialogResult OpenFileName(char* filepath, int size, const char* filter = nullptr, const char* title = nullptr, HWND hWnd = NULL, bool multiSelect = false);
+  public:
 
-	// [ƒtƒ@ƒCƒ‹‚ğ•Û‘¶]ƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚ğ•\¦
-	static DialogResult SaveFileName(char* filepath, int size, const char* filter = nullptr, const char* title = nullptr, const char* ext = nullptr, HWND hWnd = NULL);
+    // [ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã]ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’è¡¨ç¤º
+    static DialogResult OpenFileName(char* filepath, int size, const char* filter = nullptr,
+                                     const char* title = nullptr, HWND hWnd = NULL, bool multiSelect = false);
+
+    // [ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¿å­˜]ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã‚’è¡¨ç¤º
+    static DialogResult SaveFileName(char* filepath, int size, const char* filter = nullptr,
+                                     const char* title = nullptr, const char* ext = nullptr,
+                                     HWND hWnd = NULL);
 };

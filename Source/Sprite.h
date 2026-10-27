@@ -1,53 +1,56 @@
-#pragma once
+ï»¿#pragma once
 
 #include <wrl.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
 
-// ƒXƒvƒ‰ƒCƒg
+// ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ
 class Sprite
 {
-public:
-	Sprite(ID3D11Device* device);
-	// Set ignoreSRGB for display-color PNGs drawn to an UNORM back buffer.
-	Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB = false, const char* pixelShaderFile = "Data/Shader/SpritePS.cso");
+  public:
 
-	// ’¸“_ƒf[ƒ^
-	struct Vertex
-	{
-		DirectX::XMFLOAT3	position;
-		DirectX::XMFLOAT4	color;
-		DirectX::XMFLOAT2	texcoord;
-	};
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Sprite(ID3D11Device* device);
 
-	// •`‰æÀs
-	void Render(ID3D11DeviceContext* dc,
-		float dx, float dy,					// ¶ãˆÊ’u
-		float dz,							// ‰œs
-		float dw, float dh,					// •A‚‚³
-		float sx, float sy,					// ‰æ‘œØ‚è”²‚«ˆÊ’u
-		float sw, float sh,					// ‰æ‘œØ‚è”²‚«ƒTƒCƒY
-		float angle,						// Šp“x
-		float r, float g, float b, float a	// F
-	) const;
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+    Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB = false,
+           const char* pixelShaderFile = "Data/Shader/SpritePS.cso");
 
-	// •`‰æÀsiƒeƒNƒXƒ`ƒƒØ‚è”²‚«w’è‚È‚µj
-	void Render(ID3D11DeviceContext* dc,
-		float dx, float dy,					// ¶ãˆÊ’u
-		float dz,							// ‰œs
-		float dw, float dh,					// •A‚‚³
-		float angle,						// Šp“x
-		float r, float g, float b, float a	// F
-	) const;
+    // é ‚ç‚¹ãƒ‡ãƒ¼ã‚¿
+    struct Vertex
+    {
+        DirectX::XMFLOAT3 position;
+        DirectX::XMFLOAT4 color;
+        DirectX::XMFLOAT2 texcoord;
+    };
 
-private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>			vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>			pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>			inputLayout;
+    // æç”»å®Ÿè¡Œ
+    void Render(ID3D11DeviceContext* dc, float dx, float dy, // å·¦ä¸Šä½ç½®
+                float dz,                                    // å¥¥è¡Œ
+                float dw, float dh,                          // å¹…ã€é«˜ã•
+                float sx, float sy,                          // ç”»åƒåˆ‡ã‚ŠæŠœãä½ç½®
+                float sw, float sh,                          // ç”»åƒåˆ‡ã‚ŠæŠœãã‚µã‚¤ã‚º
+                float angle,                                 // è§’åº¦
+                float r, float g, float b, float a           // è‰²
+    ) const;
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer>				vertexBuffer;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	shaderResourceView;
+    // æç”»å®Ÿè¡Œï¼ˆãƒ†ã‚¯ã‚¹ãƒãƒ£åˆ‡ã‚ŠæŠœãæŒ‡å®šãªã—ï¼‰
+    void Render(ID3D11DeviceContext* dc, float dx, float dy, // å·¦ä¸Šä½ç½®
+                float dz,                                    // å¥¥è¡Œ
+                float dw, float dh,                          // å¹…ã€é«˜ã•
+                float angle,                                 // è§’åº¦
+                float r, float g, float b, float a           // è‰²
+    ) const;
 
-	float textureWidth = 0;
-	float textureHeight = 0;
+  private:
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+    Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
+
+    float textureWidth = 0;
+    float textureHeight = 0;
 };

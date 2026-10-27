@@ -1,203 +1,198 @@
-#include <fstream>
+ï»¿#include <fstream>
 #include "Sprite.h"
 #include "Misc.h"
 #include "GpuResourceUtils.h"
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-Sprite::Sprite(ID3D11Device* device)
-	: Sprite(device, nullptr)
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+Sprite::Sprite(ID3D11Device* device) : Sprite(device, nullptr)
 {
 }
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB, const char* pixelShaderFile)
 {
-	HRESULT hr = S_OK;
+    HRESULT hr = S_OK;
 
-	// ’¸“_ƒoƒbƒtƒ@‚Ì¶¬
-	{
-		// ’¸“_ƒoƒbƒtƒ@‚ğì¬‚·‚é‚½‚ß‚Ìİ’èƒIƒvƒVƒ‡ƒ“
-		D3D11_BUFFER_DESC bufferDesc = {};
-		bufferDesc.ByteWidth = sizeof(Vertex) * 4;
-		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		bufferDesc.MiscFlags = 0;
-		bufferDesc.StructureByteStride = 0;
-		// ’¸“_ƒoƒbƒtƒ@ƒIƒuƒWƒFƒNƒg‚Ì¶¬
-		hr = device->CreateBuffer(&bufferDesc, nullptr, vertexBuffer.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®ç”Ÿæˆ
+    {
+        // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã‚’ä½œæˆã™ã‚‹ãŸã‚ã®è¨­å®šã‚ªãƒ—ã‚·ãƒ§ãƒ³
+        D3D11_BUFFER_DESC bufferDesc = {};
+        bufferDesc.ByteWidth = sizeof(Vertex) * 4;
+        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+        bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        bufferDesc.MiscFlags = 0;
+        bufferDesc.StructureByteStride = 0;
+        // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ç”Ÿæˆ
+        hr = device->CreateBuffer(&bufferDesc, nullptr, vertexBuffer.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// ’¸“_ƒVƒF[ƒ_[
-	{
-		// “ü—ÍƒŒƒCƒAƒEƒg
-		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-		hr = GpuResourceUtils::LoadVertexShader(
-			device,
-			"Data/Shader/SpriteVS.cso",
-			inputElementDesc,
-			ARRAYSIZE(inputElementDesc),
-			inputLayout.GetAddressOf(),
-			vertexShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // é ‚ç‚¹ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
+    {
+        // å…¥åŠ›ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
+        D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+            {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+             D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+             D3D11_INPUT_PER_VERTEX_DATA, 0},
+            {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+             D3D11_INPUT_PER_VERTEX_DATA, 0},
+        };
+        hr = GpuResourceUtils::LoadVertexShader(device, "Data/Shader/SpriteVS.cso", inputElementDesc,
+                                                ARRAYSIZE(inputElementDesc), inputLayout.GetAddressOf(),
+                                                vertexShader.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	}
+    // ãƒ”ã‚¯ã‚»ãƒ«ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
+    {
+        hr = GpuResourceUtils::LoadPixelShader(device, pixelShaderFile, pixelShader.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
 
-	// ƒsƒNƒZƒ‹ƒVƒF[ƒ_[
-	{
-		hr = GpuResourceUtils::LoadPixelShader(
-			device,
-			pixelShaderFile,
-			pixelShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	}
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ç”Ÿæˆ
+    if (filename != nullptr)
+    {
+        // ãƒ†ã‚¯ã‚¹ãƒãƒ£ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
+        D3D11_TEXTURE2D_DESC desc;
+        hr = GpuResourceUtils::LoadTexture(device, filename, shaderResourceView.GetAddressOf(), &desc,
+                                           ignoreSRGB);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-	// ƒeƒNƒXƒ`ƒƒ‚Ì¶¬	
-	if (filename != nullptr)
-	{
-		// ƒeƒNƒXƒ`ƒƒƒtƒ@ƒCƒ‹“Ç‚İ‚İ
-		D3D11_TEXTURE2D_DESC desc;
-		hr = GpuResourceUtils::LoadTexture(device, filename, shaderResourceView.GetAddressOf(), &desc, ignoreSRGB);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        textureWidth = static_cast<float>(desc.Width);
+        textureHeight = static_cast<float>(desc.Height);
+    }
+    else
+    {
+        // ãƒ€ãƒŸãƒ¼ãƒ†ã‚¯ã‚¹ãƒãƒ£ç”Ÿæˆ
+        D3D11_TEXTURE2D_DESC desc;
+        hr = GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF, shaderResourceView.GetAddressOf(),
+                                                  &desc);
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		textureWidth = static_cast<float>(desc.Width);
-		textureHeight = static_cast<float>(desc.Height);
-	}
-	else
-	{
-		// ƒ_ƒ~[ƒeƒNƒXƒ`ƒƒ¶¬
-		D3D11_TEXTURE2D_DESC desc;
-		hr = GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF, shaderResourceView.GetAddressOf(),
-			&desc);
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-
-		textureWidth = static_cast<float>(desc.Width);
-		textureHeight = static_cast<float>(desc.Height);
-	}
+        textureWidth = static_cast<float>(desc.Width);
+        textureHeight = static_cast<float>(desc.Height);
+    }
 }
 
-// •`‰æÀs
-void Sprite::Render(ID3D11DeviceContext* dc,
-	float dx, float dy,					// ¶ãˆÊ’u
-	float dz,							// ‰œs
-	float dw, float dh,					// •A‚‚³
-	float sx, float sy,					// ‰æ‘œØ‚è”²‚«ˆÊ’u
-	float sw, float sh,					// ‰æ‘œØ‚è”²‚«ƒTƒCƒY
-	float angle,						// Šp“x
-	float r, float g, float b, float a	// F
-	) const
+// æç”»å®Ÿè¡Œ
+void Sprite::Render(ID3D11DeviceContext* dc, float dx, float dy, // å·¦ä¸Šä½ç½®
+                    float dz,                                    // å¥¥è¡Œ
+                    float dw, float dh,                          // å¹…ã€é«˜ã•
+                    float sx, float sy,                          // ç”»åƒåˆ‡ã‚ŠæŠœãä½ç½®
+                    float sw, float sh,                          // ç”»åƒåˆ‡ã‚ŠæŠœãã‚µã‚¤ã‚º
+                    float angle,                                 // è§’åº¦
+                    float r, float g, float b, float a           // è‰²
+) const
 {
-	// ’¸“_À•W
-	DirectX::XMFLOAT2 positions[] = {
-		DirectX::XMFLOAT2(dx,      dy),			// ¶ã
-		DirectX::XMFLOAT2(dx + dw, dy),			// ‰Eã
-		DirectX::XMFLOAT2(dx,      dy + dh),	// ¶‰º
-		DirectX::XMFLOAT2(dx + dw, dy + dh),	// ‰E‰º
-	};
+    // é ‚ç‚¹åº§æ¨™
+    DirectX::XMFLOAT2 positions[] = {
+        DirectX::XMFLOAT2(dx, dy),           // å·¦ä¸Š
+        DirectX::XMFLOAT2(dx + dw, dy),      // å³ä¸Š
+        DirectX::XMFLOAT2(dx, dy + dh),      // å·¦ä¸‹
+        DirectX::XMFLOAT2(dx + dw, dy + dh), // å³ä¸‹
+    };
 
-	// ƒeƒNƒXƒ`ƒƒÀ•W
-	DirectX::XMFLOAT2 texcoords[] = {
-		DirectX::XMFLOAT2(sx,      sy),			// ¶ã
-		DirectX::XMFLOAT2(sx + sw, sy),			// ‰Eã
-		DirectX::XMFLOAT2(sx,      sy + sh),	// ¶‰º
-		DirectX::XMFLOAT2(sx + sw, sy + sh),	// ‰E‰º
-	};
+    // ãƒ†ã‚¯ã‚¹ãƒãƒ£åº§æ¨™
+    DirectX::XMFLOAT2 texcoords[] = {
+        DirectX::XMFLOAT2(sx, sy),           // å·¦ä¸Š
+        DirectX::XMFLOAT2(sx + sw, sy),      // å³ä¸Š
+        DirectX::XMFLOAT2(sx, sy + sh),      // å·¦ä¸‹
+        DirectX::XMFLOAT2(sx + sw, sy + sh), // å³ä¸‹
+    };
 
-	// ƒXƒvƒ‰ƒCƒg‚Ì’†S‚Å‰ñ“]‚³‚¹‚é‚½‚ß‚É‚S’¸“_‚Ì’†SˆÊ’u‚ª
-	// Œ´“_(0, 0)‚É‚È‚é‚æ‚¤‚Éˆê’U’¸“_‚ğˆÚ“®‚³‚¹‚éB
-	float mx = dx + dw * 0.5f;
-	float my = dy + dh * 0.5f;
-	for (auto& p : positions)
-	{
-		p.x -= mx;
-		p.y -= my;
-	}
+    // ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®ä¸­å¿ƒã§å›è»¢ã•ã›ã‚‹ãŸã‚ã«ï¼”é ‚ç‚¹ã®ä¸­å¿ƒä½ç½®ãŒ
+    // åŸç‚¹(0, 0)ã«ãªã‚‹ã‚ˆã†ã«ä¸€æ—¦é ‚ç‚¹ã‚’ç§»å‹•ã•ã›ã‚‹
+    float mx = dx + dw * 0.5f;
+    float my = dy + dh * 0.5f;
 
-	// ’¸“_‚ğ‰ñ“]‚³‚¹‚é
-	float theta = DirectX::XMConvertToRadians(angle);
-	float c = cosf(theta);
-	float s = sinf(theta);
-	for (auto& p : positions)
-	{
-		DirectX::XMFLOAT2 r = p;
-		p.x = c * r.x + -s * r.y;
-		p.y = s * r.x + c * r.y;
-	}
+    for (auto& p : positions)
+    {
+        p.x -= mx;
+        p.y -= my;
+    }
 
-	// ‰ñ“]‚Ì‚½‚ß‚ÉˆÚ“®‚³‚¹‚½’¸“_‚ğŒ³‚ÌˆÊ’u‚É–ß‚·
-	for (auto& p : positions)
-	{
-		p.x += mx;
-		p.y += my;
-	}
+    // é ‚ç‚¹ã‚’å›è»¢ã•ã›ã‚‹
+    float theta = DirectX::XMConvertToRadians(angle);
+    float c = cosf(theta);
+    float s = sinf(theta);
 
-	// Œ»İİ’è‚³‚ê‚Ä‚¢‚éƒrƒ…[ƒ|[ƒg‚©‚çƒXƒNƒŠ[ƒ“ƒTƒCƒY‚ğæ“¾‚·‚éB
-	D3D11_VIEWPORT viewport;
-	UINT numViewports = 1;
-	dc->RSGetViewports(&numViewports, &viewport);
-	float screenWidth = viewport.Width;
-	float screenHeight = viewport.Height;
+    for (auto& p : positions)
+    {
+        DirectX::XMFLOAT2 r = p;
+        p.x = c * r.x + -s * r.y;
+        p.y = s * r.x + c * r.y;
+    }
 
-	// ƒXƒNƒŠ[ƒ“À•WŒn‚©‚çNDCÀ•WŒn‚Ö•ÏŠ·‚·‚éB
-	for (DirectX::XMFLOAT2& p : positions)
-	{
-		p.x = 2.0f * p.x / screenWidth - 1.0f;
-		p.y = 1.0f - 2.0f * p.y / screenHeight;
-	}
+    // å›è»¢ã®ãŸã‚ã«ç§»å‹•ã•ã›ãŸé ‚ç‚¹ã‚’å…ƒã®ä½ç½®ã«æˆ»ã™
+    for (auto& p : positions)
+    {
+        p.x += mx;
+        p.y += my;
+    }
 
-	// ’¸“_ƒoƒbƒtƒ@‚Ì“à—e‚Ì•ÒW‚ğŠJn‚·‚éB
-	D3D11_MAPPED_SUBRESOURCE mappedSubresource;
-	HRESULT hr = dc->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
-	_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    // ç¾åœ¨è¨­å®šã•ã‚Œã¦ã„ã‚‹ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‹ã‚‰ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
+    D3D11_VIEWPORT viewport;
+    UINT numViewports = 1;
+    dc->RSGetViewports(&numViewports, &viewport);
+    float screenWidth = viewport.Width;
+    float screenHeight = viewport.Height;
 
-	// ’¸“_ƒoƒbƒtƒ@‚Ì“à—e‚ğ•ÒW
-	Vertex* v = static_cast<Vertex*>(mappedSubresource.pData);
-	for (int i = 0; i < 4; ++i)
-	{
-		v[i].position.x = positions[i].x;
-		v[i].position.y = positions[i].y;
-		v[i].position.z = dz;
+    // ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ç³»ã‹ã‚‰NDCåº§æ¨™ç³»ã¸å¤‰æ›ã™ã‚‹
+    for (DirectX::XMFLOAT2& p : positions)
+    {
+        p.x = 2.0f * p.x / screenWidth - 1.0f;
+        p.y = 1.0f - 2.0f * p.y / screenHeight;
+    }
 
-		v[i].color.x = r;
-		v[i].color.y = g;
-		v[i].color.z = b;
-		v[i].color.w = a;
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹ã®ç·¨é›†ã‚’é–‹å§‹ã™ã‚‹
+    D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+    HRESULT hr = dc->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedSubresource);
+    _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
-		v[i].texcoord.x = texcoords[i].x / textureWidth;
-		v[i].texcoord.y = texcoords[i].y / textureHeight;
-	}
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹ã‚’ç·¨é›†
+    Vertex* v = static_cast<Vertex*>(mappedSubresource.pData);
 
-	// ’¸“_ƒoƒbƒtƒ@‚Ì“à—e‚Ì•ÒW‚ğI—¹‚·‚éB
-	dc->Unmap(vertexBuffer.Get(), 0);
+    for (int i = 0; i < 4; ++i)
+    {
+        v[i].position.x = positions[i].x;
+        v[i].position.y = positions[i].y;
+        v[i].position.z = dz;
 
-	// GPU‚É•`‰æ‚·‚é‚½‚ß‚Ìƒf[ƒ^‚ğ“n‚·
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	dc->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-	dc->IASetInputLayout(inputLayout.Get());
-	dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	dc->VSSetShader(vertexShader.Get(), nullptr, 0);
-	dc->PSSetShader(pixelShader.Get(), nullptr, 0);
-	dc->PSSetShaderResources(0, 1, shaderResourceView.GetAddressOf());
+        v[i].color.x = r;
+        v[i].color.y = g;
+        v[i].color.z = b;
+        v[i].color.w = a;
 
-	// •`‰æ
-	dc->Draw(4, 0);
+        v[i].texcoord.x = texcoords[i].x / textureWidth;
+        v[i].texcoord.y = texcoords[i].y / textureHeight;
+    }
+
+    // é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ã®å†…å®¹ã®ç·¨é›†ã‚’çµ‚äº†ã™ã‚‹
+    dc->Unmap(vertexBuffer.Get(), 0);
+
+    // GPUã«æç”»ã™ã‚‹ãŸã‚ã®ãƒ‡ãƒ¼ã‚¿ã‚’æ¸¡ã™
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    dc->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+    dc->IASetInputLayout(inputLayout.Get());
+    dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    dc->VSSetShader(vertexShader.Get(), nullptr, 0);
+    dc->PSSetShader(pixelShader.Get(), nullptr, 0);
+    dc->PSSetShaderResources(0, 1, shaderResourceView.GetAddressOf());
+
+    // æç”»
+    dc->Draw(4, 0);
 }
 
-// •`‰æÀsiƒeƒNƒXƒ`ƒƒØ‚è”²‚«w’è‚È‚µj
-void Sprite::Render(ID3D11DeviceContext* dc,
-	float dx, float dy,					// ¶ãˆÊ’u
-	float dz,							// ‰œs
-	float dw, float dh,					// •A‚‚³
-	float angle,						// Šp“x
-	float r, float g, float b, float a	// F
-	) const
+// æç”»å®Ÿè¡Œï¼ˆãƒ†ã‚¯ã‚¹ãƒãƒ£åˆ‡ã‚ŠæŠœãæŒ‡å®šãªã—ï¼‰
+void Sprite::Render(ID3D11DeviceContext* dc, float dx, float dy, // å·¦ä¸Šä½ç½®
+                    float dz,                                    // å¥¥è¡Œ
+                    float dw, float dh,                          // å¹…ã€é«˜ã•
+                    float angle,                                 // è§’åº¦
+                    float r, float g, float b, float a           // è‰²
+) const
 {
-	Render(dc, dx, dy, dz, dw, dh, 0, 0, textureWidth, textureHeight, angle, r, g, b, a);
+    Render(dc, dx, dy, dz, dw, dh, 0, 0, textureWidth, textureHeight, angle, r, g, b, a);
 }

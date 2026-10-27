@@ -1,45 +1,38 @@
 #ifndef STYLIZED_HLSLI
 #define STYLIZED_HLSLI
 
-// PBR.hlsli ‚Æ Scene.hlsli ‚ğæ‚Éinclude‚µ‚Ä‚¨‚­‚±‚Æ
+// PBR.hlsli ã¨ Scene.hlsli ã‚’å…ˆã«includeã—ã¦ãŠãã“ã¨
 
 cbuffer CbStylize : register(b1)
 {
-    float3 cbShadowColor;           // ‰e‘¤‚ÌF–¡iŠgUF‚ÉæZ‚·‚éj
-    float  cbStylizeBlend;          // 0:Œ³‚ÌPBR 1:ƒXƒ^ƒCƒ‰ƒCƒYƒh
+    float3 cbShadowColor; // å½±å´ã®è‰²å‘³ï¼ˆæ‹¡æ•£è‰²ã«ä¹—ç®—ã™ã‚‹ï¼‰
+    float cbStylizeBlend; // 0:å…ƒã®PBR 1:ã‚¹ã‚¿ã‚¤ãƒ©ã‚¤ã‚ºãƒ‰
     float3 cbRimColor;
-    float  cbRimIntensity;
-    float  cbToonThreshold;         // –¾ˆÃ‚Ì‹«–Ú‚ÌˆÊ’ui0`1j
-    float  cbToonSoftness;          // –¾ˆÃ‚Ì‹«–Ú‚Ì‚Ú‚©‚µ•
-    float  cbSpecularThreshold;     // ƒnƒCƒ‰ƒCƒg‚ªon‚ß‚éˆÊ’ui0`1j
-    float  cbSpecularSoftness;      // ƒnƒCƒ‰ƒCƒg‚Ì‰‚Ì‚Ú‚©‚µ•
-    float  cbSpecularIntensity;
-    float  cbRimThreshold;          // ƒŠƒ€ƒ‰ƒCƒg‚ªon‚ß‚éˆÊ’ui0`1j
-    float  cbRimSoftness;           // ƒŠƒ€ƒ‰ƒCƒg‚Ì‰‚Ì‚Ú‚©‚µ•
-    float  cbAmbientStrength;
+    float cbRimIntensity;
+    float cbToonThreshold;     // æ˜æš—ã®å¢ƒç›®ã®ä½ç½®ï¼ˆ0ã€œ1ï¼‰
+    float cbToonSoftness;      // æ˜æš—ã®å¢ƒç›®ã®ã¼ã‹ã—å¹…
+    float cbSpecularThreshold; // ãƒã‚¤ãƒ©ã‚¤ãƒˆãŒå‡ºå§‹ã‚ã‚‹ä½ç½®ï¼ˆ0ã€œ1ï¼‰
+    float cbSpecularSoftness;  // ãƒã‚¤ãƒ©ã‚¤ãƒˆã®ç¸ã®ã¼ã‹ã—å¹…
+    float cbSpecularIntensity;
+    float cbRimThreshold; // ãƒªãƒ ãƒ©ã‚¤ãƒˆãŒå‡ºå§‹ã‚ã‚‹ä½ç½®ï¼ˆ0ã€œ1ï¼‰
+    float cbRimSoftness;  // ãƒªãƒ ãƒ©ã‚¤ãƒˆã®ç¸ã®ã¼ã‹ã—å¹…
+    float cbAmbientStrength;
 };
 
-// threshold ‚ğ‹«‚ÉAsoftness ‚Ì•‚Å 0¨1 ‚ÖØ‚è‘Ö‚¦‚é
+// threshold ã‚’å¢ƒã«ã€softness ã®å¹…ã§ 0â†’1 ã¸åˆ‡ã‚Šæ›¿ãˆã‚‹
 float StylizedStep(float threshold, float softness, float x)
 {
     return smoothstep(threshold - softness, threshold + softness, x);
 }
 
-float3 StylizedLighting(
-    float3 albedo,
-    float metalness,
-    float smoothness,
-    float3 normal,
-    float3 viewDirection,
-    float3 lightDirection,
-    float3 lightColor,
-    float3 ambient,
-    float rimWeight)
+float3 StylizedLighting(float3 albedo, float metalness, float smoothness, float3 normal, float3 viewDirection,
+                        float3 lightDirection, float3 lightColor, float3 ambient, float rimWeight)
 {
-    // ‹à‘®‚Ù‚ÇŠgU‚ªÁ‚¦‚Ä”½Ë‚ªF‚Ã‚­
+    // é‡‘å±ã»ã©æ‹¡æ•£ãŒæ¶ˆãˆã¦åå°„ãŒè‰²ã¥ã
     float3 specularColor;
     float oneMinusReflectivity;
-    float3 diffuseColor = DiffuseAndSpecularFromMetallic(albedo, metalness, specularColor, oneMinusReflectivity);
+    float3 diffuseColor =
+        DiffuseAndSpecularFromMetallic(albedo, metalness, specularColor, oneMinusReflectivity);
 
     float nl = dot(normal, lightDirection);
     float halfLambert = nl * 0.5f + 0.5f;
@@ -47,24 +40,24 @@ float3 StylizedLighting(
     float3 diffuse = diffuseColor * lerp(cbShadowColor, lightColor, lightRamp);
     diffuse += diffuseColor * ambient * cbAmbientStrength;
 
-    // GGX‚ÌŒ`‚ğc‚µ‚Â‚Â‰‚¾‚¯‚­‚Á‚«‚è‚³‚¹‚é
+    // GGXã®å½¢ã‚’æ®‹ã—ã¤ã¤ç¸ã ã‘ãã£ãã‚Šã•ã›ã‚‹
     float3 halfDirection = normalize(lightDirection + viewDirection);
     float nh = saturate(dot(normal, halfDirection));
     float roughness = max(PerceptualRoughnessToRoughness(SmoothnessToPerceptualRoughness(smoothness)), 0.05f);
-    float d = GGXTerm(nh, roughness) * roughness * roughness * PI; // ƒs[ƒN‚ª1‚É‚È‚é‚æ‚¤³‹K‰»
+    float d = GGXTerm(nh, roughness) * roughness * roughness * PI; // ãƒ”ãƒ¼ã‚¯ãŒ1ã«ãªã‚‹ã‚ˆã†æ­£è¦åŒ–
     float specularMask = StylizedStep(cbSpecularThreshold, cbSpecularSoftness, d) * lightRamp;
-    // ”ñ‹à‘®‚Í”’A‹à‘®‚Í’n‚ÌF‚ÌƒnƒCƒ‰ƒCƒg‚É‚·‚é
+    // éé‡‘å±ã¯ç™½ã€é‡‘å±ã¯åœ°ã®è‰²ã®ãƒã‚¤ãƒ©ã‚¤ãƒˆã«ã™ã‚‹
     float3 highlightColor = lerp(float3(1.0f, 1.0f, 1.0f), albedo, metalness);
     float3 specular = highlightColor * lightColor * specularMask * smoothness * cbSpecularIntensity;
 
-    // ŠÂ‹«ƒ}ƒbƒv‚ª–³‚¢‚Ì‚ÅA”½Ë•ûŒü‚Ìã‰º‚Å‹ó‚Æ’n–Ê‚ÌF‚ğ‰f‚·
+    // ç’°å¢ƒãƒãƒƒãƒ—ãŒç„¡ã„ã®ã§ã€åå°„æ–¹å‘ã®ä¸Šä¸‹ã§ç©ºã¨åœ°é¢ã®è‰²ã‚’æ˜ ã™
     float3 reflectDirection = reflect(-viewDirection, normal);
     float3 environment = lerp(cbGroundColor, cbSkyColor, reflectDirection.y * 0.5f + 0.5f);
     float nv = saturate(dot(normal, viewDirection));
     float grazing = saturate(smoothness + (1.0f - oneMinusReflectivity));
     float3 environmentSpecular = environment * FresnelLerp(specularColor, grazing, nv) * smoothness;
 
-    // •½‚ç‚È–Ê‚Í–Ê‚²‚ÆŒõ‚é‚½‚ßArimWeight‚Å‘ÎÛ‚ği‚é
+    // å¹³ã‚‰ãªé¢ã¯é¢ã”ã¨å…‰ã‚‹ãŸã‚ã€rimWeightã§å¯¾è±¡ã‚’çµã‚‹
     float rim = 1.0f - nv;
     float rimMask = StylizedStep(cbRimThreshold, cbRimSoftness, rim);
     float3 rimLight = cbRimColor * rimMask * cbRimIntensity * rimWeight;

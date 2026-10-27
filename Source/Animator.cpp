@@ -1,16 +1,17 @@
-#include <algorithm>
+ï»¿#include <algorithm>
 #include <cmath>
 #include "Animator.h"
 
-Animator::Animator(Model* model, int maxLayers)
-    : model(model)
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+Animator::Animator(Model* model, int maxLayers) : model(model)
 {
     size_t nodeCount = model->GetNodes().size();
     finalNodePoses.resize(nodeCount);
     tempNodePoses.resize(nodeCount);
 
-    // ŠeƒŒƒCƒ„[‚Ìƒoƒbƒtƒ@‚ğ‰Šú‰»
+    // å„ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒãƒƒãƒ•ã‚¡ã‚’åˆæœŸåŒ–
     layers.resize(maxLayers);
+
     for (auto& layer : layers)
     {
         layer.previousNodePoses.resize(nodeCount);
@@ -19,9 +20,10 @@ Animator::Animator(Model* model, int maxLayers)
     }
 }
 
+// æ›´æ–°å‡¦ç†
 void Animator::Update(float elapsedTime)
 {
-    // 1. ŠeƒŒƒCƒ„[“à‚ÅŠÔ‚ği‚ßAƒNƒŠƒbƒv‚ğƒuƒŒƒ“ƒh‚µ‚Äƒ|[ƒY‚ğŒvZ
+    // 1. å„ãƒ¬ã‚¤ãƒ¤ãƒ¼å†…ã§æ™‚é–“ã‚’é€²ã‚ã€ã‚¯ãƒªãƒƒãƒ—ã‚’ãƒ–ãƒ¬ãƒ³ãƒ‰ã—ã¦ãƒãƒ¼ã‚ºã‚’è¨ˆç®—
     for (AnimationLayer& layer : layers)
     {
         if (layer.isPlaying)
@@ -30,13 +32,16 @@ void Animator::Update(float elapsedTime)
         }
     }
 
-    // Layer 0 (Base Layer) ‚ªÄ¶‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Î‰½‚à‚µ‚È‚¢
-    if (!layers[0].isPlaying) return;
+    // Layer 0 (Base Layer) ãŒå†ç”Ÿã•ã‚Œã¦ã„ãªã‘ã‚Œã°ä½•ã‚‚ã—ãªã„
+    if (!layers[0].isPlaying)
+    {
+        return;
+    }
 
-    // 2. ƒx[ƒXƒŒƒCƒ„[‚ÌŒ‹‰Ê‚ğÅIƒ|[ƒY‚Ì‰Šú’l‚Æ‚·‚é
+    // 2. ãƒ™ãƒ¼ã‚¹ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®çµæœã‚’æœ€çµ‚ãƒãƒ¼ã‚ºã®åˆæœŸå€¤ã¨ã™ã‚‹
     finalNodePoses = layers[0].computedPoses;
 
-    // 3. Layer 1 ˆÈ~‚ğã‚É‡¬‚µ‚Ä‚¢‚­
+    // 3. Layer 1 ä»¥é™ã‚’ä¸Šã«åˆæˆã—ã¦ã„ã
     for (size_t i = 1; i < layers.size(); ++i)
     {
         if (layers[i].isPlaying && layers[i].layerGlobalWeight > 0.001f)
@@ -45,16 +50,18 @@ void Animator::Update(float elapsedTime)
         }
     }
 
-    // ƒ‚ƒfƒ‹‚ÉÅIƒ|[ƒY‚ğ“K—p
+    // ãƒ¢ãƒ‡ãƒ«ã«æœ€çµ‚ãƒãƒ¼ã‚ºã‚’é©ç”¨
     model->SetNodePoses(finalNodePoses);
 }
 
 void Animator::EvaluateLayerPoses(AnimationLayer& layer, float elapsedTime)
 {
-    float targetEndTime = (layer.endTime >= 0.0f) ? (std::min)(layer.endTime, layer.duration) : layer.duration;
+    float targetEndTime =
+        (layer.endTime >= 0.0f) ? (std::min)(layer.endTime, layer.duration) : layer.duration;
 
-    // ŠÔis
+    // æ™‚é–“é€²è¡Œ
     layer.currentTime += elapsedTime * layer.playbackSpeed;
+
     if (layer.currentTime >= targetEndTime)
     {
         if (layer.isLoop && targetEndTime > 0.0f)
@@ -68,27 +75,29 @@ void Animator::EvaluateLayerPoses(AnimationLayer& layer, float elapsedTime)
         }
     }
 
-    // clip_0 ‚Ì•]‰¿
+    // clip_0 ã®è©•ä¾¡
     if (layer.clip0 >= 0)
     {
-        model->ComputeAnimation(layer.clip0, layer.currentTime, layer.computedPoses); //[cite: 1]
+        model->ComputeAnimation(layer.clip0, layer.currentTime, layer.computedPoses);
     }
 
-    // clip_1 ‚ª—LŒøA‚©‚ÂƒuƒŒƒ“ƒh—¦‚ª0‚æ‚è‘å‚«‚¢ê‡‚Ì‚İAclip_1‚ğŒvZ‚µ‚Ä‡¬
+    // clip_1 ãŒæœ‰åŠ¹ã€ã‹ã¤ãƒ–ãƒ¬ãƒ³ãƒ‰ç‡ãŒ0ã‚ˆã‚Šå¤§ãã„å ´åˆã®ã¿ã€clip_1ã‚’è¨ˆç®—ã—ã¦åˆæˆ
     if (layer.clip1 >= 0 && layer.blendRate > 0.001f)
     {
         model->ComputeAnimation(layer.clip1, layer.currentTime, tempNodePoses);
         BlendNodePoses(layer.computedPoses, layer.computedPoses, tempNodePoses, layer.blendRate);
     }
 
-    // ‘O‚ÌƒAƒjƒ[ƒVƒ‡ƒ“iˆÙ‚È‚éƒXƒe[ƒgj‚©‚ç‚ÌƒNƒƒXƒtƒF[ƒh
+    // å‰ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ï¼ˆç•°ãªã‚‹ã‚¹ãƒ†ãƒ¼ãƒˆï¼‰ã‹ã‚‰ã®ã‚¯ãƒ­ã‚¹ãƒ•ã‚§ãƒ¼ãƒ‰
     if (layer.blendTime < layer.blendDuration)
     {
         layer.blendTime += elapsedTime;
+
         if (layer.blendTime >= layer.blendDuration)
         {
             layer.blendTime = layer.blendDuration;
         }
+
         float blendFactor = layer.blendTime / layer.blendDuration;
         BlendNodePoses(layer.computedPoses, layer.previousNodePoses, layer.computedPoses, blendFactor);
     }
@@ -98,20 +107,23 @@ void Animator::ApplyLayerToFinalPoses(std::vector<Model::NodePose>& ioFinalPoses
 {
     for (size_t n = 0; n < ioFinalPoses.size(); ++n)
     {
-        // ƒ}ƒXƒNƒEƒFƒCƒg‚Ìæ“¾
+        // ãƒã‚¹ã‚¯ã‚¦ã‚§ã‚¤ãƒˆã®å–å¾—
         float maskWeight = layer.mask ? layer.mask->boneWeights[n] : 1.0f;
         float finalWeight = maskWeight * layer.layerGlobalWeight;
 
-        if (finalWeight <= 0.001f) continue;
+        if (finalWeight <= 0.001f)
+        {
+            continue;
+        }
 
         if (layer.blendMode == AnimationBlendMode::Override)
         {
-            // ã‘‚«iOverridej‡¬
+            // ä¸Šæ›¸ãï¼ˆOverrideï¼‰åˆæˆ
             BlendSingleNode(ioFinalPoses[n], ioFinalPoses[n], layer.computedPoses[n], finalWeight);
         }
         else if (layer.blendMode == AnimationBlendMode::Additive)
         {
-            // ‰ÁZiAdditivej‡¬
+            // åŠ ç®—ï¼ˆAdditiveï¼‰åˆæˆ
             const Model::NodePose& base = layer.basePoses[n];
             const Model::NodePose& curr = layer.computedPoses[n];
             Model::NodePose& target = ioFinalPoses[n];
@@ -121,18 +133,20 @@ void Animator::ApplyLayerToFinalPoses(std::vector<Model::NodePose>& ioFinalPoses
             DirectX::XMVECTOR baseR = DirectX::XMLoadFloat4(&base.rotation);
             DirectX::XMVECTOR currR = DirectX::XMLoadFloat4(&curr.rotation);
 
-            // ·•ªŒvZ (Position: Current - Base)
+            // å·®åˆ†è¨ˆç®— (Position: Current - Base)
             DirectX::XMVECTOR diffP = DirectX::XMVectorSubtract(currP, baseP);
-            // ·•ªŒvZ (Rotation: Inv(Base) * Current)
-            DirectX::XMVECTOR diffR = DirectX::XMQuaternionMultiply(DirectX::XMQuaternionInverse(baseR), currR);
+            // å·®åˆ†è¨ˆç®— (Rotation: Inv(Base) * Current)
+            DirectX::XMVECTOR diffR =
+                DirectX::XMQuaternionMultiply(DirectX::XMQuaternionInverse(baseR), currR);
 
-            // ‘ÎÛƒ|[ƒY‚Ö‚Ì“K—p
+            // å¯¾è±¡ãƒãƒ¼ã‚ºã¸ã®é©ç”¨
             DirectX::XMVECTOR targetP = DirectX::XMLoadFloat3(&target.position);
             DirectX::XMVECTOR targetR = DirectX::XMLoadFloat4(&target.rotation);
 
-            // ƒEƒFƒCƒg‚ğ“K—p‚µ‚Ä‰ÁZ
+            // ã‚¦ã‚§ã‚¤ãƒˆã‚’é©ç”¨ã—ã¦åŠ ç®—
             DirectX::XMVECTOR scaledDiffP = DirectX::XMVectorScale(diffP, finalWeight);
-            DirectX::XMVECTOR finalDiffR = DirectX::XMQuaternionSlerp(DirectX::XMQuaternionIdentity(), diffR, finalWeight);
+            DirectX::XMVECTOR finalDiffR =
+                DirectX::XMQuaternionSlerp(DirectX::XMQuaternionIdentity(), diffR, finalWeight);
 
             targetP = DirectX::XMVectorAdd(targetP, scaledDiffP);
             targetR = DirectX::XMQuaternionMultiply(targetR, finalDiffR);
@@ -143,17 +157,21 @@ void Animator::ApplyLayerToFinalPoses(std::vector<Model::NodePose>& ioFinalPoses
     }
 }
 
-void Animator::Play(int layerIndex, int clipIndex, bool loop, float blendDuration, float startTime, float endTime)
+void Animator::Play(int layerIndex, int clipIndex, bool loop, float blendDuration, float startTime,
+                    float endTime)
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return;
+    }
 
     auto& layer = layers[layerIndex];
 
-    // V‚µ‚¢ƒXƒe[ƒg‚ÉˆÚs‚·‚é‘O‚ÉAŒ»İ‚ÌŒvZŒ‹‰Ê‚ğƒNƒƒXƒtƒF[ƒhŠJnƒ|[ƒY‚Æ‚µ‚Ä•Û‘¶
+    // æ–°ã—ã„ã‚¹ãƒ†ãƒ¼ãƒˆã«ç§»è¡Œã™ã‚‹å‰ã«ã€ç¾åœ¨ã®è¨ˆç®—çµæœã‚’ã‚¯ãƒ­ã‚¹ãƒ•ã‚§ãƒ¼ãƒ‰é–‹å§‹ãƒãƒ¼ã‚ºã¨ã—ã¦ä¿å­˜
     layer.previousNodePoses = layer.computedPoses;
 
     layer.clip0 = clipIndex;
-    layer.clip1 = -1;       // Å‰‚ÍƒuƒŒƒ“ƒh‘ÎÛ‚È‚µ
+    layer.clip1 = -1; // æœ€åˆã¯ãƒ–ãƒ¬ãƒ³ãƒ‰å¯¾è±¡ãªã—
     layer.blendRate = 0.0f;
 
     layer.isLoop = loop;
@@ -167,7 +185,7 @@ void Animator::Play(int layerIndex, int clipIndex, bool loop, float blendDuratio
     {
         layer.duration = model->GetAnimations().at(clipIndex).secondsLength;
 
-        // Additiveƒ‚[ƒh‚Ìê‡‚ÍŠî€‚Æ‚È‚é0ƒtƒŒ[ƒ€–Ú‚Ìƒ|[ƒY‚ğƒLƒƒƒbƒVƒ…‚·‚é
+        // Additiveãƒ¢ãƒ¼ãƒ‰ã®å ´åˆã¯åŸºæº–ã¨ãªã‚‹0ãƒ•ãƒ¬ãƒ¼ãƒ ç›®ã®ãƒãƒ¼ã‚ºã‚’ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã™ã‚‹
         if (layer.blendMode == AnimationBlendMode::Additive)
         {
             model->ComputeAnimation(clipIndex, 0.0f, layer.basePoses);
@@ -175,26 +193,34 @@ void Animator::Play(int layerIndex, int clipIndex, bool loop, float blendDuratio
     }
 }
 
-void Animator::Play(int layerIndex, const char* clipName, bool loop, float blendDuration, float startTime, float endTime)
+void Animator::Play(int layerIndex, const char* clipName, bool loop, float blendDuration, float startTime,
+                    float endTime)
 {
-    Play(layerIndex, GetClipIndex(clipName), loop, blendDuration, startTime,endTime);
+    Play(layerIndex, GetClipIndex(clipName), loop, blendDuration, startTime, endTime);
 }
 
 void Animator::SetLayerBlend(int layerIndex, int clip0, int clip1, float blendRate)
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return;
+    }
 
     auto& layer = layers[layerIndex];
     layer.clip0 = clip0;
     layer.clip1 = clip1;
     layer.blendRate = blendRate;
 
-    // Ä¶ŠÔ‚ÍƒŠƒZƒbƒg‚¹‚¸‚É‚»‚Ì‚Ü‚Üis‚·‚é
+    // å†ç”Ÿæ™‚é–“ã¯ãƒªã‚»ãƒƒãƒˆã›ãšã«ãã®ã¾ã¾é€²è¡Œã™ã‚‹
 }
 
-void Animator::SetLayerState(int layerIndex, float weight, AnimationBlendMode mode, const AnimationLayerMask* mask)
+void Animator::SetLayerState(int layerIndex, float weight, AnimationBlendMode mode,
+                             const AnimationLayerMask* mask)
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return;
+    }
 
     layers[layerIndex].layerGlobalWeight = weight;
     layers[layerIndex].blendMode = mode;
@@ -204,6 +230,7 @@ void Animator::SetLayerState(int layerIndex, float weight, AnimationBlendMode mo
 int Animator::GetClipIndex(const char* clipName) const
 {
     const std::vector<Model::Animation>& clips = model->GetAnimations();
+
     for (size_t i = 0; i < clips.size(); ++i)
     {
         if (clips.at(i).name == clipName)
@@ -211,49 +238,71 @@ int Animator::GetClipIndex(const char* clipName) const
             return static_cast<int>(i);
         }
     }
+
     return -1;
 }
 
 bool Animator::IsPlaying(int layerIndex) const
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return false;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return false;
+    }
+
     return layers[layerIndex].isPlaying;
 }
 
 float Animator::GetCurrentTimes(int layerIndex) const
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return 0.0f;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return 0.0f;
+    }
+
     return layers[layerIndex].currentTime;
 }
 
 float Animator::GetDuration(int layerIndex) const
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return 0.0f;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return 0.0f;
+    }
+
     return layers[layerIndex].duration;
 }
 
 float Animator::GetProgress(int layerIndex) const
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return 0.0f;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return 0.0f;
+    }
 
     const auto& layer = layers[layerIndex];
-    if (layer.duration <= 0.0f) return 0.0f;
 
-    // Œ»İŠÔ / ‘S‘ÌŠÔ ‚Å 0.0f ~ 1.0f ‚Ìi’»—¦‚ğŒvZ
+    if (layer.duration <= 0.0f)
+    {
+        return 0.0f;
+    }
+
+    // ç¾åœ¨æ™‚é–“ / å…¨ä½“æ™‚é–“ ã§ 0.0f ~ 1.0f ã®é€²æ—ç‡ã‚’è¨ˆç®—
     return layer.currentTime / layer.duration;
 }
 
 void Animator::SetLayerSpeed(int layerIndex, float speed)
 {
-    if (layerIndex < 0 || layerIndex >= layers.size()) return;
+    if (layerIndex < 0 || layerIndex >= layers.size())
+    {
+        return;
+    }
+
     layers[layerIndex].playbackSpeed = speed;
 }
 
-void Animator::BlendNodePoses(
-    std::vector<Model::NodePose>& dstPoses,
-    const std::vector<Model::NodePose>& srcPoses0,
-    const std::vector<Model::NodePose>& srcPoses1,
-    float blendFactor)
+void Animator::BlendNodePoses(std::vector<Model::NodePose>& dstPoses,
+                              const std::vector<Model::NodePose>& srcPoses0,
+                              const std::vector<Model::NodePose>& srcPoses1, float blendFactor)
 {
     for (size_t nodeIndex = 0; nodeIndex < srcPoses0.size(); ++nodeIndex)
     {
@@ -261,11 +310,8 @@ void Animator::BlendNodePoses(
     }
 }
 
-void Animator::BlendSingleNode(
-    Model::NodePose& dst,
-    const Model::NodePose& src0,
-    const Model::NodePose& src1,
-    float blendFactor)
+void Animator::BlendSingleNode(Model::NodePose& dst, const Model::NodePose& src0, const Model::NodePose& src1,
+                               float blendFactor)
 {
     DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&src0.position);
     DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&src1.position);
@@ -279,13 +325,19 @@ void Animator::BlendSingleNode(
     DirectX::XMStoreFloat3(&dst.scale, DirectX::XMVectorLerp(s0, s1, blendFactor));
 }
 
-void AnimationLayerMask::BuildLayerMaskFromRoot(const Model* model, const char* rootBoneName, float targetWeight)
+void AnimationLayerMask::BuildLayerMaskFromRoot(const Model* model, const char* rootBoneName,
+                                                float targetWeight)
 {
-    if (!model) return;
+    if (!model)
+    {
+        return;
+    }
+
     const auto& nodes = model->GetNodes();
     boneWeights.assign(nodes.size(), 0.0f);
 
     int rootIndex = -1;
+
     for (size_t i = 0; i < nodes.size(); ++i)
     {
         if (nodes[i].name == rootBoneName)
@@ -295,13 +347,17 @@ void AnimationLayerMask::BuildLayerMaskFromRoot(const Model* model, const char* 
         }
     }
 
-    if (rootIndex == -1) return;
+    if (rootIndex == -1)
+    {
+        return;
+    }
 
     boneWeights[rootIndex] = targetWeight;
 
     for (size_t i = rootIndex + 1; i < nodes.size(); ++i)
     {
         int pIdx = nodes[i].parentIndex;
+
         if (pIdx >= rootIndex && boneWeights[pIdx] > 0.001f)
         {
             boneWeights[i] = targetWeight;

@@ -15,6 +15,45 @@
       "collisionModelPath": "Data/Model/Cube/Cube.gltf"
     },
     {
+      "typeId": 101,
+      "name": "LaboratoryBlockOrange",
+      "category": "Ground",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Orange_1m.gltf",
+      "collision": true,
+      "defaultScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+    },
+    {
+      "typeId": 102,
+      "name": "LaboratoryBlockPanel",
+      "category": "Ground",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Panel_1m.gltf",
+      "collision": true,
+      "defaultScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+    },
+    {
+      "typeId": 103,
+      "name": "LaboratoryBlockVent",
+      "category": "Ground",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Vent_1m.gltf",
+      "collision": true,
+      "defaultScale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+    },
+    {
       "typeId": 201,
       "name": "LabColumn_3m",
       "category": "Decoration",

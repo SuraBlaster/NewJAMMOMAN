@@ -1,36 +1,38 @@
-#pragma once
+ï»¿#pragma once
 
 #include "Shader.h"
 
-// —ÖŠsüi”w–Ê–@jƒVƒF[ƒ_[
+// è¼ªéƒ­ç·šï¼ˆèƒŒé¢æ³•ï¼‰ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
 class OutlineShader : public Shader
 {
-public:
-	OutlineShader(ID3D11Device* device);
-	~OutlineShader() override = default;
+  public:
 
-	// ŠJnˆ—
-	void Begin(const RenderContext& rc) override;
+    OutlineShader(ID3D11Device* device);
+    ~OutlineShader() override = default;
 
-	// XVˆ—
-	void Update(const RenderContext& rc, const Model::Mesh& mesh) override;
+    // é–‹å§‹å‡¦ç†
+    void Begin(const RenderContext& rc) override;
 
-	// I—¹ˆ—
-	void End(const RenderContext& rc) override;
+    // æ›´æ–°å‡¦ç†
+    void Update(const RenderContext& rc, const Model::Mesh& mesh) override;
 
-private:
-	// Shader/Outline.hlsli ‚Ì CbOutline ‚Æ“¯‚¶•À‚Ñ‚É‚·‚é‚±‚Æ
-	struct CbOutline
-	{
-		DirectX::XMFLOAT4	color;
-		float				width;
-		float				albedoMix;
-		DirectX::XMFLOAT2	viewportSize;
-	};
+    // çµ‚äº†å‡¦ç†
+    void End(const RenderContext& rc) override;
 
-	Microsoft::WRL::ComPtr<ID3D11VertexShader>		vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader>		pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>		inputLayout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer>			outlineConstantBuffer;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState>	cullFrontRasterizerState;
+  private:
+
+    // Shader/Outline.hlsli ã® CbOutline ã¨åŒã˜ä¸¦ã³ã«ã™ã‚‹ã“ã¨
+    struct CbOutline
+    {
+        DirectX::XMFLOAT4 color;
+        float width;
+        float albedoMix;
+        DirectX::XMFLOAT2 viewportSize;
+    };
+
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> outlineConstantBuffer;
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> cullFrontRasterizerState;
 };

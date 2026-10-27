@@ -2,9 +2,9 @@
 
 VsOutput main(float4 position : POSITION)
 {
-	VsOutput vout;
-	vout.position = mul(position, worldViewProjection);
-	vout.color = color;
+    VsOutput vout;
+    vout.position = mul(position, worldViewProjection);
+    vout.color = color;
 
-	return vout;
+    return vout;
 }

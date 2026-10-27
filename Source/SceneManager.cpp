@@ -1,7 +1,8 @@
-#include "LoadingProfile.h"
+﻿#include "LoadingProfile.h"
 #include "SceneManager.h"
 #include <utility>
 
+// 更新処理
 void SceneManager::Update(float elapsedTime)
 {
     if (nextScene)
@@ -9,41 +10,73 @@ void SceneManager::Update(float elapsedTime)
         LoadingProfile::Scope profile("SceneTransition");
         auto factory = std::move(nextScene);
         nextScene = nullptr;
-        if (currentScene) currentScene->Finalize();
+
+        if (currentScene)
+        {
+            currentScene->Finalize();
+        }
+
         currentScene.reset();
         profile.Step("old_scene_cleanup");
         currentScene = factory();
         profile.Step("construct");
-        if (currentScene) currentScene->Initialize();
+
+        if (currentScene)
+        {
+            currentScene->Initialize();
+        }
+
         profile.Step("initialize");
     }
-    if (currentScene) currentScene->Update(elapsedTime);
+
+    if (currentScene)
+    {
+        currentScene->Update(elapsedTime);
+    }
 }
 
+// 描画処理
 void SceneManager::Render(float elapsedTime)
 {
-    if (currentScene) currentScene->Render(elapsedTime);
+    if (currentScene)
+    {
+        currentScene->Render(elapsedTime);
+    }
 }
 
+// デバッグ画面の描画処理
 void SceneManager::DrawGUI()
 {
-    if (currentScene) currentScene->DrawGUI();
+    if (currentScene)
+    {
+        currentScene->DrawGUI();
+    }
 }
 
 void SceneManager::Clear()
 {
     nextScene = nullptr;
-    if (currentScene) currentScene->Finalize();
+
+    if (currentScene)
+    {
+        currentScene->Finalize();
+    }
+
     currentScene.reset();
 }
 
 void SceneManager::ChangeScene(SceneFactory factory)
 {
-    if (factory) nextScene = std::move(factory);
+    if (factory)
+    {
+        nextScene = std::move(factory);
+    }
 }
 
 void SceneManager::ChangeScene(std::shared_ptr<Scene> scene)
 {
     if (scene && scene != currentScene)
+    {
         ChangeScene([scene]() { return scene; });
+    }
 }

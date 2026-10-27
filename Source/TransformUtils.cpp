@@ -1,39 +1,41 @@
-#include "TransformUtils.h"
+ï»¿#include "TransformUtils.h"
 
-// s—ñ‚©‚çƒˆ[Aƒsƒbƒ`Aƒ[ƒ‹‚ğs—ñ‚ğŒvZ‚·‚éB
+// è¡Œåˆ—ã‹ã‚‰ãƒ¨ãƒ¼ã€ãƒ”ãƒƒãƒã€ãƒ­ãƒ¼ãƒ«ã‚’è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹
 bool TransformUtils::MatrixToRollPitchYaw(const DirectX::XMFLOAT4X4& m, float& pitch, float& yaw, float& roll)
 {
-	float xRadian = asinf(-m._32);
-	pitch = xRadian;
-	if (xRadian < DirectX::XM_PI / 2.0f)
-	{
-		if (xRadian > -DirectX::XM_PI / 2.0f)
-		{
-			roll = atan2f(m._12, m._22);
-			yaw = atan2f(m._31, m._33);
-			return true;
-		}
-		else
-		{
-			roll = (float)-atan2f(m._13, m._11);
-			yaw = 0.0f;
-			return false;
-		}
-	}
-	else
-	{
-		roll = (float)atan2f(m._13, m._11);
-		yaw = 0.0f;
-		return false;
-	}
+    float xRadian = asinf(-m._32);
+    pitch = xRadian;
+
+    if (xRadian < DirectX::XM_PI / 2.0f)
+    {
+        if (xRadian > -DirectX::XM_PI / 2.0f)
+        {
+            roll = atan2f(m._12, m._22);
+            yaw = atan2f(m._31, m._33);
+            return true;
+        }
+        else
+        {
+            roll = (float)-atan2f(m._13, m._11);
+            yaw = 0.0f;
+            return false;
+        }
+    }
+    else
+    {
+        roll = (float)atan2f(m._13, m._11);
+        yaw = 0.0f;
+        return false;
+    }
 }
 
-// ƒNƒH[ƒ^ƒjƒIƒ“‚©‚çƒˆ[Aƒsƒbƒ`Aƒ[ƒ‹‚ğs—ñ‚ğŒvZ‚·‚éB
-bool TransformUtils::QuaternionToRollPitchYaw(const DirectX::XMFLOAT4& q, float& pitch, float& yaw, float& roll)
+// ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‹ã‚‰ãƒ¨ãƒ¼ã€ãƒ”ãƒƒãƒã€ãƒ­ãƒ¼ãƒ«ã‚’è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹
+bool TransformUtils::QuaternionToRollPitchYaw(const DirectX::XMFLOAT4& q, float& pitch, float& yaw,
+                                              float& roll)
 {
-	DirectX::XMVECTOR qVector = DirectX::XMLoadFloat4(&q);
-	DirectX::XMMATRIX mMatrix = DirectX::XMMatrixRotationQuaternion(qVector);
-	DirectX::XMFLOAT4X4 m;
-	DirectX::XMStoreFloat4x4(&m, mMatrix);
-	return MatrixToRollPitchYaw(m, pitch, yaw, roll);
+    DirectX::XMVECTOR qVector = DirectX::XMLoadFloat4(&q);
+    DirectX::XMMATRIX mMatrix = DirectX::XMMatrixRotationQuaternion(qVector);
+    DirectX::XMFLOAT4X4 m;
+    DirectX::XMStoreFloat4x4(&m, mMatrix);
+    return MatrixToRollPitchYaw(m, pitch, yaw, roll);
 }

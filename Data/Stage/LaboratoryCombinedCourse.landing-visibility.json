@@ -1,0 +1,68 @@
+{
+  "backup": "LaboratoryCombinedCourse.before-landing-visibility-2026-10-15T02-48-41-626Z.tmj",
+  "changes": {
+    "removed": [
+      [
+        173,
+        22
+      ],
+      [
+        173,
+        23
+      ],
+      [
+        173,
+        24
+      ]
+    ],
+    "added": [
+      [
+        173,
+        18
+      ],
+      [
+        173,
+        19
+      ],
+      [
+        174,
+        18
+      ],
+      [
+        174,
+        19
+      ],
+      [
+        198,
+        19
+      ],
+      [
+        198,
+        20
+      ],
+      [
+        199,
+        19
+      ],
+      [
+        199,
+        20
+      ],
+      [
+        200,
+        19
+      ],
+      [
+        200,
+        20
+      ]
+    ]
+  },
+  "cameraSections": [
+    "landing_middle",
+    "landing_final_drop1",
+    "landing_final_drop1_low",
+    "landing_final_drop2",
+    "landing_final_drop2_low"
+  ]
+}

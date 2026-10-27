@@ -1,16 +1,30 @@
-#include "Character.h"
+﻿#include "Character.h"
 #include <cassert>
 #include <cstdio>
 
 class TestCharacter final : public Character
 {
-public:
-    void Update(float elapsedTime) override { UpdateInvincibleTimer(elapsedTime); }
+  public:
+
+    void Update(float elapsedTime) override
+    {
+        UpdateInvincibleTimer(elapsedTime);
+    }
+
     int damageEvents = 0;
     int deathEvents = 0;
-private:
-    void OnDamaged() override { ++damageEvents; }
-    void OnDead() override { ++deathEvents; }
+
+  private:
+
+    void OnDamaged() override
+    {
+        ++damageEvents;
+    }
+
+    void OnDead() override
+    {
+        ++deathEvents;
+    }
 };
 
 int main()

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "SceneManager.h"
 #include <utility>
 #include <atomic>
@@ -9,30 +9,52 @@
 #include "LoadingBoss.h"
 #include "LoadingPlayer.h"
 
-// Construct on a worker; initialize and activate on the main thread.
-// Factories must avoid the immediate device context and shared rendering state.
 class SceneLoading : public Scene
 {
-public:
+  public:
+
+    // コンストラクタ
     explicit SceneLoading(SceneManager::SceneFactory factory, bool fromTitle = false)
-        : factory(std::move(factory)), showTitleIntro(fromTitle) {}
+        : factory(std::move(factory)), showTitleIntro(fromTitle)
+    {
+    }
+
+    // デストラクタ
     ~SceneLoading() override;
+
+    // 初期化処理
     void Initialize() override;
+
+    // 終了処理
     void Finalize() override;
+
+    // 更新処理
     void Update(float elapsedTime) override;
+
+    // 描画処理
     void Render(float elapsedTime) override;
+
+    // デバッグ画面の描画処理
     void DrawGUI() override;
-private:
+
+  private:
+
     void StartLoading();
     void JoinLoading();
     std::thread loadingThread;
     std::atomic<bool> loadComplete{false};
     std::shared_ptr<Scene> loadedScene;
     std::exception_ptr loadError;
+
+    // RenderCharacters の描画処理
     void RenderCharacters();
     std::unique_ptr<LoadingBoss> boss;
     std::unique_ptr<LoadingPlayer> player;
+
+    // DrawDescription の描画処理
     void DrawDescription(float scale, float offsetX, float offsetY);
+
+    // DrawLoadingText の描画処理
     void DrawLoadingText(float scale, float offsetX, float offsetY);
     static constexpr float TYPEWRITER_DELAY = 0.6f;
     static constexpr float LETTER_INTERVAL = 0.06f;

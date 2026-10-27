@@ -1,4 +1,4 @@
-#include <stdexcept>
+ï»¿#include <stdexcept>
 #include <cmath>
 #include <algorithm>
 #include "Misc.h"
@@ -6,169 +6,216 @@
 
 Audio* Audio::instance = nullptr;
 
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Audio::Audio()
 {
-	// ƒCƒ“ƒXƒ^ƒ“ƒXİ’è
-	if (instance) throw std::logic_error("Audio already instantiated");
-	instance = this;
+    // ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹è¨­å®š
+    if (instance)
+    {
+        throw std::logic_error("Audio already instantiated");
+    }
 
-	HRESULT hr;
+    instance = this;
 
-	// COM‚Ì‰Šú‰»
-	hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-	comInitialized = SUCCEEDED(hr);
-	if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) return;
+    HRESULT hr;
 
-	UINT32 createFlags = 0;
+    // COMã®åˆæœŸåŒ–
+    hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    comInitialized = SUCCEEDED(hr);
 
-	// XAudio‰Šú‰»
-	hr = XAudio2Create(&xaudio, createFlags);
-	if (FAILED(hr)) return;
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
+    {
+        return;
+    }
 
-	// ƒ}ƒXƒ^ƒŠƒ“ƒOƒ{ƒCƒX¶¬
-	hr = xaudio->CreateMasteringVoice(&masteringVoice);
-	if (FAILED(hr)) return;
+    UINT32 createFlags = 0;
 
-	RegisterFromFile("Data/Audio/sound_list.csv");
+    // XAudioåˆæœŸåŒ–
+    hr = XAudio2Create(&xaudio, createFlags);
+
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    // ãƒã‚¹ã‚¿ãƒªãƒ³ã‚°ãƒœã‚¤ã‚¹ç”Ÿæˆ
+    hr = xaudio->CreateMasteringVoice(&masteringVoice);
+
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    RegisterFromFile("Data/Audio/sound_list.csv");
 }
 
-// ƒfƒXƒgƒ‰ƒNƒ^
+// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 Audio::~Audio()
 {
-	// ŠÇ—‚µ‚Ä‚¢‚é‰¹Œ¹‚ğ”jŠü
-	soundMap.clear();
+    // ç®¡ç†ã—ã¦ã„ã‚‹éŸ³æºã‚’ç ´æ£„
+    soundMap.clear();
 
-	// ƒ}ƒXƒ^ƒŠƒ“ƒOƒ{ƒCƒX”jŠü
-	if (masteringVoice != nullptr)
-	{
-		masteringVoice->DestroyVoice();
-		masteringVoice = nullptr;
-	}
+    // ãƒã‚¹ã‚¿ãƒªãƒ³ã‚°ãƒœã‚¤ã‚¹ç ´æ£„
+    if (masteringVoice != nullptr)
+    {
+        masteringVoice->DestroyVoice();
+        masteringVoice = nullptr;
+    }
 
-	// XAudioI—¹‰»
-	if (xaudio != nullptr)
-	{
-		xaudio->Release();
-		xaudio = nullptr;
-	}
+    // XAudioçµ‚äº†åŒ–
+    if (xaudio != nullptr)
+    {
+        xaudio->Release();
+        xaudio = nullptr;
+    }
 
-	// COMI—¹‰»
-	if (comInitialized) CoUninitialize();
-	instance = nullptr;
+    // COMçµ‚äº†åŒ–
+    if (comInitialized)
+    {
+        CoUninitialize();
+    }
+
+    instance = nullptr;
 }
 
-// ‰¹Œ¹‚Ì“o˜^
+// éŸ³æºã®ç™»éŒ²
 void Audio::Register(const std::string& key, const char* filename)
 {
-	// Šù‚É“¯‚¶ƒL[‚Å“o˜^‚³‚ê‚Ä‚¢‚½‚ç‰½‚à‚µ‚È‚¢
-	if (soundMap.find(key) != soundMap.end())
-	{
-		return;
-	}
+    // æ—¢ã«åŒã˜ã‚­ãƒ¼ã§ç™»éŒ²ã•ã‚Œã¦ã„ãŸã‚‰ä½•ã‚‚ã—ãªã„
+    if (soundMap.find(key) != soundMap.end())
+    {
+        return;
+    }
 
-	// Šù‘¶‚ÌLoadAudioSource‚ğg‚Á‚Ä“Ç‚İ‚Ş
-	if (auto source = LoadAudioSource(filename)) soundMap.emplace(key, std::move(source));
+    // æ—¢å­˜ã®LoadAudioSourceã‚’ä½¿ã£ã¦èª­ã¿è¾¼ã‚€
+    if (auto source = LoadAudioSource(filename))
+    {
+        soundMap.emplace(key, std::move(source));
+    }
 }
 
 void Audio::RegisterFromFile(const char* listFilename)
 {
-	std::ifstream file(listFilename);
-	if (!file.is_open()) return;
+    std::ifstream file(listFilename);
 
-	std::string line;
-	while (std::getline(file, line))
-	{
-		if (line.empty() || line.find("//") == 0) continue;
+    if (!file.is_open())
+    {
+        return;
+    }
 
-		std::stringstream ss(line);
-		std::string key, path, volStr;
+    std::string line;
 
-		// 1. ƒL[
-		std::getline(ss, key, ',');
-		// 2. ƒpƒX
-		std::getline(ss, path, ',');
-		// 3. ‰¹—Ê (‚ ‚ê‚Î“Ç‚İ‚Ş)
-		std::getline(ss, volStr, ',');
+    while (std::getline(file, line))
+    {
+        if (line.empty() || line.find("//") == 0)
+        {
+            continue;
+        }
 
-		// ƒpƒX‚Ì‰üsœ‹i‘O‰ñ‚Æ“¯‚¶j
-		if (!path.empty() && (path.back() == '\r' || path.back() == '\n')) path.pop_back();
+        std::stringstream ss(line);
+        std::string key, path, volStr;
 
-		if (!key.empty() && !path.empty())
-		{
-			Register(key, path.c_str());
+        // 1. ã‚­ãƒ¼
+        std::getline(ss, key, ',');
+        // 2. ãƒ‘ã‚¹
+        std::getline(ss, path, ',');
+        // 3. éŸ³é‡ (ã‚ã‚Œã°èª­ã¿è¾¼ã‚€)
+        std::getline(ss, volStr, ',');
 
-			// ‰¹—Ê‚Ìw’è‚ª‚ ‚Á‚½ê‡Afloat‚É•ÏŠ·‚µ‚ÄƒZƒbƒg
-			if (!volStr.empty())
-			{
-				try {
-					float vol = std::stof(volStr);
-					SetVolume(key, vol);
-				}
-				catch (...) {
-					// ”’l•ÏŠ·‚É¸”s‚µ‚½ê‡‚Í–³‹(1.0‚Ì‚Ü‚Ü)
-				}
-			}
-		}
-	}
+        // ãƒ‘ã‚¹ã®æ”¹è¡Œé™¤å»ï¼ˆå‰å›ã¨åŒã˜ï¼‰
+        if (!path.empty() && (path.back() == '\r' || path.back() == '\n'))
+        {
+            path.pop_back();
+        }
+
+        if (!key.empty() && !path.empty())
+        {
+            Register(key, path.c_str());
+
+            // éŸ³é‡ã®æŒ‡å®šãŒã‚ã£ãŸå ´åˆã€floatã«å¤‰æ›ã—ã¦ã‚»ãƒƒãƒˆ
+            if (!volStr.empty())
+            {
+                try
+                {
+                    float vol = std::stof(volStr);
+                    SetVolume(key, vol);
+                }
+                catch (...)
+                {
+                    // æ•°å€¤å¤‰æ›ã«å¤±æ•—ã—ãŸå ´åˆã¯ç„¡è¦–(1.0ã®ã¾ã¾)
+                }
+            }
+        }
+    }
 }
 
-// “o˜^‚µ‚½‰¹Œ¹‚ÌÄ¶
+// ç™»éŒ²ã—ãŸéŸ³æºã®å†ç”Ÿ
 void Audio::Play(const std::string& key, bool loop)
 {
-	// ƒL[‚ª‘¶İ‚·‚é‚©Šm”F
-	if (soundMap.find(key) != soundMap.end())
-	{
-		// AudioSource‚ÌPlay‚ğŒÄ‚Ô
-		soundMap[key]->Play(loop);
-	}
+    // ã‚­ãƒ¼ãŒå­˜åœ¨ã™ã‚‹ã‹ç¢ºèª
+    if (soundMap.find(key) != soundMap.end())
+    {
+        // AudioSourceã®Playã‚’å‘¼ã¶
+        soundMap[key]->Play(loop);
+    }
 }
 
-// “o˜^‚µ‚½‰¹Œ¹‚Ì’â~
+// ç™»éŒ²ã—ãŸéŸ³æºã®åœæ­¢
 void Audio::Stop(const std::string& key)
 {
-	if (soundMap.find(key) != soundMap.end())
-	{
-		soundMap[key]->Stop();
-	}
+    if (soundMap.find(key) != soundMap.end())
+    {
+        soundMap[key]->Stop();
+    }
 }
 
 void Audio::StopAll()
 {
-	for (auto& pair : soundMap)
-	{
-		pair.second->Stop();
-	}	
+    for (auto& pair : soundMap)
+    {
+        pair.second->Stop();
+    }
 }
 
 void Audio::SetMasterVolume(float volume)
 {
-	if (masteringVoice)
-	{
-		// ‘S‘Ì‚Ìo—Í‰¹—Ê‚ğ•ÏX
-		if (std::isfinite(volume)) masteringVoice->SetVolume((std::clamp)(volume, 0.0f, XAUDIO2_MAX_VOLUME_LEVEL));
-	}
+    if (masteringVoice)
+    {
+        // å…¨ä½“ã®å‡ºåŠ›éŸ³é‡ã‚’å¤‰æ›´
+        if (std::isfinite(volume))
+        {
+            masteringVoice->SetVolume((std::clamp)(volume, 0.0f, XAUDIO2_MAX_VOLUME_LEVEL));
+        }
+    }
 }
 
 void Audio::SetVolume(const std::string& key, float volume)
 {
-	auto it = soundMap.find(key);
-	if (it != soundMap.end())
-	{
-		it->second->SetVolume(volume);
-	}
+    auto it = soundMap.find(key);
+
+    if (it != soundMap.end())
+    {
+        it->second->SetVolume(volume);
+    }
 }
 
-// ƒI[ƒfƒBƒIƒ\[ƒX“Ç‚İ‚İ
+// ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªã‚½ãƒ¼ã‚¹èª­ã¿è¾¼ã¿
 std::unique_ptr<AudioSource> Audio::LoadAudioSource(const char* filename)
 {
-	if (!xaudio || !masteringVoice) return nullptr;
-	try {
-	std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
-	return std::make_unique<AudioSource>(xaudio, resource);
-	} catch (const std::exception& error) {
-		OutputDebugStringA(error.what());
-		OutputDebugStringA("\n");
-		return nullptr;
-	}
+    if (!xaudio || !masteringVoice)
+    {
+        return nullptr;
+    }
+
+    try
+    {
+        std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
+        return std::make_unique<AudioSource>(xaudio, resource);
+    }
+    catch (const std::exception& error)
+    {
+        OutputDebugStringA(error.what());
+        OutputDebugStringA("\n");
+        return nullptr;
+    }
 }

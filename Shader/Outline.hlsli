@@ -4,8 +4,8 @@
 cbuffer CbOutline : register(b1)
 {
     float4 cbOutlineColor;
-    float  cbOutlineWidth;          // ü‚Ì‘¾‚³iƒsƒNƒZƒ‹j
-    float  cbOutlineAlbedoMix;      // 0:ü‚ÌF‚»‚Ì‚Ü‚Ü 1:ƒ‚ƒfƒ‹‚ÌF‚ğˆÃ‚­‚µ‚½F
+    float cbOutlineWidth;     // ç·šã®å¤ªã•ï¼ˆãƒ”ã‚¯ã‚»ãƒ«ï¼‰
+    float cbOutlineAlbedoMix; // 0:ç·šã®è‰²ãã®ã¾ã¾ 1:ãƒ¢ãƒ‡ãƒ«ã®è‰²ã‚’æš—ãã—ãŸè‰²
     float2 cbViewportSize;
 };
 

@@ -1,52 +1,52 @@
-#include <imgui.h>
+ï»¿#include <imgui.h>
 #include "StylizedShading.h"
 
-// ’²®—pGUI
+// èª¿æ•´ç”¨GUI
 void StylizedShading::DrawGUI()
 {
-	if (ImGui::Begin("Stylized Shading"))
-	{
-		ImGui::SliderFloat(u8"PBRÌƒXƒ^ƒCƒ‰ƒCƒYƒh", &settings.stylizeBlend, 0.0f, 1.0f);
+    if (ImGui::Begin("Stylized Shading"))
+    {
+        ImGui::SliderFloat(u8"PBRâ‡”ã‚¹ã‚¿ã‚¤ãƒ©ã‚¤ã‚ºãƒ‰", &settings.stylizeBlend, 0.0f, 1.0f);
 
-		if (ImGui::CollapsingHeader(u8"‰A‰eiƒgƒD[ƒ“j", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::SliderFloat(u8"‹«–Ú‚ÌˆÊ’u", &settings.toonThreshold, 0.0f, 1.0f);
-			ImGui::SliderFloat(u8"‹«–Ú‚Ì‚Ú‚©‚µ", &settings.toonSoftness, 0.001f, 0.5f);
-			ImGui::ColorEdit3(u8"‰e‚ÌF", &settings.shadowColor.x);
-			ImGui::SliderFloat(u8"ŠÂ‹«Œõ‚Ì‹­‚³", &settings.ambientStrength, 0.0f, 2.0f);
-		}
+        if (ImGui::CollapsingHeader(u8"é™°å½±ï¼ˆãƒˆã‚¥ãƒ¼ãƒ³ï¼‰", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat(u8"å¢ƒç›®ã®ä½ç½®", &settings.toonThreshold, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"å¢ƒç›®ã®ã¼ã‹ã—", &settings.toonSoftness, 0.001f, 0.5f);
+            ImGui::ColorEdit3(u8"å½±ã®è‰²", &settings.shadowColor.x);
+            ImGui::SliderFloat(u8"ç’°å¢ƒå…‰ã®å¼·ã•", &settings.ambientStrength, 0.0f, 2.0f);
+        }
 
-		if (ImGui::CollapsingHeader(u8"ƒnƒCƒ‰ƒCƒg", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::SliderFloat(u8"on‚ß‚éˆÊ’u##specular", &settings.specularThreshold, 0.0f, 1.0f);
-			ImGui::SliderFloat(u8"‰‚Ì‚Ú‚©‚µ##specular", &settings.specularSoftness, 0.001f, 0.5f);
-			ImGui::SliderFloat(u8"‹­‚³##specular", &settings.specularIntensity, 0.0f, 3.0f);
-		}
+        if (ImGui::CollapsingHeader(u8"ãƒã‚¤ãƒ©ã‚¤ãƒˆ", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat(u8"å‡ºå§‹ã‚ã‚‹ä½ç½®##specular", &settings.specularThreshold, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"ç¸ã®ã¼ã‹ã—##specular", &settings.specularSoftness, 0.001f, 0.5f);
+            ImGui::SliderFloat(u8"å¼·ã•##specular", &settings.specularIntensity, 0.0f, 3.0f);
+        }
 
-		if (ImGui::CollapsingHeader(u8"ƒŠƒ€ƒ‰ƒCƒg", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::SliderFloat(u8"on‚ß‚éˆÊ’u##rim", &settings.rimThreshold, 0.0f, 1.0f);
-			ImGui::SliderFloat(u8"‰‚Ì‚Ú‚©‚µ##rim", &settings.rimSoftness, 0.001f, 0.5f);
-			ImGui::SliderFloat(u8"‹­‚³##rim", &settings.rimIntensity, 0.0f, 3.0f);
-			ImGui::ColorEdit3(u8"F##rim", &settings.rimColor.x);
-			ImGui::SliderFloat(u8"ƒXƒe[ƒW“™‚Ö‚Ì‹­‚³##rim", &staticRimScale, 0.0f, 1.0f);
-		}
+        if (ImGui::CollapsingHeader(u8"ãƒªãƒ ãƒ©ã‚¤ãƒˆ", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat(u8"å‡ºå§‹ã‚ã‚‹ä½ç½®##rim", &settings.rimThreshold, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"ç¸ã®ã¼ã‹ã—##rim", &settings.rimSoftness, 0.001f, 0.5f);
+            ImGui::SliderFloat(u8"å¼·ã•##rim", &settings.rimIntensity, 0.0f, 3.0f);
+            ImGui::ColorEdit3(u8"è‰²##rim", &settings.rimColor.x);
+            ImGui::SliderFloat(u8"ã‚¹ãƒ†ãƒ¼ã‚¸ç­‰ã¸ã®å¼·ã•##rim", &staticRimScale, 0.0f, 1.0f);
+        }
 
-		if (ImGui::CollapsingHeader(u8"—ÖŠsü", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::Checkbox(u8"•\¦##outline", &outlineSettings.enabled);
-			ImGui::SliderFloat(u8"‘¾‚³iƒsƒNƒZƒ‹j##outline", &outlineSettings.width, 0.0f, 8.0f);
-			ImGui::ColorEdit3(u8"F##outline", &outlineSettings.color.x);
-			ImGui::SliderFloat(u8"ƒ‚ƒfƒ‹‚ÌF‚ğ¬‚º‚é##outline", &outlineSettings.albedoMix, 0.0f, 1.0f);
-			ImGui::Checkbox(u8"ƒXƒe[ƒW“™‚É‚à•`‚­##outline", &outlineSettings.drawOnStatic);
-		}
+        if (ImGui::CollapsingHeader(u8"è¼ªéƒ­ç·š", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox(u8"è¡¨ç¤º##outline", &outlineSettings.enabled);
+            ImGui::SliderFloat(u8"å¤ªã•ï¼ˆãƒ”ã‚¯ã‚»ãƒ«ï¼‰##outline", &outlineSettings.width, 0.0f, 8.0f);
+            ImGui::ColorEdit3(u8"è‰²##outline", &outlineSettings.color.x);
+            ImGui::SliderFloat(u8"ãƒ¢ãƒ‡ãƒ«ã®è‰²ã‚’æ··ãœã‚‹##outline", &outlineSettings.albedoMix, 0.0f, 1.0f);
+            ImGui::Checkbox(u8"ã‚¹ãƒ†ãƒ¼ã‚¸ç­‰ã«ã‚‚æã##outline", &outlineSettings.drawOnStatic);
+        }
 
-		if (ImGui::Button(u8"‰Šú’l‚É–ß‚·"))
-		{
-			settings = Settings();
-			staticRimScale = 0.0f;
-			outlineSettings = OutlineSettings();
-		}
-	}
-	ImGui::End();
+        if (ImGui::Button(u8"åˆæœŸå€¤ã«æˆ»ã™"))
+        {
+            settings = Settings();
+            staticRimScale = 0.0f;
+            outlineSettings = OutlineSettings();
+        }
+    }
+    ImGui::End();
 }

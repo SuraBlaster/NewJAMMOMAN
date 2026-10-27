@@ -1,91 +1,177 @@
-#include <windows.h>
+Ôªø#include <windows.h>
 #include <math.h>
 #include <Xinput.h>
 #include "GamePad.h"
 #include <algorithm>
 
-// çXêV
+// Êõ¥Êñ∞
 void GamePad::Update()
 {
-	if (vibrating && std::chrono::steady_clock::now() >= vibrationEnd) StopVibration();
-	axisLx = axisLy = 0.0f;
-	axisRx = axisRy = 0.0f;
-	triggerL = triggerR = 0.0f;
+    if (vibrating && std::chrono::steady_clock::now() >= vibrationEnd)
+    {
+        StopVibration();
+    }
 
-	GamePadButton newButtonState = 0;
+    axisLx = axisLy = 0.0f;
+    axisRx = axisRy = 0.0f;
+    triggerL = triggerR = 0.0f;
 
-	// É{É^ÉìèÓïÒéÊìæ
-	XINPUT_STATE xinputState;
-	if (XInputGetState(slot, &xinputState) == ERROR_SUCCESS)
-	{
-		//XINPUT_CAPABILITIES caps;
-		//XInputGetCapabilities(m_slot, XINPUT_FLAG_GAMEPAD, &caps);
-		XINPUT_GAMEPAD& pad = xinputState.Gamepad;
+    GamePadButton newButtonState = 0;
 
-		if (pad.wButtons & XINPUT_GAMEPAD_DPAD_UP)					newButtonState |= BTN_UP;
-		if (pad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)				newButtonState |= BTN_RIGHT;
-		if (pad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)				newButtonState |= BTN_DOWN;
-		if (pad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)				newButtonState |= BTN_LEFT;
-		if (pad.wButtons & XINPUT_GAMEPAD_A)						newButtonState |= BTN_A;
-		if (pad.wButtons & XINPUT_GAMEPAD_B)						newButtonState |= BTN_B;
-		if (pad.wButtons & XINPUT_GAMEPAD_X)						newButtonState |= BTN_X;
-		if (pad.wButtons & XINPUT_GAMEPAD_Y)						newButtonState |= BTN_Y;
-		if (pad.wButtons & XINPUT_GAMEPAD_START)					newButtonState |= BTN_START;
-		if (pad.wButtons & XINPUT_GAMEPAD_BACK)						newButtonState |= BTN_BACK;
-		if (pad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)				newButtonState |= BTN_LEFT_THUMB;
-		if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)				newButtonState |= BTN_RIGHT_THUMB;
-		if (pad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)			newButtonState |= BTN_LEFT_SHOULDER;
-		if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)			newButtonState |= BTN_RIGHT_SHOULDER;
-		if (pad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)	newButtonState |= BTN_LEFT_TRIGGER;
-		if (pad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)	newButtonState |= BTN_RIGHT_TRIGGER;
+    // „Éú„Çø„É≥ÊÉÖÂ†±ÂèñÂæó
+    XINPUT_STATE xinputState;
 
-		if ((pad.sThumbLX <  XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pad.sThumbLX > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) &&
-			(pad.sThumbLY <  XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && pad.sThumbLY > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE))
-		{
-			pad.sThumbLX = 0;
-			pad.sThumbLY = 0;
-		}
+    if (XInputGetState(slot, &xinputState) == ERROR_SUCCESS)
+    {
 
-		if ((pad.sThumbRX <  XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pad.sThumbRX > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) &&
-			(pad.sThumbRY <  XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && pad.sThumbRY > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE))
-		{
-			pad.sThumbRX = 0;
-			pad.sThumbRY = 0;
-		}
+        XINPUT_GAMEPAD& pad = xinputState.Gamepad;
 
-		triggerL = static_cast<float>(pad.bLeftTrigger) / 255.0f;
-		triggerR = static_cast<float>(pad.bRightTrigger) / 255.0f;
-		axisLx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
-		axisLy = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
-		axisRx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
-		axisRy = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
-	}
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
+        {
+            newButtonState |= BTN_UP;
+        }
 
-	{
-		buttonState[1] = buttonState[0];	// ÉXÉCÉbÉ`óöó
-		buttonState[0] = newButtonState;
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+        {
+            newButtonState |= BTN_RIGHT;
+        }
 
-		buttonDown = ~buttonState[1] & newButtonState;	// âüÇµÇΩèuä‘
-		buttonUp = ~newButtonState & buttonState[1];	// ó£ÇµÇΩèuä‘
-	}
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+        {
+            newButtonState |= BTN_DOWN;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+        {
+            newButtonState |= BTN_LEFT;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_A)
+        {
+            newButtonState |= BTN_A;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_B)
+        {
+            newButtonState |= BTN_B;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_X)
+        {
+            newButtonState |= BTN_X;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_Y)
+        {
+            newButtonState |= BTN_Y;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_START)
+        {
+            newButtonState |= BTN_START;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_BACK)
+        {
+            newButtonState |= BTN_BACK;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)
+        {
+            newButtonState |= BTN_LEFT_THUMB;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)
+        {
+            newButtonState |= BTN_RIGHT_THUMB;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+        {
+            newButtonState |= BTN_LEFT_SHOULDER;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+        {
+            newButtonState |= BTN_RIGHT_SHOULDER;
+        }
+
+        if (pad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+        {
+            newButtonState |= BTN_LEFT_TRIGGER;
+        }
+
+        if (pad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+        {
+            newButtonState |= BTN_RIGHT_TRIGGER;
+        }
+
+        if ((pad.sThumbLX < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+             pad.sThumbLX > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) &&
+            (pad.sThumbLY < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+             pad.sThumbLY > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE))
+        {
+            pad.sThumbLX = 0;
+            pad.sThumbLY = 0;
+        }
+
+        if ((pad.sThumbRX < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+             pad.sThumbRX > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) &&
+            (pad.sThumbRY < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+             pad.sThumbRY > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE))
+        {
+            pad.sThumbRX = 0;
+            pad.sThumbRY = 0;
+        }
+
+        triggerL = static_cast<float>(pad.bLeftTrigger) / 255.0f;
+        triggerR = static_cast<float>(pad.bRightTrigger) / 255.0f;
+        axisLx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
+        axisLy = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
+        axisRx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
+        axisRy = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
+    }
+
+    {
+        buttonState[1] = buttonState[0]; // „Çπ„Ç§„ÉÉ„ÉÅÂ±•Ê≠¥
+        buttonState[0] = newButtonState;
+
+        buttonDown = ~buttonState[1] & newButtonState; // Êäº„Åó„ÅüÁû¨Èñì
+        buttonUp = ~newButtonState & buttonState[1];   // Èõ¢„Åó„ÅüÁû¨Èñì
+    }
 }
 
 void GamePad::Vibrate(float left, float right, float duration)
 {
     StopVibration();
-    if (duration <= 0.0f) return;
+
+    if (duration <= 0.0f)
+    {
+        return;
+    }
+
     XINPUT_VIBRATION value{};
     value.wLeftMotorSpeed = static_cast<WORD>((std::clamp)(left, 0.0f, 1.0f) * 65535.0f);
     value.wRightMotorSpeed = static_cast<WORD>((std::clamp)(right, 0.0f, 1.0f) * 65535.0f);
-    if (XInputSetState(slot, &value) != ERROR_SUCCESS) return;
+
+    if (XInputSetState(slot, &value) != ERROR_SUCCESS)
+    {
+        return;
+    }
+
     vibrating = true;
-    vibrationEnd = std::chrono::steady_clock::now()
-        + std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(duration));
+    vibrationEnd =
+        std::chrono::steady_clock::now() + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                                               std::chrono::duration<float>(duration));
 }
 
 void GamePad::StopVibration()
 {
-    if (!vibrating) return;
+    if (!vibrating)
+    {
+        return;
+    }
+
     XINPUT_VIBRATION value{};
     XInputSetState(slot, &value);
     vibrating = false;

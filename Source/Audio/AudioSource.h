@@ -1,35 +1,43 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
 #include <xaudio2.h>
 #include "Audio/AudioResource.h"
 
-// �I�[�f�B�I�\�[�X
+// オーディオソース
 class AudioSource
 {
-public:
-	AudioSource(IXAudio2* xaudio, const std::shared_ptr<AudioResource>& resource);
-	~AudioSource();
-	AudioSource(const AudioSource&) = delete;
-	AudioSource& operator=(const AudioSource&) = delete;
+  public:
 
-	// �Đ�
-	void Play(bool loop = false);
+    // コンストラクタ
+    AudioSource(IXAudio2* xaudio, const std::shared_ptr<AudioResource>& resource);
 
-	// ��~
-	void Stop();
+    // デストラクタ
+    ~AudioSource();
 
-	//���ʐݒ�
-	void SetVolume(float volume);
+    // コンストラクタ
+    AudioSource(const AudioSource&) = delete;
+    AudioSource& operator=(const AudioSource&) = delete;
 
-private:
-	IXAudio2SourceVoice* FindFreeVoice();
+    // 再生
+    void Play(bool loop = false);
 
-private:
-	IXAudio2* xaudio = nullptr;
+    // 停止
+    void Stop();
 
-	std::shared_ptr<AudioResource>	resource;
-	std::vector<IXAudio2SourceVoice*> voices;
-	static const int MAX_POLYPHONY = 16;
-	float volume = 1.0f;
+    //音量設定
+    void SetVolume(float volume);
+
+  private:
+
+    IXAudio2SourceVoice* FindFreeVoice();
+
+  private:
+
+    IXAudio2* xaudio = nullptr;
+
+    std::shared_ptr<AudioResource> resource;
+    std::vector<IXAudio2SourceVoice*> voices;
+    static const int MAX_POLYPHONY = 16;
+    float volume = 1.0f;
 };

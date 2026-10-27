@@ -32,6 +32,10 @@
     {
       "firstgid": 11,
       "source": "Tiled/GateTileset.tsj"
+    },
+    {
+      "firstgid": 14,
+      "source": "Tiled/LaboratoryBlocks.tsj"
     }
   ],
   "layers": [
@@ -12653,7 +12657,7 @@
           "id": 7,
           "name": "Boss",
           "gid": 9,
-          "x": 7584,
+          "x": 7600,
           "y": -1072,
           "width": 32,
           "height": 64,

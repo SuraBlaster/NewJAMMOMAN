@@ -1,4 +1,4 @@
-#include <DirectXCollision.h>
+Ôªø#include <DirectXCollision.h>
 #include "CollisionManager.h"
 #include "Model.h"
 
@@ -10,246 +10,351 @@ void CollisionManager::Register(CollisionMesh* mesh)
 void CollisionManager::Unregister(CollisionMesh* mesh)
 {
     auto it = std::find(meshes.begin(), meshes.end(), mesh);
+
     if (it != meshes.end())
     {
         meshes.erase(it);
     }
 }
 
-bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult)
+bool CollisionManager::Raycast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end,
+                               HitResult& hitResult)
 {
-	bool hit = false;
-	hitResult.distance = FLT_MAX;
+    bool hit = false;
+    hitResult.distance = FLT_MAX;
+    const AABB segmentBounds = {
+        {(std::min)(start.x, end.x), (std::min)(start.y, end.y), (std::min)(start.z, end.z)},
+        {(std::max)(start.x, end.x), (std::max)(start.y, end.y), (std::max)(start.z, end.z)}};
+
     for (const CollisionMesh* mesh : meshes)
     {
-		HitResult tempResult;
+        if (mesh->bounds)
+        {
+            const auto& box = *mesh->bounds;
+
+            if (segmentBounds.max.x < box.min.x || segmentBounds.min.x > box.max.x ||
+                segmentBounds.max.y < box.min.y || segmentBounds.min.y > box.max.y ||
+                segmentBounds.max.z < box.min.z || segmentBounds.min.z > box.max.z)
+            {
+                continue;
+            }
+        }
+
+        HitResult tempResult;
+
         if (RayCast(mesh, start, end, tempResult))
         {
             if (tempResult.distance < hitResult.distance)
             {
-				hitResult = tempResult;
-			}
-			hit = true;
+                hitResult = tempResult;
+            }
+
+            hit = true;
         }
-	}
+    }
+
     return hit;
+}
+
+bool CollisionManager::ResolveTerrainPlacement(float x, float y, float z, float& floorY) const
+{
+    float top = y;
+    bool found = false, expanded;
+    do
+    {
+        expanded = false;
+
+        for (const auto& box : terrainBoxes)
+        {
+            if (x < box.min.x || x > box.max.x || z < box.min.z || z > box.max.z ||
+                box.min.y > top + 0.0001f || box.max.y <= top + 0.0001f)
+            {
+                continue;
+            }
+
+            top = box.max.y;
+            found = expanded = true;
+        }
+    } while (expanded);
+
+    if (found)
+    {
+        floorY = top;
+    }
+
+    return found;
+}
+
+bool CollisionManager::FindTerrainFloor(float x, float z, float minimumY, float maximumY, float& floorY) const
+{
+    bool found = false;
+
+    for (const auto& box : terrainBoxes)
+    {
+        if (x < box.min.x || x > box.max.x || z < box.min.z || z > box.max.z || box.max.y < minimumY ||
+            box.max.y > maximumY)
+        {
+            continue;
+        }
+
+        if (!found || box.max.y > floorY)
+        {
+            floorY = box.max.y;
+        }
+
+        found = true;
+    }
+
+    return found;
 }
 
 bool CollisionManager::CheckWall(const AABB& body, float displacementX, TerrainSweepHit& hit) const
 {
- hit = TerrainSweepHit{};
- if (displacementX == 0.0f) return false;
- if (SweepTerrain(body, { displacementX, 0.0f, 0.0f }, hit) != SweepStatus::Hit) return false;
- const float direction = displacementX < 0.0f ? -1.0f : 1.0f;
- for (const auto& normal : hit.normals)
-  if (normal.x * direction < -0.5f) return true;
- return false;
+    hit = TerrainSweepHit{};
+
+    if (displacementX == 0.0f)
+    {
+        return false;
+    }
+
+    if (SweepTerrain(body, {displacementX, 0.0f, 0.0f}, hit) != SweepStatus::Hit)
+    {
+        return false;
+    }
+
+    const float direction = displacementX < 0.0f ? -1.0f : 1.0f;
+
+    for (const auto& normal : hit.normals)
+    {
+        if (normal.x * direction < -0.5f)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void CollisionManager::RegisterTerrainAABB(const AABB& box)
 {
-	terrainBoxes.push_back(box);
+    terrainBoxes.push_back(box);
 }
 
 void CollisionManager::ClearTerrainAABBs()
 {
-	terrainBoxes.clear();
+    terrainBoxes.clear();
 }
 
-SweepStatus CollisionManager::SweepTerrain(const AABB& movingBox, const DirectX::XMFLOAT3& displacement, TerrainSweepHit& hit) const
+SweepStatus CollisionManager::SweepTerrain(const AABB& movingBox, const DirectX::XMFLOAT3& displacement,
+                                           TerrainSweepHit& hit) const
 {
-	hit = TerrainSweepHit{};
+    hit = TerrainSweepHit{};
 
-	std::vector<SweepHit> candidates;
-	float earliestTime = 1.0f;
+    std::vector<SweepHit> candidates;
+    float earliestTime = 1.0f;
 
-	// 1. Ç∑Ç◊ÇƒìØÇ∂äJénà íuÅEà⁄ìÆó Ç≈í≤Ç◊ÇÈÅB
-	for (const AABB& obstacle : terrainBoxes)
-	{
-		SweepHit candidate;
+    // 1. „Åô„Åπ„Å¶Âêå„ÅòÈñãÂßã‰ΩçÁΩÆ„ÉªÁßªÂãïÈáè„ÅßË™ø„Åπ„Çã
+    for (const AABB& obstacle : terrainBoxes)
+    {
+        SweepHit candidate;
 
-		const SweepStatus status = Collision::SweepAABB(
-			movingBox,
-			displacement,
-			obstacle,
-			candidate);
+        const SweepStatus status = Collision::SweepAABB(movingBox, displacement, obstacle, candidate);
 
-		// èâä˙ÇﬂÇËçûÇ›ÇÕÅAí èÌÇÃà⁄ìÆè’ìÀÇ∆ÇÕï Ç…àµÇ§ÅB
-		if (status == SweepStatus::InitialOverlap)
-		{
-			return SweepStatus::InitialOverlap;
-		}
+        // ÂàùÊúü„ÇÅ„ÇäËæº„Åø„ÅØ„ÄÅÈÄöÂ∏∏„ÅÆÁßªÂãïË°ùÁ™Å„Å®„ÅØÂà•„Å´Êâ±„ÅÜ
+        if (status == SweepStatus::InitialOverlap)
+        {
+            return SweepStatus::InitialOverlap;
+        }
 
-		if (status != SweepStatus::Hit)
-		{
-			continue;
-		}
+        if (status != SweepStatus::Hit)
+        {
+            continue;
+        }
 
-		earliestTime =
-			(std::min)(earliestTime, candidate.time);
+        earliestTime = (std::min)(earliestTime, candidate.time);
 
-		candidates.push_back(candidate);
-	}
+        candidates.push_back(candidate);
+    }
 
-	if (candidates.empty())
-	{
-		return SweepStatus::NoHit;
-	}
+    if (candidates.empty())
+    {
+        return SweepStatus::NoHit;
+    }
 
-	// 2. ç≈èâÇÃê⁄êGéûçèÇämíËÇ∑ÇÈÅB
-	hit.time = earliestTime;
+    // 2. ÊúÄÂàù„ÅÆÊé•Ëß¶ÊôÇÂàª„ÇíÁ¢∫ÂÆö„Åô„Çã
+    hit.time = earliestTime;
 
-	constexpr float TIME_TOLERANCE = 0.000001f;
+    constexpr float TIME_TOLERANCE = 0.000001f;
 
-	// 3. ç≈èâÇÃéûçèÇ∆ÇŸÇ⁄ìØéûÇ…ìñÇΩÇÈñ ÇèWÇﬂÇÈÅB
-	for (const SweepHit& candidate : candidates)
-	{
-		if (std::abs(candidate.time - earliestTime)
-			> TIME_TOLERANCE)
-		{
-			continue;
-		}
+    // 3. ÊúÄÂàù„ÅÆÊôÇÂàª„Å®„Åª„ÅºÂêåÊôÇ„Å´ÂΩì„Åü„ÇãÈù¢„ÇíÈõÜ„ÇÅ„Çã
+    for (const SweepHit& candidate : candidates)
+    {
+        if (std::abs(candidate.time - earliestTime) > TIME_TOLERANCE)
+        {
+            continue;
+        }
 
-		for (int i = 0; i < candidate.normalCount; ++i)
-		{
-			const DirectX::XMFLOAT3& normal =
-				candidate.normals[i];
+        for (int i = 0; i < candidate.normalCount; ++i)
+        {
+            const DirectX::XMFLOAT3& normal = candidate.normals[i];
 
-			bool alreadyAdded = false;
+            bool alreadyAdded = false;
 
-			for (const DirectX::XMFLOAT3& existing : hit.normals)
-			{
-				if (existing.x == normal.x &&
-					existing.y == normal.y &&
-					existing.z == normal.z)
-				{
-					alreadyAdded = true;
-					break;
-				}
-			}
+            for (const DirectX::XMFLOAT3& existing : hit.normals)
+            {
+                if (existing.x == normal.x && existing.y == normal.y && existing.z == normal.z)
+                {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
 
-			if (!alreadyAdded)
-			{
-				hit.normals.push_back(normal);
-			}
-		}
-	}
+            if (!alreadyAdded)
+            {
+                hit.normals.push_back(normal);
+            }
+        }
+    }
 
-	return SweepStatus::Hit;
+    return SweepStatus::Hit;
 }
 
-bool CollisionManager::RayCast(const CollisionMesh* collisionMesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hitResult)
+bool CollisionManager::RayCast(const CollisionMesh* collisionMesh, const DirectX::XMFLOAT3& start,
+                               const DirectX::XMFLOAT3& end, HitResult& hitResult)
 {
-	DirectX::XMVECTOR rayStart = DirectX::XMLoadFloat3(&start);
-	DirectX::XMVECTOR rayEnd = DirectX::XMLoadFloat3(&end);
-	DirectX::XMVECTOR rayVec = DirectX::XMVectorSubtract(rayEnd, rayStart);
-	DirectX::XMVECTOR rayLength = DirectX::XMVector3Length(rayVec);
+    DirectX::XMVECTOR rayStart = DirectX::XMLoadFloat3(&start);
+    DirectX::XMVECTOR rayEnd = DirectX::XMLoadFloat3(&end);
+    DirectX::XMVECTOR rayVec = DirectX::XMVectorSubtract(rayEnd, rayStart);
+    DirectX::XMVECTOR rayLength = DirectX::XMVector3Length(rayVec);
 
-	// ÉèÅ[ÉãÉhãÛä‘ÇÃÉåÉCÇÃí∑Ç≥
-	float distance = DirectX::XMVectorGetX(rayLength);
-	if (distance == 0.0f) return false;
+    // „ÉØ„Éº„É´„ÉâÁ©∫Èñì„ÅÆ„É¨„Ç§„ÅÆÈï∑„Åï
+    float distance = DirectX::XMVectorGetX(rayLength);
 
-	bool hit = false;
-	DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(collisionMesh->transform);
-	for (const Model::Mesh& mesh : collisionMesh->model->GetMeshes())
-	{
-		// ÉåÉCÇÉèÅ[ÉãÉhãÛä‘Ç©ÇÁÉçÅ[ÉJÉããÛä‘Ç÷ïœä∑
-		DirectX::XMMATRIX g = DirectX::XMLoadFloat4x4(&mesh.node->globalTransform);
-		DirectX::XMMATRIX transformMatrix = DirectX::XMMatrixMultiply(g, w);
-		DirectX::XMMATRIX inverseTransform = DirectX::XMMatrixInverse(nullptr, transformMatrix);
+    if (distance == 0.0f)
+    {
+        return false;
+    }
 
-		DirectX::XMVECTOR s = DirectX::XMVector3Transform(rayStart, inverseTransform);
-		DirectX::XMVECTOR e = DirectX::XMVector3Transform(rayEnd, inverseTransform);
-		DirectX::XMVECTOR se = DirectX::XMVectorSubtract(e, s);
-		DirectX::XMVECTOR v = DirectX::XMVector3Normalize(se);
-		DirectX::XMVECTOR lengthVector = DirectX::XMVector3Length(se);
+    bool hit = false;
+    DirectX::XMMATRIX w = DirectX::XMLoadFloat4x4(collisionMesh->transform);
 
-		// ÉåÉCÇÃí∑Ç≥
-		float length = DirectX::XMVectorGetX(lengthVector);
-		if (length <= 0.0f) continue;
+    for (const Model::Mesh& mesh : collisionMesh->model->GetMeshes())
+    {
+        // „É¨„Ç§„Çí„ÉØ„Éº„É´„ÉâÁ©∫Èñì„Åã„Çâ„É≠„Éº„Ç´„É´Á©∫Èñì„Å∏Â§âÊèõ
+        DirectX::XMMATRIX g = DirectX::XMLoadFloat4x4(&mesh.node->globalTransform);
+        DirectX::XMMATRIX transformMatrix = DirectX::XMMatrixMultiply(g, w);
+        DirectX::XMMATRIX inverseTransform = DirectX::XMMatrixInverse(nullptr, transformMatrix);
 
-		float neart = length;
+        DirectX::XMVECTOR s = DirectX::XMVector3Transform(rayStart, inverseTransform);
+        DirectX::XMVECTOR e = DirectX::XMVector3Transform(rayEnd, inverseTransform);
+        DirectX::XMVECTOR se = DirectX::XMVectorSubtract(e, s);
+        DirectX::XMVECTOR v = DirectX::XMVector3Normalize(se);
+        DirectX::XMVECTOR lengthVector = DirectX::XMVector3Length(se);
+
+        // „É¨„Ç§„ÅÆÈï∑„Åï
+        float length = DirectX::XMVectorGetX(lengthVector);
+
+        if (length <= 0.0f)
+        {
+            continue;
+        }
+
+        float neart = length;
 
 #if 0
-		// ÉoÉEÉìÉfÉBÉìÉOÉ{ÉbÉNÉXÇ∆ÇÃåç∑îªíËÅiçÇë¨âªÅj
-		DirectX::XMVECTOR bboxMin = DirectX::XMLoadFloat3(&mesh.boundingBox[0]);
-		DirectX::XMVECTOR bboxMax = DirectX::XMLoadFloat3(&mesh.boundingBox[1]);
-		DirectX::BoundingBox bbox;
-		DirectX::BoundingBox::CreateFromPoints(bbox, bboxMin, bboxMax);
+        // „Éê„Ç¶„É≥„Éá„Ç£„É≥„Ç∞„Éú„ÉÉ„ÇØ„Çπ„Å®„ÅÆ‰∫§Â∑ÆÂà§ÂÆöÔºàÈ´òÈÄüÂåñÔºâ
+        DirectX::XMVECTOR bboxMin = DirectX::XMLoadFloat3(&mesh.boundingBox[0]);
+        DirectX::XMVECTOR bboxMax = DirectX::XMLoadFloat3(&mesh.boundingBox[1]);
+        DirectX::BoundingBox bbox;
+        DirectX::BoundingBox::CreateFromPoints(bbox, bboxMin, bboxMax);
 
-		float bboxDistance = length;
-		if (!bbox.Intersects(s, v, bboxDistance))
-		{
-			// ÉoÉEÉìÉfÉBÉìÉOÉ{ÉbÉNÉXÇ∆åç∑ÇµÇ»Ç¢èÍçáÇÕÉXÉLÉbÉv
-			continue;
-		}
+        float bboxDistance = length;
+
+        if (!bbox.Intersects(s, v, bboxDistance))
+        {
+            // „Éê„Ç¶„É≥„Éá„Ç£„É≥„Ç∞„Éú„ÉÉ„ÇØ„Çπ„Å®‰∫§Â∑Æ„Åó„Å™„ÅÑÂ†¥Âêà„ÅØ„Çπ„Ç≠„ÉÉ„Éó
+            continue;
+        }
 #endif
 
-		// éOäpå`Åiñ ÅjÇ∆ÇÃåç∑îªíË
-		const std::vector<Model::Vertex>& vertices = mesh.vertices;
-		const std::vector<uint32_t>& indices = mesh.indices;
+        // ‰∏âËßíÂΩ¢ÔºàÈù¢Ôºâ„Å®„ÅÆ‰∫§Â∑ÆÂà§ÂÆö
+        const std::vector<Model::Vertex>& vertices = mesh.vertices;
+        const std::vector<uint32_t>& indices = mesh.indices;
 
-		bool hitMesh = false;
-		DirectX::XMVECTOR hitPosition;
-		DirectX::XMVECTOR hitNormal;
-		for (size_t i = 0; i < indices.size(); i += 3)
-		{
-			// éOäpå`ÇÃí∏ì_Çíäèo
-			const Model::Vertex& a = vertices[indices[i]];
-			const Model::Vertex& b = vertices[indices[i + 1]];
-			const Model::Vertex& c = vertices[indices[i + 2]];
+        bool hitMesh = false;
+        DirectX::XMVECTOR hitPosition;
+        DirectX::XMVECTOR hitNormal;
 
-			DirectX::XMVECTOR aVector = DirectX::XMLoadFloat3(&a.position);
-			DirectX::XMVECTOR bVector = DirectX::XMLoadFloat3(&b.position);
-			DirectX::XMVECTOR cVector = DirectX::XMLoadFloat3(&c.position);
+        for (size_t i = 0; i < indices.size(); i += 3)
+        {
+            // ‰∏âËßíÂΩ¢„ÅÆÈ†ÇÁÇπ„ÇíÊäΩÂá∫
+            const Model::Vertex& a = vertices[indices[i]];
+            const Model::Vertex& b = vertices[indices[i + 1]];
+            const Model::Vertex& c = vertices[indices[i + 2]];
 
-			// éOäpå`ÇÃéOï”ÉxÉNÉgÉãÇéZèo
-			DirectX::XMVECTOR ab = DirectX::XMVectorSubtract(bVector, aVector);
-			DirectX::XMVECTOR bc = DirectX::XMVectorSubtract(cVector, bVector);
-			DirectX::XMVECTOR ca = DirectX::XMVectorSubtract(aVector, cVector);
+            DirectX::XMVECTOR aVector = DirectX::XMLoadFloat3(&a.position);
+            DirectX::XMVECTOR bVector = DirectX::XMLoadFloat3(&b.position);
+            DirectX::XMVECTOR cVector = DirectX::XMLoadFloat3(&c.position);
 
-			// éOäpå`ÇÃñ@ê¸ÉxÉNÉgÉãÇéZèo		
-			DirectX::XMVECTOR n = DirectX::XMVector3Cross(ab, bc);
+            // ‰∏âËßíÂΩ¢„ÅÆ‰∏âËæ∫„Éô„ÇØ„Éà„É´„ÇíÁÆóÂá∫
+            DirectX::XMVECTOR ab = DirectX::XMVectorSubtract(bVector, aVector);
+            DirectX::XMVECTOR bc = DirectX::XMVectorSubtract(cVector, bVector);
+            DirectX::XMVECTOR ca = DirectX::XMVectorSubtract(aVector, cVector);
 
-			// ì‡êœÇÃåãâ Ç™ÉvÉâÉXÇ»ÇÁÇŒó†å¸Ç´
-			DirectX::XMVECTOR dotVector = DirectX::XMVector3Dot(v, n);
-			float dot = DirectX::XMVectorGetX(dotVector);
-			if (dot >= 0) continue;
+            // ‰∏âËßíÂΩ¢„ÅÆÊ≥ïÁ∑ö„Éô„ÇØ„Éà„É´„ÇíÁÆóÂá∫
+            DirectX::XMVECTOR n = DirectX::XMVector3Cross(ab, bc);
 
-			// éOäpå`Ç∆ÉåÉCÇÃåç∑îªíË
-			float dist = neart;
-			if (!DirectX::TriangleTests::Intersects(s, v, aVector, bVector, cVector, dist))
-				continue;
+            // ÂÜÖÁ©ç„ÅÆÁµêÊûú„Åå„Éó„É©„Çπ„Å™„Çâ„Å∞Ë£èÂêë„Åç
+            DirectX::XMVECTOR dotVector = DirectX::XMVector3Dot(v, n);
+            float dot = DirectX::XMVectorGetX(dotVector);
 
-			if (dist >= neart) continue;
+            if (dot >= 0)
+            {
+                continue;
+            }
 
-			neart = dist;
-			hitPosition = DirectX::XMVectorAdd(s, DirectX::XMVectorScale(v, neart));
-			hitNormal = n;
+            // ‰∏âËßíÂΩ¢„Å®„É¨„Ç§„ÅÆ‰∫§Â∑ÆÂà§ÂÆö
+            float dist = neart;
 
-			hitMesh = true;
-		}
-		if (hitMesh)
-		{
-			// ÉçÅ[ÉJÉããÛä‘Ç©ÇÁÉèÅ[ÉãÉhãÛä‘Ç÷ïœä∑
-			DirectX::XMVECTOR worldHitPosition = DirectX::XMVector3Transform(hitPosition, transformMatrix);
-			DirectX::XMVECTOR worldHitVec = DirectX::XMVectorSubtract(worldHitPosition, rayStart);
-			DirectX::XMVECTOR worldHitDistanceVector = DirectX::XMVector3Length(worldHitVec);
-			float worldHitDistance = DirectX::XMVectorGetX(worldHitDistanceVector);
+            if (!DirectX::TriangleTests::Intersects(s, v, aVector, bVector, cVector, dist))
+            {
+                continue;
+            }
 
-			// ÉqÉbÉgèÓïÒï€ë∂
-			if (distance > worldHitDistance)
-			{
-				distance = worldHitDistance;
+            if (dist >= neart)
+            {
+                continue;
+            }
 
-				DirectX::XMVECTOR worldNormal = XMVector3TransformNormal(hitNormal, transformMatrix);
-				DirectX::XMStoreFloat3(&hitResult.position, worldHitPosition);
-				DirectX::XMStoreFloat3(&hitResult.normal, DirectX::XMVector3Normalize(worldNormal));
-				hitResult.distance = worldHitDistance;
+            neart = dist;
+            hitPosition = DirectX::XMVectorAdd(s, DirectX::XMVectorScale(v, neart));
+            hitNormal = n;
 
-				hit = true;
-			}
-		}
-	}
-	return hit;
+            hitMesh = true;
+        }
+
+        if (hitMesh)
+        {
+            // „É≠„Éº„Ç´„É´Á©∫Èñì„Åã„Çâ„ÉØ„Éº„É´„ÉâÁ©∫Èñì„Å∏Â§âÊèõ
+            DirectX::XMVECTOR worldHitPosition = DirectX::XMVector3Transform(hitPosition, transformMatrix);
+            DirectX::XMVECTOR worldHitVec = DirectX::XMVectorSubtract(worldHitPosition, rayStart);
+            DirectX::XMVECTOR worldHitDistanceVector = DirectX::XMVector3Length(worldHitVec);
+            float worldHitDistance = DirectX::XMVectorGetX(worldHitDistanceVector);
+
+            // „Éí„ÉÉ„ÉàÊÉÖÂ†±‰øùÂ≠ò
+            if (distance > worldHitDistance)
+            {
+                distance = worldHitDistance;
+
+                DirectX::XMVECTOR worldNormal = XMVector3TransformNormal(hitNormal, transformMatrix);
+                DirectX::XMStoreFloat3(&hitResult.position, worldHitPosition);
+                DirectX::XMStoreFloat3(&hitResult.normal, DirectX::XMVector3Normalize(worldNormal));
+                hitResult.distance = worldHitDistance;
+
+                hit = true;
+            }
+        }
+    }
+
+    return hit;
 }
