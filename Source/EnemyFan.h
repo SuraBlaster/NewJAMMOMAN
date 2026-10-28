@@ -7,16 +7,14 @@ class Player;
 
 class EnemyFan final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyFan(ID3D11Device* device, Player* player);
 
     // 更新処理
     void Update(float elapsedTime) override;
 
-  private:
-
+private:
     void OnDead() override
     {
         Destroy();

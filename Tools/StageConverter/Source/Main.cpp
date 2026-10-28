@@ -8,86 +8,83 @@
 #include <string>
 #include <vector>
 
-namespace
+constexpr int CONVERTER_EXIT_SUCCESS = 0;
+constexpr int EXIT_INVALID_ARGUMENTS = 1;
+constexpr int EXIT_CONVERSION_FAILURE = 2;
+
+static std::string WideToUtf8(const std::wstring& text)
 {
-    constexpr int CONVERTER_EXIT_SUCCESS = 0;
-    constexpr int EXIT_INVALID_ARGUMENTS = 1;
-    constexpr int EXIT_CONVERSION_FAILURE = 2;
-
-    std::string WideToUtf8(const std::wstring& text)
+    if (text.empty())
     {
-        if (text.empty())
-        {
-            return {};
-        }
-
-        const int requiredLength =
-            WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
-                                nullptr, 0, nullptr, nullptr);
-
-        if (requiredLength <= 0)
-        {
-            return {};
-        }
-
-        std::string result(static_cast<std::size_t>(requiredLength), '\0');
-        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
-                            result.data(), requiredLength, nullptr, nullptr);
-        return result;
+        return {};
     }
 
-    // 引数付き起動は自動テストや一括処理用として従来のCLI変換を維持する
-    int RunCommandLineConversion()
+    const int requiredLength =
+        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
+                            nullptr, 0, nullptr, nullptr);
+
+    if (requiredLength <= 0)
     {
-        int argumentCount = 0;
-        LPWSTR* wideArguments = CommandLineToArgvW(GetCommandLineW(), &argumentCount);
+        return {};
+    }
 
-        if (wideArguments == nullptr)
-        {
-            return EXIT_INVALID_ARGUMENTS;
-        }
+    std::string result(static_cast<std::size_t>(requiredLength), '\0');
+    WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
+                        result.data(), requiredLength, nullptr, nullptr);
+    return result;
+}
 
-        std::vector<std::string> utf8Arguments;
-        utf8Arguments.reserve(static_cast<std::size_t>(argumentCount));
+// 引数付き起動は自動テストや一括処理用として従来のCLI変換を維持する
+static int RunCommandLineConversion()
+{
+    int argumentCount = 0;
+    LPWSTR* wideArguments = CommandLineToArgvW(GetCommandLineW(), &argumentCount);
 
-        for (int index = 0; index < argumentCount; ++index)
-        {
-            utf8Arguments.push_back(WideToUtf8(wideArguments[index]));
-        }
+    if (wideArguments == nullptr)
+    {
+        return EXIT_INVALID_ARGUMENTS;
+    }
 
-        LocalFree(wideArguments);
+    std::vector<std::string> utf8Arguments;
+    utf8Arguments.reserve(static_cast<std::size_t>(argumentCount));
 
-        std::vector<char*> argumentPointers;
-        argumentPointers.reserve(utf8Arguments.size());
+    for (int index = 0; index < argumentCount; ++index)
+    {
+        utf8Arguments.push_back(WideToUtf8(wideArguments[index]));
+    }
 
-        for (std::string& argument : utf8Arguments)
-        {
-            argumentPointers.push_back(argument.data());
-        }
+    LocalFree(wideArguments);
 
-        stage_converter::ConverterOptions options;
-        std::string errorMessage;
+    std::vector<char*> argumentPointers;
+    argumentPointers.reserve(utf8Arguments.size());
 
-        if (!stage_converter::ParseCommandLine(argumentCount, argumentPointers.data(), options, errorMessage))
-        {
-            return EXIT_INVALID_ARGUMENTS;
-        }
+    for (std::string& argument : utf8Arguments)
+    {
+        argumentPointers.push_back(argument.data());
+    }
 
-        if (options.showHelp)
-        {
-            return CONVERTER_EXIT_SUCCESS;
-        }
+    ConverterOptions options;
+    std::string errorMessage;
 
-        try
-        {
-            const stage_converter::TiledStageConverter converter;
-            converter.Convert(options);
-            return CONVERTER_EXIT_SUCCESS;
-        }
-        catch (const std::exception&)
-        {
-            return EXIT_CONVERSION_FAILURE;
-        }
+    if (!ParseCommandLine(argumentCount, argumentPointers.data(), options, errorMessage))
+    {
+        return EXIT_INVALID_ARGUMENTS;
+    }
+
+    if (options.showHelp)
+    {
+        return CONVERTER_EXIT_SUCCESS;
+    }
+
+    try
+    {
+        const TiledStageConverter converter;
+        converter.Convert(options);
+        return CONVERTER_EXIT_SUCCESS;
+    }
+    catch (const std::exception&)
+    {
+        return EXIT_CONVERSION_FAILURE;
     }
 }
 
@@ -99,5 +96,5 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR commandLine, int showCo
         return RunCommandLineConversion();
     }
 
-    return stage_converter::RunGuiApplication(instance, showCommand);
+    return RunGuiApplication(instance, showCommand);
 }

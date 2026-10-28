@@ -8,7 +8,7 @@
 // コンストラクタ
 EnemyFan::EnemyFan(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Fan.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Fan.cereal");
     rotation.y = DirectX::XMConvertToRadians(-90.0f);
     radius = 0.55f;
     height = 1.0f;

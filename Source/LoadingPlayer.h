@@ -4,8 +4,7 @@ class ModelRenderer;
 
 class LoadingPlayer : public Character
 {
-  public:
-
+public:
     // コンストラクタ
     LoadingPlayer();
 

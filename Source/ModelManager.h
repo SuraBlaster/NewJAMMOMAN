@@ -6,15 +6,13 @@
 
 class ModelManager
 {
-  public:
-
+public:
     static ModelManager& Instance();
     std::shared_ptr<Model> CreateInstance(ID3D11Device* device, const char* filename,
                                           float sampleRate = 60.0f);
     void Clear();
 
-  private:
-
+private:
     // コンストラクタ
     ModelManager() = default;
 

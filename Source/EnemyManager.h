@@ -10,8 +10,7 @@ class ShapeRenderer;
 
 class EnemyManager
 {
-  public:
-
+public:
     static EnemyManager& Instance()
     {
         static EnemyManager instance;
@@ -77,8 +76,7 @@ class EnemyManager
         return result;
     }
 
-  private:
-
+private:
     // コンストラクタ
     EnemyManager() = default;
 

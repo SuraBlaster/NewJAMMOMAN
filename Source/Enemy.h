@@ -8,8 +8,7 @@ class Player;
 
 class Enemy : public Character
 {
-  public:
-
+public:
     // デストラクタ
     ~Enemy() override = default;
 
@@ -17,9 +16,7 @@ class Enemy : public Character
     virtual void Render(ModelRenderer* modelRenderer) const;
 
     // DrawPrimitive の描画処理
-    virtual void DrawPrimitive(ShapeRenderer*) const
-    {
-    }
+    virtual void DrawPrimitive(ShapeRenderer*) const {}
 
     // 当たり判定などのデバッグ描画処理
     virtual void DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const;
@@ -49,13 +46,11 @@ class Enemy : public Character
         return Character::ApplyDamage(damage, invincibleDuration);
     }
 
-  protected:
-
+protected:
     // コンストラクタ
     Enemy() = default;
     bool DamagePlayerOnContact(Player& player, int damage, float invincibleTime, bool destroyOnHit = false);
 
-  private:
-
+private:
     bool destroyRequested = false;
 };

@@ -26,8 +26,7 @@ class Benchmark
     LARGE_INTEGER startTicks;
     LARGE_INTEGER currentTicks;
 
-  public:
-
+public:
     // コンストラクタ
     Benchmark()
     {

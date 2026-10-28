@@ -4,8 +4,7 @@
 
 class CameraSectionState
 {
-  public:
-
+public:
     // 更新処理
     bool Update(const std::vector<CameraLimitZoneData>& zones, float x, float y, bool reset = false)
     {
@@ -89,8 +88,7 @@ class CameraSectionState
         return activeSection;
     }
 
-  private:
-
+private:
     std::string activeSection;
     bool initialized = false;
 };

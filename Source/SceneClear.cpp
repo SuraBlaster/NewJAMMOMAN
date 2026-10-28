@@ -9,11 +9,8 @@
 #include <algorithm>
 #include <string>
 
-namespace
-{
-    constexpr char MESSAGE[] = "Thank You For Playing";
-    constexpr size_t MESSAGE_LENGTH = sizeof(MESSAGE) - 1;
-}
+constexpr char MESSAGE[] = "Thank You For Playing";
+constexpr size_t MESSAGE_LENGTH = sizeof(MESSAGE) - 1;
 
 // 初期化処理
 void SceneClear::Initialize()

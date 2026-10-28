@@ -5,8 +5,7 @@
 
 class SceneManager
 {
-  public:
-
+public:
     using SceneFactory = std::function<std::shared_ptr<Scene>()>;
 
     static SceneManager& Instance()
@@ -33,8 +32,7 @@ class SceneManager
     void ChangeScene(SceneFactory factory);
     void ChangeScene(std::shared_ptr<Scene> scene);
 
-  private:
-
+private:
     // コンストラクタ
     SceneManager() = default;
 

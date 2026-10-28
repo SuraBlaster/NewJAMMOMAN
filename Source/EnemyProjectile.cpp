@@ -27,9 +27,7 @@ struct EnemyProjectile::VisualEffect
 // コンストラクタ
 EnemyProjectile::EnemyProjectile(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& velocity,
                                  float radius, float lifetime, int damage)
-    : position(position), velocity(velocity), radius(radius), lifetime(lifetime), damage(damage)
-{
-}
+    : position(position), velocity(velocity), radius(radius), lifetime(lifetime), damage(damage) {}
 
 // デストラクタ
 EnemyProjectile::~EnemyProjectile() = default;
@@ -132,6 +130,24 @@ void EnemyProjectile::Update(float elapsedTime)
 
         visualEffect->effect->SetPosition(visualEffect->handle, position);
     }
+}
+
+// プレイヤーの攻撃に触れた弾を破壊
+bool EnemyProjectile::HitPlayerAttack(const Player& player)
+{
+    if (!active || !player.IntersectsSword(position, radius))
+    {
+        return false;
+    }
+
+    Destroy();
+
+    if (terrainImpactEffect)
+    {
+        terrainImpactEffect->Play(position, terrainImpactScale);
+    }
+
+    return true;
 }
 
 bool EnemyProjectile::HitPlayer(Player& player, float invincibleTime)

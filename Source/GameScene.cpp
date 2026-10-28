@@ -22,7 +22,7 @@
 #include "ModelManager.h"
 
 // コンストラクタ
-GameScene::GameScene()
+GameScene::GameScene(std::optional<DirectX::XMFLOAT3> savePosition)
 {
     LoadingProfile::Scope profile("GameScene");
     ID3D11Device* device = Graphics::Instance().GetDevice();
@@ -30,6 +30,17 @@ GameScene::GameScene()
     backgroundFog = std::make_unique<BackgroundFog>(device);
     backgroundCity = std::make_unique<BackgroundCity>(device);
     healthGaugeUI = std::make_unique<HealthGaugeUI>(device);
+    readySprite = std::make_unique<Sprite>(device, "Data/Sprite/Ready.png");
+    readyPlaying = !savePosition.has_value();
+    const char* warningPaths[] = {
+        "Data/Sprite/WarningLetters/01_W.png", "Data/Sprite/WarningLetters/02_A.png",
+        "Data/Sprite/WarningLetters/03_R.png", "Data/Sprite/WarningLetters/04_N.png",
+        "Data/Sprite/WarningLetters/05_I.png", "Data/Sprite/WarningLetters/06_N.png",
+        "Data/Sprite/WarningLetters/07_G.png"};
+    for (std::size_t i = 0; i < warningLetters.size(); ++i)
+    {
+        warningLetters[i] = std::make_unique<Sprite>(device, warningPaths[i]);
+    }
 
     // JSON読み込み
     if (!tileTypeManager.LoadDefinitions("Data/Stage/TileTypes.json"))
@@ -42,13 +53,18 @@ GameScene::GameScene()
     {
         std::cerr << "エラー: ステージデータの読み込みに失敗しました。" << std::endl;
 
-        throw std::runtime_error("Failed to load LaboratoryCourse.stage.json.");
+        throw std::runtime_error("Failed to load Data/Stage/LaboratoryCombinedCourse.stage.json.");
     }
 
     // 3Dオブジェクト
     EnemyBoss::SetDefeat(false);
     profile.Step("stage_json_and_camera");
     player = std::make_unique<Player>(device);
+    player->deathRespawnPosition = savePosition;
+    if (savePosition)
+    {
+        player->SetPosition(*savePosition);
+    }
     profile.Step("player");
     // 最初の接地記録より前に落下しても戻れるよう、生成位置を初期復帰位置にする
     lastSafePosition = player->GetPosition();
@@ -94,12 +110,29 @@ GameScene::GameScene()
         collisionManager.RegisterTerrainAABB(box);
     }
 
+    // Place the first spawn on the floor before the appearance effect starts.
+    // The default player position is above the starting platform.
+    if (!savePosition)
+    {
+        const DirectX::XMFLOAT3 drop = {0.0f, -2.0f, 0.0f};
+        TerrainSweepHit floorHit;
+        if (collisionManager.SweepTerrain(player->GetBodyAABB(), drop, floorHit) == SweepStatus::Hit &&
+            std::any_of(floorHit.normals.begin(), floorHit.normals.end(),
+                        [](const DirectX::XMFLOAT3& normal) { return normal.y > 0.5f; }))
+        {
+            auto initialPosition = player->GetPosition();
+            initialPosition.y += drop.y * floorHit.time + 0.001f;
+            player->SetPosition(initialPosition);
+        }
+        lastSafePosition = player->GetPosition();
+    }
+
     bossGates = BossGate::FromObjects(stageData.objects);
 
     for (const auto& gate : bossGates)
     {
         bossGateModels.push_back(
-            ModelManager::Instance().CreateInstance(device, "Data/Model/Cube/Cube.gltf"));
+            ModelManager::Instance().CreateInstance(device, "Data/Model/Cube/Cube.cereal"));
     }
 
     UpdateBossGates(0.0f);
@@ -126,12 +159,18 @@ void GameScene::Initialize()
 
     LoadingProfile::gameReady = true;
 
+    if (readyPlaying)
+    {
+        UpdateCamera(100.0f);
+    }
+
     Audio::Instance().Play("BGM_STAGE");
 }
 
 // デストラクタ
 GameScene::~GameScene()
 {
+    Audio::Instance().Stop("SE_BOSS_WARNING");
     // EnemyWave は Player を非所有ポインタで参照するため、Player の破棄前に解放する
     EnemyManager::Instance().Clear();
 
@@ -151,12 +190,25 @@ void GameScene::Update(float elapsedTime)
 
     HitStopManager::Instance().Update(elapsedTime);
 
+    // READYが消えてから既存のSpawn状態を初めて更新する
+    if (readyPlaying)
+    {
+        if (!isPaused)
+        {
+            readyTime = (std::min)(READY_DURATION, readyTime + (std::max)(0.0f, elapsedTime));
+            readyPlaying = readyTime < READY_DURATION;
+        }
+        UpdateCamera(isPaused ? 0.0f : elapsedTime);
+        return;
+    }
+
     float scaleElapsedTime = elapsedTime * HitStopManager::Instance().GetTimeScale();
 
     if (!isPaused)
     {
         UpdateBossGates(scaleElapsedTime);
-        const bool introWasPlaying = healthGaugeUI->IsBossIntroPlaying();
+        const bool introWasPlaying = warningPlaying || healthGaugeUI->IsBossIntroPlaying();
+        UpdateBossWarning(elapsedTime);
 
         if (!introWasPlaying)
         {
@@ -168,13 +220,46 @@ void GameScene::Update(float elapsedTime)
         // 接地中の位置だけを記録し、空中では最後の安全な足場位置を保持する
         if (player->IsGround())
         {
-            lastSafePosition = player->GetPosition();
+            MakeSafetyMargin();
         }
 
         // 移動と接地判定の更新後に、Tiledで指定した落下範囲との重なりを調べる
         if (!introWasPlaying && !player->IsClearing() && !player->IsDead())
         {
             HandleFallRespawn();
+            const auto& position = player->GetPosition();
+            const AABB body = player->GetBodyAABB();
+            for (const auto& point : stageData.savePoints)
+            {
+                // Save when any part of the body overlaps the XY rectangle.
+                if (body.max.x >= point.minX && body.min.x <= point.maxX && body.max.y >= point.minY &&
+                    body.min.y <= point.maxY)
+                {
+                    DirectX::XMFLOAT3 destination{point.minX + (point.maxX - point.minX) * 0.5f, point.minY,
+                                                  position.z};
+                    // Enlarging a trigger below the floor must not bury the respawn position.
+                    // Repeat because lifting out of one box can enter an adjacent stacked box.
+                    bool lifted;
+                    do
+                    {
+                        lifted = false;
+                        for (const auto& terrain : stage->GetTerrainAABBs())
+                        {
+                            if (destination.x + (body.max.x - body.min.x) * 0.5f > terrain.min.x &&
+                                destination.x - (body.max.x - body.min.x) * 0.5f < terrain.max.x &&
+                                destination.z + (body.max.z - body.min.z) * 0.5f > terrain.min.z &&
+                                destination.z - (body.max.z - body.min.z) * 0.5f < terrain.max.z &&
+                                destination.y >= terrain.min.y && destination.y <= terrain.max.y)
+                            {
+                                destination.y = terrain.max.y + 0.02f;
+                                lifted = true;
+                            }
+                        }
+                    } while (lifted);
+                    player->deathRespawnPosition = destination;
+                    break;
+                }
+            }
         }
 
         // プレイヤーがボス戦開始エリアへ入った場合、保留中のボスを生成する
@@ -183,18 +268,22 @@ void GameScene::Update(float elapsedTime)
             TryStartBossEncounter();
         }
 
-        if (!healthGaugeUI->IsBossIntroPlaying() && !player->IsDead())
+        if (!warningPlaying && !healthGaugeUI->IsBossIntroPlaying() && !player->IsDead())
         {
             EnemyManager::Instance().Update(scaleElapsedTime);
         }
 
-        healthGaugeUI->Update(*player, elapsedTime);
+        if (!warningPlaying)
+        {
+            healthGaugeUI->Update(*player, elapsedTime);
+        }
 
-        if (!healthGaugeUI->IsBossIntroPlaying())
+        if (!warningPlaying && !healthGaugeUI->IsBossIntroPlaying())
         {
             if (const auto boss = introBoss.lock())
             {
                 boss->SetActionEnable(true);
+                Audio::Instance().Play("BGM_BOSS", true);
             }
 
             introBoss.reset();
@@ -233,7 +322,12 @@ void GameScene::Render(float elapsedTime)
     }
 
     backgroundCity->Render();
-    healthGaugeUI->EnqueueRender();
+    if (!readyPlaying)
+    {
+        healthGaugeUI->EnqueueRender();
+    }
+    EnqueueReady();
+    EnqueueBossWarning();
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     RenderState* renderState = Graphics::Instance().GetRenderState();
     PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
@@ -290,7 +384,11 @@ void GameScene::Render(float elapsedTime)
         modelRenderer->Draw(ShaderId::Model, bossGateModels[i], {0.25f, 0.55f, 0.65f, 1.0f}, 1.0f);
     }
 
-    modelRenderer->Draw(ShaderId::Model, player->GetModel(), {1, 1, 1, 1}, 1.0f);
+    if (!readyPlaying && player->GetScale().x > 0.0f && player->GetScale().y > 0.0f &&
+        player->GetScale().z > 0.0f)
+    {
+        modelRenderer->Draw(ShaderId::Model, player->GetModel(), {1, 1, 1, 1}, 1.0f);
+    }
     EnemyManager::Instance().Render(modelRenderer);
 
     player->RenderMotionTrail(modelRenderer);
@@ -305,10 +403,11 @@ void GameScene::Render(float elapsedTime)
     modelRenderer->Render(rc);
     backgroundFog->Render();
 
+#ifdef _DEBUG
     // 実際に衝突判定へ登録した箱を表示する
     for (const AABB& box : stage->GetTerrainAABBs())
     {
-        if (!terrainVisible(box))
+        if ((terrainAabbDisplay != 2 && terrainAabbDisplay != 3) || !terrainVisible(box))
         {
             continue;
         }
@@ -321,7 +420,8 @@ void GameScene::Render(float elapsedTime)
     {
         AABB box;
 
-        if (!stageObject->GetCollisionAABB(box) || !terrainVisible(box))
+        if ((terrainAabbDisplay != 1 && terrainAabbDisplay != 3) || !stageObject->GetCollisionAABB(box) ||
+            !terrainVisible(box))
         {
             continue;
         }
@@ -330,11 +430,13 @@ void GameScene::Render(float elapsedTime)
                                DirectX::XMFLOAT4{1.0f, 0.8f, 0.0f, 1.0f});
     }
 
+#endif
+
     // 実際の刀判定と同じ掃引カプセルをデバッグ表示する
     player->DrawDebugPrimitive(shapeRenderer);
 
-    EnemyManager::Instance().DrawPrimitive(shapeRenderer);
 #ifdef _DEBUG
+    EnemyManager::Instance().DrawPrimitive(shapeRenderer);
     EnemyManager::Instance().DrawDebugPrimitive(shapeRenderer);
 #endif
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
@@ -375,6 +477,17 @@ void GameScene::DrawGUI()
     if (ImGui::Begin("Debug"))
     {
         ImGui::Checkbox(u8"ゲーム時間を停止", &isPaused);
+        ImGui::Combo(u8"地形AABB表示", &terrainAabbDisplay, u8"非表示\0合成前\0合成後\0両方\0");
+        size_t originalAabbCount = 0;
+        for (const auto& object : stage->GetStageObjects())
+        {
+            AABB box;
+            if (object->GetCollisionAABB(box))
+            {
+                ++originalAabbCount;
+            }
+        }
+        ImGui::Text(u8"AABB数: 合成前 %zu / 合成後 %zu", originalAabbCount, stage->GetTerrainAABBs().size());
         ImGui::Text("Enemy count: %zu", EnemyManager::Instance().GetEnemyCount());
 #ifdef _DEBUG
         const bool canWarpToStage =
@@ -522,14 +635,36 @@ void GameScene::HandleFallRespawn()
             continue;
         }
 
-        // 最後に接地していた安全な位置へ戻す
-        player->SetPosition(lastSafePosition);
-
-        // 落下速度や横方向の慣性を持ち越さない
-        player->SetVelocity({0.0f, 0.0f, 0.0f});
+        player->Respawn(lastSafePosition);
 
         // 同時に複数の範囲を処理する必要はないため、復帰後は直ちに終了する
         return;
+    }
+}
+
+void GameScene::MakeSafetyMargin()
+{
+    const AABB body = player->GetBodyAABB();
+
+    constexpr float safetyMargin = 1.0f;
+
+    const float leftX = body.min.x - safetyMargin;
+    const float rightX = body.max.x + safetyMargin;
+
+    float leftFloorY;
+    float rightFloorY;
+
+    auto& collision = CollisionManager::Instance();
+
+    const bool leftGround =
+        collision.FindTerrainFloor(leftX, body.min.z, body.min.y - 0.1f, body.min.y + 0.1f, leftFloorY);
+
+    const bool rightGround =
+        collision.FindTerrainFloor(rightX, body.min.z, body.min.y - 0.1f, body.min.y + 0.1f, rightFloorY);
+
+    if (player->IsGround() && leftGround && rightGround)
+    {
+        lastSafePosition = player->GetPosition();
     }
 }
 
@@ -726,6 +861,11 @@ void GameScene::TryStartBossEncounter()
         return;
     }
 
+    if (warningPlaying)
+    {
+        return;
+    }
+
     const DirectX::XMFLOAT3& playerPosition = player->GetPosition();
 
     for (const BossEncounterZoneData& zone : stageData.bossEncounterZones)
@@ -735,6 +875,18 @@ void GameScene::TryStartBossEncounter()
             player->GetBodyAABB().max.x > zone.maxX - 0.05f)
         {
             continue;
+        }
+
+        if (!activeBossArena)
+        {
+            activeBossArena = zone;
+            lastSafePosition = playerPosition;
+            player->PrepareForBossIntro();
+            warningTime = 0.0f;
+            warningPlaying = true;
+            Audio::Instance().Stop("BGM_STAGE");
+            Audio::Instance().Play("SE_BOSS_WARNING");
+            return;
         }
 
         auto spawnedBoss = EnemyFactory::CreateFromSpawnData(Graphics::Instance().GetDevice(), player.get(),
@@ -768,8 +920,164 @@ void GameScene::TryStartBossEncounter()
         lastSafePosition = playerPosition;
         pendingBossSpawnData.reset();
         Audio::Instance().Stop("BGM_STAGE");
-        Audio::Instance().Play("BGM_BOSS", true);
         return;
+    }
+}
+
+// READY文字の描画と横切る光を予約する
+void GameScene::EnqueueReady()
+{
+    if (!readyPlaying)
+    {
+        return;
+    }
+
+    auto* hud = ImGui::GetForegroundDrawList();
+    hud->AddCallback([](const ImDrawList*, const ImDrawCmd* command)
+                     { static_cast<GameScene*>(command->UserCallbackData)->RenderReady(); }, this);
+    hud->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
+
+    auto& graphics = Graphics::Instance();
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
+    const float centerX = graphics.GetScreenWidth() * 0.5f;
+    const float centerY = graphics.GetScreenHeight() * 0.45f;
+    const float sweep = std::clamp(readyTime / 0.55f, 0.0f, 1.0f);
+    if (sweep > 0.0f && sweep < 1.0f)
+    {
+        const float head = centerX + (sweep * 2.0f - 1.0f) * 760.0f * scale;
+        for (int layer = 3; layer >= 1; --layer)
+        {
+            const float thickness = static_cast<float>(layer) * scale;
+            hud->AddRectFilled(ImVec2(head - 540.0f * scale, centerY - thickness),
+                               ImVec2(head, centerY + thickness), IM_COL32(100, 195, 255, 50 / layer));
+        }
+        hud->AddRectFilled(ImVec2(head - 320.0f * scale, centerY - scale), ImVec2(head, centerY + scale),
+                           IM_COL32(220, 250, 255, 240));
+    }
+}
+
+// READY本体と上下へ広がる半透明の残像を描画する
+void GameScene::RenderReady()
+{
+    auto& graphics = Graphics::Instance();
+    auto* dc = graphics.GetDeviceContext();
+    auto* states = graphics.GetRenderState();
+    dc->OMSetBlendState(states->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+    dc->RSSetState(states->GetRasterizerState(RasterizerState::SolidCullNone));
+    auto* sampler = states->GetSamplerState(SamplerState::LinearClamp);
+    dc->PSSetSamplers(0, 1, &sampler);
+
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
+    const float centerX = graphics.GetScreenWidth() * 0.5f;
+    const float centerY = graphics.GetScreenHeight() * 0.45f;
+    const float reveal = std::clamp((readyTime - 0.22f) / 0.24f, 0.0f, 1.0f);
+    const float fade = std::clamp((READY_DURATION - readyTime) / 0.18f, 0.0f, 1.0f);
+    const float width = 640.0f * scale;
+    const float height = width * 724.0f / 2172.0f;
+    const auto draw = [&](float drawWidth, float drawHeight, float offsetY, float alpha)
+    {
+        readySprite->Render(dc, centerX - drawWidth * 0.5f, centerY - drawHeight * 0.5f + offsetY, 0,
+                            drawWidth, drawHeight, 0, 1, 1, 1, alpha);
+    };
+
+    if (readyTime >= 0.38f && readyTime < 0.78f)
+    {
+        const float expansion = std::clamp((readyTime - 0.38f) / 0.67f, 0.0f, 1.0f);
+        const float echoProgress = std::clamp((readyTime - 0.38f) / 0.4f, 0.0f, 1.0f);
+        const float fadeIn = std::clamp(echoProgress / 0.15f, 0.0f, 1.0f);
+        const float fadeOut = 1.0f - echoProgress;
+        const float alpha = fadeIn * fadeOut * fadeOut * 0.18f;
+        const float echoHeight = height * (1.0f + expansion * 1.8f);
+        const float offset = (30.0f + expansion * 110.0f) * scale;
+        draw(width * (1.0f + expansion * 0.18f), echoHeight, -offset, alpha);
+        draw(width * (1.0f + expansion * 0.18f), echoHeight, offset, alpha);
+    }
+
+    if (reveal > 0.0f)
+    {
+        draw(width, height * (0.08f + reveal * 0.92f), 0, reveal * fade);
+    }
+}
+
+// 警告演出の更新処理
+void GameScene::UpdateBossWarning(float elapsedTime)
+{
+    if (warningPlaying)
+    {
+        warningTime += (std::max)(0.0f, elapsedTime);
+        warningPlaying = warningTime < WARNING_DURATION;
+        if (!warningPlaying)
+        {
+            Audio::Instance().Stop("SE_BOSS_WARNING");
+        }
+    }
+}
+
+// HUDより手前に警告の描画を予約する
+void GameScene::EnqueueBossWarning()
+{
+    if (!warningPlaying)
+    {
+        return;
+    }
+
+    auto* hud = ImGui::GetForegroundDrawList();
+    hud->AddCallback([](const ImDrawList*, const ImDrawCmd* command)
+                     { static_cast<GameScene*>(command->UserCallbackData)->RenderBossWarning(); }, this);
+    hud->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
+
+    auto& graphics = Graphics::Instance();
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
+    const float progress = std::clamp((warningTime - 0.9f) / 0.35f, 0.0f, 1.0f);
+    const float center = graphics.GetScreenWidth() * 0.5f;
+    const float y = graphics.GetScreenHeight() * 0.32f + 82.0f * scale;
+    const float pulse = 0.65f + 0.35f * std::cos(warningTime * 12.0f);
+    const float fade = std::clamp((WARNING_DURATION - warningTime) / 0.2f, 0.0f, 1.0f);
+    if (progress > 0.0f)
+    {
+        hud->AddRectFilled(ImVec2(center - 440.0f * scale * progress, y),
+                           ImVec2(center + 440.0f * scale * progress, y + 5.0f * scale),
+                           IM_COL32(255, 12, 8, static_cast<int>(255.0f * pulse * fade)));
+    }
+}
+
+// 警告文字と出現中の残像を描画する
+void GameScene::RenderBossWarning()
+{
+    auto& graphics = Graphics::Instance();
+    auto* dc = graphics.GetDeviceContext();
+    auto* states = graphics.GetRenderState();
+    dc->OMSetBlendState(states->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+    dc->RSSetState(states->GetRasterizerState(RasterizerState::SolidCullNone));
+    auto* sampler = states->GetSamplerState(SamplerState::LinearClamp);
+    dc->PSSetSamplers(0, 1, &sampler);
+
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
+    const float widths[] = {330, 330, 295, 285, 185, 295, 289};
+    const float glyphScale = 0.43f * scale;
+    float x = graphics.GetScreenWidth() * 0.5f - 2009.0f * glyphScale * 0.5f;
+    const float y = graphics.GetScreenHeight() * 0.32f - 85.0f * scale;
+    const float fade = std::clamp((WARNING_DURATION - warningTime) / 0.2f, 0.0f, 1.0f);
+    const float pulse = warningTime < 1.2f ? 1.0f : 0.65f + 0.35f * std::cos(warningTime * 12.0f);
+    for (std::size_t i = 0; i < warningLetters.size(); ++i)
+    {
+        const float age = warningTime - static_cast<float>(i) * 0.13f;
+        const float width = widths[i] * glyphScale;
+        if (age >= 0.0f)
+        {
+            const float progress = std::clamp(age / 0.28f, 0.0f, 1.0f);
+            const float remaining = 1.0f - progress;
+            for (int trail = 3; trail >= 0; --trail)
+            {
+                const float offset = remaining * static_cast<float>(trail + 1) * 18.0f * scale;
+                const float alpha = (trail == 0 ? 1.0f : remaining * 0.18f) * progress * pulse * fade;
+                warningLetters[i]->Render(dc, x + offset, y, 0, width * (1.0f + remaining * 0.45f),
+                                          390.0f * glyphScale, 0, 1, 1, 1, alpha);
+            }
+        }
+        x += width;
     }
 }
 

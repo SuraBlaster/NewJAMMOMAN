@@ -5,8 +5,7 @@
 
 class EffectManager
 {
-  public:
-
+public:
     static EffectManager& Instance()
     {
         static EffectManager instance;
@@ -34,8 +33,7 @@ class EffectManager
         return effekseerManager;
     }
 
-  private:
-
+private:
     // コンストラクタ
     EffectManager() = default;
 

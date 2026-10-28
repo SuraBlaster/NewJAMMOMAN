@@ -8,15 +8,13 @@
 
 class GLTFImporter
 {
-  private:
-
+private:
     using MeshList = std::vector<Model::Mesh>;
     using MaterialList = std::vector<Model::Material>;
     using NodeList = std::vector<Model::Node>;
     using AnimationList = std::vector<Model::Animation>;
 
-  public:
-
+public:
     // コンストラクタ
     GLTFImporter(const char* filename);
 
@@ -32,8 +30,7 @@ class GLTFImporter
     // アニメーションデータを読み込み
     void LoadAnimations(AnimationList& animations, const NodeList& nodes, float sampleRate = 60);
 
-  private:
-
+private:
     static DirectX::XMFLOAT3 gltfVector3ToXMFLOAT3(const std::vector<double>& gltfValue);
 
     static DirectX::XMFLOAT4 gltfQuaternionToXMFLOAT4(const std::vector<double>& gltfValue);
@@ -52,8 +49,7 @@ class GLTFImporter
     // タンジェント計算
     static void ComputeTangents(std::vector<Model::Vertex>& vertices, const std::vector<uint32_t>& indices);
 
-  private:
-
+private:
     std::filesystem::path filepath;
     tinygltf::Model gltfModel;
 };

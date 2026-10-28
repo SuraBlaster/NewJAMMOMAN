@@ -7,8 +7,7 @@
 // スプライト
 class Sprite
 {
-  public:
-
+public:
     // コンストラクタ
     Sprite(ID3D11Device* device);
 
@@ -42,8 +41,7 @@ class Sprite
                 float r, float g, float b, float a           // 色
     ) const;
 
-  private:
-
+private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;

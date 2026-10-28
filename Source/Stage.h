@@ -10,8 +10,7 @@
 
 class Stage
 {
-  public:
-
+public:
     // コンストラクタ
     Stage(ID3D11Device* device, const StageData& stageData, const TileTypeManager& tileTypeManager);
 
@@ -28,12 +27,10 @@ class Stage
         return terrainBoxes;
     }
 
-  private:
-
+private:
     void BuildTerrainAABBs();
 
-  private:
-
+private:
     std::unordered_map<std::string, std::shared_ptr<Model>> modelPrototypeCache;
 
     std::vector<std::unique_ptr<StageObject>> stageObjects;

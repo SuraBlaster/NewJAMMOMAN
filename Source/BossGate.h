@@ -7,8 +7,7 @@
 
 class BossGate
 {
-  public:
-
+public:
     static constexpr int RIGHT_TYPE_ID = 301;
     static constexpr int LEFT_TYPE_ID = 302;
 
@@ -20,9 +19,7 @@ class BossGate
 
     // コンストラクタ
     explicit BossGate(const AABB& bounds, Direction direction = Direction::Right)
-        : bounds(bounds), direction(direction)
-    {
-    }
+        : bounds(bounds), direction(direction) {}
 
     static bool IsGateType(int typeId)
     {
@@ -140,8 +137,7 @@ class BossGate
         return bounds;
     }
 
-  private:
-
+private:
     static constexpr float APPROACH_DISTANCE = 2.0f;
     static constexpr float ANIMATION_DURATION = 0.35f;
     static constexpr float CROSSING_MARGIN = 0.05f;

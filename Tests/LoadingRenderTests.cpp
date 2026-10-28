@@ -15,9 +15,7 @@
 
 struct LoadedTestScene : Scene
 {
-    explicit LoadedTestScene(int& transitions) : transitions(transitions)
-    {
-    }
+    explicit LoadedTestScene(int& transitions) : transitions(transitions) {}
 
     void Initialize() override
     {

@@ -6,8 +6,7 @@
 
 class SceneClear : public Scene
 {
-  public:
-
+public:
     // 初期化処理
     void Initialize() override;
 
@@ -23,8 +22,7 @@ class SceneClear : public Scene
     // デバッグ画面の描画処理
     void DrawGUI() override;
 
-  private:
-
+private:
     void ReturnToTitle();
     static constexpr float TYPEWRITER_DELAY = 0.5f;
     static constexpr float LETTER_INTERVAL = 0.08f;

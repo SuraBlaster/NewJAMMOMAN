@@ -8,8 +8,7 @@ class ModelRenderer;
 
 class PlayerTrail
 {
-  public:
-
+public:
     struct MotionSnapshot
     {
         std::shared_ptr<Model> trailModel;
@@ -53,8 +52,7 @@ class PlayerTrail
     // RenderMotion の描画処理
     void RenderMotion(ModelRenderer* modelRenderer) const;
 
-  private:
-
+private:
     static constexpr int MAX_POLYGON = 32;
     static constexpr int MAX_TRAILS = 3;
     static constexpr float TRAIL_INTERVAL = 0.05f;

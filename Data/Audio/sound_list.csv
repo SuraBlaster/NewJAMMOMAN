@@ -2,6 +2,7 @@
 BGM_TITLE,Data/Audio/Scene/TitleBGM.wav,0.3
 BGM_STAGE,Data/Audio/Scene/StageBGM.wav,0.3
 BGM_BOSS,Data/Audio/Scene/BossBGM.wav,0.3
+SE_BOSS_WARNING,Data/Audio/Scene/BossWarning.wav,0.35
 BGM_ENDING,Data/Audio/Scene/Ending.wav,0.3
 SE_CLEAR,Data/Audio/Scene/Clear.wav,0.3
 SE_LOADING,Data/Audio/Scene/Loading.wav,0.25

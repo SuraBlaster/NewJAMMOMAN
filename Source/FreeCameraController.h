@@ -3,8 +3,7 @@
 
 class FreeCameraController
 {
-  public:
-
+public:
     // カメラからコントローラーへパラメータを同期する
     void SyncCameraToController(const Camera& camera);
 
@@ -14,8 +13,7 @@ class FreeCameraController
     // 更新処理
     void Update();
 
-  private:
-
+private:
     DirectX::XMFLOAT3 eye;
     DirectX::XMFLOAT3 focus;
     DirectX::XMFLOAT3 up;

@@ -1,0 +1,1 @@
+Built-in image_gen. Transparent PNG HUD sprite. Exact text: WARNING. Mega Man X4 inspired late-1990s sci-fi typography; wide bold angular italic capitals, yellow-orange to red fill, black outline and red keyline. Single horizontal word, transparent padding. No extra text, icons, frame, background, or watermark.

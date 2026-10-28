@@ -1,63 +1,63 @@
-{
+﻿{
   "formatVersion": 1,
   "definitions": [
     {
       "typeId": 100,
       "name": "LaboratoryBlock",
       "category": "Ground",
-      "modelPath": "Data/Model/laboratory/Generated/LabBlock_1m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_1m.cereal",
       "collision": true,
       "defaultScale": {
         "x": 1,
         "y": 1,
         "z": 1
       },
-      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+      "collisionModelPath": "Data/Model/Cube/Cube.cereal"
     },
     {
       "typeId": 101,
       "name": "LaboratoryBlockOrange",
       "category": "Ground",
-      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Orange_1m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Orange_1m.cereal",
       "collision": true,
       "defaultScale": {
         "x": 1,
         "y": 1,
         "z": 1
       },
-      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+      "collisionModelPath": "Data/Model/Cube/Cube.cereal"
     },
     {
       "typeId": 102,
       "name": "LaboratoryBlockPanel",
       "category": "Ground",
-      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Panel_1m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Panel_1m.cereal",
       "collision": true,
       "defaultScale": {
         "x": 1,
         "y": 1,
         "z": 1
       },
-      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+      "collisionModelPath": "Data/Model/Cube/Cube.cereal"
     },
     {
       "typeId": 103,
       "name": "LaboratoryBlockVent",
       "category": "Ground",
-      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Vent_1m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabBlock_Vent_1m.cereal",
       "collision": true,
       "defaultScale": {
         "x": 1,
         "y": 1,
         "z": 1
       },
-      "collisionModelPath": "Data/Model/Cube/Cube.gltf"
+      "collisionModelPath": "Data/Model/Cube/Cube.cereal"
     },
     {
       "typeId": 201,
       "name": "LabColumn_3m",
       "category": "Decoration",
-      "modelPath": "Data/Model/laboratory/Generated/LabColumn_3m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabColumn_3m.cereal",
       "collision": false,
       "defaultScale": {
         "x": 1,
@@ -69,7 +69,7 @@
       "typeId": 202,
       "name": "LabWall_1m",
       "category": "Decoration",
-      "modelPath": "Data/Model/laboratory/Generated/LabWall_1m.gltf",
+      "modelPath": "Data/Model/laboratory/Generated/LabWall_1m.cereal",
       "collision": false,
       "defaultScale": {
         "x": 1,
@@ -81,7 +81,7 @@
       "typeId": 301,
       "name": "OneWayGateRight",
       "category": "Gate",
-      "modelPath": "Data/Model/Cube/Cube.gltf",
+      "modelPath": "Data/Model/Cube/Cube.cereal",
       "collision": false,
       "defaultScale": {
         "x": 1,
@@ -93,7 +93,7 @@
       "typeId": 302,
       "name": "OneWayGateLeft",
       "category": "Gate",
-      "modelPath": "Data/Model/Cube/Cube.gltf",
+      "modelPath": "Data/Model/Cube/Cube.cereal",
       "collision": false,
       "defaultScale": {
         "x": 1,

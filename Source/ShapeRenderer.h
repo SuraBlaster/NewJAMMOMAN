@@ -7,15 +7,12 @@
 
 class ShapeRenderer
 {
-  public:
-
+public:
     // コンストラクタ
     ShapeRenderer(ID3D11Device* device);
 
     // デストラクタ
-    ~ShapeRenderer()
-    {
-    }
+    ~ShapeRenderer() {}
 
     // 箱描画
     void DrawBox(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& angle,
@@ -23,6 +20,10 @@ class ShapeRenderer
 
     // 球描画
     void DrawSphere(const DirectX::XMFLOAT3& position, float radius, const DirectX::XMFLOAT4& color);
+
+    // 円柱描画（positionは底面の中心）
+    void DrawCylinder(const DirectX::XMFLOAT3& position, float radius, float height,
+                      const DirectX::XMFLOAT4& color);
 
     // カプセル描画
     void DrawCapsule(const DirectX::XMFLOAT4X4& transform, float radius, float height,
@@ -35,8 +36,7 @@ class ShapeRenderer
     void Render(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
                 const DirectX::XMFLOAT4X4& projection);
 
-  private:
-
+private:
     struct Mesh
     {
         Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
@@ -75,8 +75,7 @@ class ShapeRenderer
     // 骨メッシュ作成
     void CreateBoneMesh(ID3D11Device* device, float length);
 
-  private:
-
+private:
     Mesh boxMesh;
     Mesh sphereMesh;
     Mesh halfSphereMesh;

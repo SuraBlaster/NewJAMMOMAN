@@ -7,8 +7,7 @@ class Player;
 
 class EnemyWalker final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyWalker(ID3D11Device* device, Player* player);
 
@@ -16,8 +15,7 @@ class EnemyWalker final : public Enemy
     void Update(float elapsedTime) override;
     void SetDirection(float direction);
 
-  private:
-
+private:
     // UpdatePatrol の更新処理
     void UpdatePatrol(float elapsedTime);
     void OnDead() override;

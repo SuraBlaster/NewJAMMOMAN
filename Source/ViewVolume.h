@@ -4,8 +4,7 @@
 
 class ViewVolume
 {
-  public:
-
+public:
     // コンストラクタ
     ViewVolume(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
     {
@@ -40,7 +39,6 @@ class ViewVolume
         return true;
     }
 
-  private:
-
+private:
     DirectX::XMFLOAT4 planes[6];
 };

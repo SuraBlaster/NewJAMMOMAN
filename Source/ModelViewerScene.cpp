@@ -164,7 +164,7 @@ void ModelViewerScene::DrawMenuGUI()
             if (ImGui::MenuItem("Open Model", "", &check))
             {
                 static const char* FILTER =
-                    "Model Files(*.gltf;*.glb)\0*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
+                    "Model Files(*.cereal;*.gltf;*.glb)\0*.cereal;*.gltf;*.glb;\0All Files(*.*)\0*.*;\0\0";
 
                 char filename[256] = {0};
                 HWND hWnd = Graphics::Instance().GetWindowHandle();
@@ -361,9 +361,7 @@ void ModelViewerScene::DrawPropertyGUI()
                     DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[1])),
                     DirectX::XMVectorGetX(DirectX::XMVector3Length(globalTransformMatrix.r[2]))};
 
-                if (ImGui::DragFloat3("Global Scale", &globalScale.x, 0.1f))
-                {
-                }
+                if (ImGui::DragFloat3("Global Scale", &globalScale.x, 0.1f)) {}
             }
         }
     }

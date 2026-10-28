@@ -14,8 +14,7 @@ enum class DialogResult
 // ダイアログ
 class Dialog
 {
-  public:
-
+public:
     // [ファイルを開く]ダイアログボックスを表示
     static DialogResult OpenFileName(char* filepath, int size, const char* filter = nullptr,
                                      const char* title = nullptr, HWND hWnd = NULL, bool multiSelect = false);

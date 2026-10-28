@@ -10,8 +10,7 @@
 
 class WalkingProbe final : public Character
 {
-  public:
-
+public:
     WalkingProbe()
     {
         useGravity = true;

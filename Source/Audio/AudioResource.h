@@ -5,8 +5,7 @@
 
 class AudioResource
 {
-  public:
-
+public:
     // コンストラクタ
     explicit AudioResource(const char* filename);
 
@@ -28,8 +27,7 @@ class AudioResource
         return format.Format;
     }
 
-  private:
-
+private:
     std::vector<UINT8> data;
     WAVEFORMATEXTENSIBLE format{};
 };

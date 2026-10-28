@@ -3,8 +3,7 @@
 
 class EnemyActivation
 {
-  public:
-
+public:
     // 更新処理
     bool Update(float enemyX, float enemyY, float playerX, float playerY)
     {
@@ -32,7 +31,6 @@ class EnemyActivation
         return active;
     }
 
-  private:
-
+private:
     bool active = false;
 };

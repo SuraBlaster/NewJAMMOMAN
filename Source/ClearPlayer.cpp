@@ -8,7 +8,7 @@
 ClearPlayer::ClearPlayer()
 {
     model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
-                                                    "Data/Model/Jammo/Jammo_Player.gltf");
+                                                    "Data/Model/Jammo/Jammo_Player.cereal");
     position = {16.0f, -6.5f, 0};
     rotation = {0, DirectX::XMConvertToRadians(-90), 0};
     scale = {0.018f, 0.018f, 0.018f};

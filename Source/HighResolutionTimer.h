@@ -4,8 +4,7 @@
 
 class HighResolutionTimer
 {
-  public:
-
+public:
     // コンストラクタ
     HighResolutionTimer() : deltaTime(-1.0), pausedTime(0), stopped(false)
     {
@@ -98,8 +97,7 @@ class HighResolutionTimer
         }
     }
 
-  private:
-
+private:
     double secondsPerCount;
     double deltaTime;
 

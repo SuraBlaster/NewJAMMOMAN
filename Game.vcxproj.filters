@@ -213,6 +213,12 @@
     <ClInclude Include="Source\LoadingProfile.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Source\TimeUtils.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ModelSerialization.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Source\SceneLoading.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>

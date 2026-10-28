@@ -7,21 +7,17 @@
 #include "Player.h"
 #include "EnemyVisibility.h"
 
-namespace
-{
-    constexpr float ENEMY_SCALE = 0.01f;
-    constexpr float DESPAWN_DISTANCE = 14.0f;
-    constexpr int CONTACT_DAMAGE = 1;
-    constexpr float DAMAGE_INVINCIBLE_TIME = 1.2f;
-    constexpr float KNOCKBACK_HORIZONTAL = 6.0f;
-    constexpr float KNOCKBACK_VERTICAL = 5.0f;
-
-}
+constexpr float ENEMY_SCALE = 0.01f;
+constexpr float DESPAWN_DISTANCE = 14.0f;
+constexpr int CONTACT_DAMAGE = 1;
+constexpr float DAMAGE_INVINCIBLE_TIME = 1.2f;
+constexpr float KNOCKBACK_HORIZONTAL = 6.0f;
+constexpr float KNOCKBACK_VERTICAL = 5.0f;
 
 // コンストラクタ
 EnemyWave::EnemyWave(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.cereal");
     InitializeAnimator();
 
     if (animator)

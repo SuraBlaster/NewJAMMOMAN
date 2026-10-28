@@ -29,24 +29,21 @@ struct TerrainSweepHit
 
 class CollisionManager
 {
-  private:
-
+private:
     // コンストラクタ
     CollisionManager() = default;
 
     // デストラクタ
     ~CollisionManager() = default;
 
-  public:
-
+public:
     static CollisionManager& Instance()
     {
         static CollisionManager instance;
         return instance;
     }
 
-  public:
-
+public:
     void Register(CollisionMesh* mesh);
     void Unregister(CollisionMesh* mesh);
 
@@ -62,13 +59,11 @@ class CollisionManager
                              TerrainSweepHit& hit) const;
     bool CheckWall(const AABB& body, float displacementX, TerrainSweepHit& hit) const;
 
-  private:
-
+private:
     bool RayCast(const CollisionMesh* mesh, const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end,
                  HitResult& hitResult);
 
-  private:
-
+private:
     std::vector<CollisionMesh*> meshes;
     std::vector<AABB> terrainBoxes;
 };

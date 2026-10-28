@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <windows.h>
-#include <chrono>
+#include "TimeUtils.h"
 #include <fstream>
 #include <iomanip>
 #include <string>
@@ -9,7 +9,6 @@
 
 namespace LoadingProfile
 {
-    using Clock = std::chrono::steady_clock;
 
     inline bool Enabled()
     {
@@ -32,11 +31,12 @@ namespace LoadingProfile
     inline std::mutex entriesMutex;
     inline bool gameReady = false;
     inline bool firstGameFrame = false;
-    inline Clock::time_point loadingStart, waitStart;
+    inline double loadingStart = 0.0;
+    inline double waitStart = 0.0;
 
-    inline double Milliseconds(Clock::time_point start)
+    inline double Milliseconds(double start)
     {
-        return std::chrono::duration<double, std::milli>(Clock::now() - start).count();
+        return GetTimeMilliseconds() - start;
     }
 
     inline void Record(const std::string& name, double ms)
@@ -51,20 +51,18 @@ namespace LoadingProfile
     class Scope
     {
         std::string name;
-        Clock::time_point start = Clock::now(), last = start;
+        double start = GetTimeMilliseconds();
+        double last = start;
 
-      public:
-
+    public:
         // コンストラクタ
-        explicit Scope(std::string label) : name(std::move(label))
-        {
-        }
+        explicit Scope(std::string label) : name(std::move(label)) {}
 
         void Step(const char* label)
         {
-            auto now = Clock::now();
-            Record(name + "/" + label, std::chrono::duration<double, std::milli>(now - last).count());
-            last = Clock::now();
+            const double now = GetTimeMilliseconds();
+            Record(name + "/" + label, now - last);
+            last = GetTimeMilliseconds();
         }
 
         // デストラクタ

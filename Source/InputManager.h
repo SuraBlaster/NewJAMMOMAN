@@ -7,8 +7,7 @@ using InputButton = unsigned int;
 
 class InputManager
 {
-  public:
-
+public:
     static constexpr InputButton BTN_UP = (1 << 0);
     static constexpr InputButton BTN_RIGHT = (1 << 1);
     static constexpr InputButton BTN_DOWN = (1 << 2);
@@ -122,8 +121,7 @@ class InputManager
         return gamePad.GetTriggerR();
     }
 
-  private:
-
+private:
     // コンストラクタ
     InputManager() = default;
     GamePad gamePad;

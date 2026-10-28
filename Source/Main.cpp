@@ -5,22 +5,19 @@
 
 #include "Framework.h"
 
-namespace
+struct ComApartment
 {
-    struct ComApartment
-    {
-        HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-        // デストラクタ
-        ~ComApartment()
+    // デストラクタ
+    ~ComApartment()
+    {
+        if (SUCCEEDED(result))
         {
-            if (SUCCEEDED(result))
-            {
-                CoUninitialize();
-            }
+            CoUninitialize();
         }
-    };
-}
+    }
+};
 
 const LONG SCREEN_WIDTH = 1280;
 const LONG SCREEN_HEIGHT = 720;

@@ -91,6 +91,7 @@ struct StageData
     std::string stageName;                             // ステージの識別・表示に使用する名前
     std::vector<StageObjectData> objects;              // ステージに配置されたオブジェクト一覧
     std::vector<EnemySpawnData> enemies;               // Tiledから読み込んだ敵の初期配置一覧
+    std::vector<FallRespawnZoneData> savePoints;
     std::vector<FallRespawnZoneData> fallRespawnZones; // Tiledで指定した落下復帰エリア一覧
     std::vector<BossEncounterZoneData> bossEncounterZones;
     std::vector<BossApproachCameraZoneData> bossApproachCameraZones;

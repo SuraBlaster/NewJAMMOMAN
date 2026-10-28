@@ -7,8 +7,7 @@
 
 class SceneTitle : public Scene
 {
-  public:
-
+public:
     // 初期化処理
     void Initialize() override;
 
@@ -24,8 +23,7 @@ class SceneTitle : public Scene
     // デバッグ画面の描画処理
     void DrawGUI() override;
 
-  private:
-
+private:
     void StartGame();
     void UpdateIntroSound();
 

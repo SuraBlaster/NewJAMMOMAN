@@ -5,8 +5,7 @@
 
 class Effect
 {
-  public:
-
+public:
     // コンストラクタ
     explicit Effect(const char* filename);
 
@@ -31,7 +30,6 @@ class Effect
 
     bool IsPlaying(Effekseer::Handle handle);
 
-  private:
-
+private:
     Effekseer::EffectRef effekseerEffect;
 };

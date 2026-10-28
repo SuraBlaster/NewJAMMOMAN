@@ -9,7 +9,7 @@
 TitlePlayer::TitlePlayer()
 {
     model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
-                                                    "Data/Model/Jammo/Jammo_Player.gltf");
+                                                    "Data/Model/Jammo/Jammo_Player.cereal");
     InitializeAnimator(model->GetAnimationIndex("Idle_Seq_0"));
     Reset();
 }

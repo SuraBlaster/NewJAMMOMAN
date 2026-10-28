@@ -14,7 +14,7 @@ bool EnemyBoss::defeatFlag = false;
 // コンストラクタ
 EnemyBoss::EnemyBoss(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Boss.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Boss.cereal");
     scale = {0.015f, 0.015f, 0.015f};
     rotation.y = DirectX::XMConvertToRadians(-90.0f);
     radius = 0.65f;

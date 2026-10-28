@@ -4,8 +4,7 @@ class ModelRenderer;
 
 class LoadingBoss : public Character
 {
-  public:
-
+public:
     // コンストラクタ
     LoadingBoss();
 
@@ -15,8 +14,7 @@ class LoadingBoss : public Character
     // 描画処理
     void Render(ModelRenderer* renderer);
 
-  private:
-
+private:
     float attackTimer = 1.0f;
     bool attacking = false;
 };

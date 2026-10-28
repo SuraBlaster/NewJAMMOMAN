@@ -11,7 +11,7 @@
 // コンストラクタ
 EnemyMage::EnemyMage(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Wizard.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Wizard.cereal");
     scale = {0.01f, 0.01f, 0.01f};
     rotation.y = DirectX::XMConvertToRadians(-90.0f);
     radius = 0.45f;
@@ -84,7 +84,7 @@ void EnemyMage::FireProjectile()
     const DirectX::XMFLOAT3 start = {position.x, position.y + height * 0.7f, position.z};
     const DirectX::XMFLOAT3 direction = {facingDirection * 7.0f, 0.0f, 0.0f};
 
-    projectiles.emplace_back(start, direction, 0.2f, 5.0f, 1);
+    projectiles.emplace_back(start, direction, 0.3f, 5.0f, 1);
     projectiles.back().AttachEffect(projectileEffect, 0.5f);
     projectiles.back().EnableTerrainCollision(terrainImpactEffect);
 }
@@ -95,6 +95,7 @@ void EnemyMage::UpdateProjectiles(float elapsedTime)
     for (auto& projectile : projectiles)
     {
         projectile.Update(elapsedTime);
+        projectile.HitPlayerAttack(*player);
         projectile.HitPlayer(*player, 1.0f);
     }
 

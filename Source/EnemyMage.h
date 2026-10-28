@@ -10,8 +10,7 @@ class Player;
 
 class EnemyMage final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyMage(ID3D11Device* device, Player* player);
 
@@ -22,8 +21,7 @@ class EnemyMage final : public Enemy
     // DrawPrimitive の描画処理
     void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
 
-  private:
-
+private:
     void FireProjectile();
 
     // UpdateProjectiles の更新処理

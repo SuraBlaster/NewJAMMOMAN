@@ -1,6 +1,7 @@
 ﻿#include "LoadingProfile.h"
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <cereal/cereal.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/string.hpp>
@@ -9,6 +10,7 @@
 #include "GLTFImporter.h"
 #include "GpuResourceUtils.h"
 #include "Model.h"
+#include "ModelSerialization.h"
 #include "AnimationKeyframeLookup.h"
 
 const std::vector<D3D11_INPUT_ELEMENT_DESC> Model::INPUT_ELEMENT_DESCS = {
@@ -25,42 +27,6 @@ const std::vector<D3D11_INPUT_ELEMENT_DESC> Model::INPUT_ELEMENT_DESCS = {
     {"BONE_INDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
      D3D11_INPUT_PER_VERTEX_DATA, 0},
 };
-
-namespace DirectX
-{
-    template <class Archive> void serialize(Archive& archive, XMUINT4& v)
-    {
-        archive(cereal::make_nvp("x", v.x), cereal::make_nvp("y", v.y), cereal::make_nvp("z", v.z),
-                cereal::make_nvp("w", v.w));
-    }
-
-    template <class Archive> void serialize(Archive& archive, XMFLOAT2& v)
-    {
-        archive(cereal::make_nvp("x", v.x), cereal::make_nvp("y", v.y));
-    }
-
-    template <class Archive> void serialize(Archive& archive, XMFLOAT3& v)
-    {
-        archive(cereal::make_nvp("x", v.x), cereal::make_nvp("y", v.y), cereal::make_nvp("z", v.z));
-    }
-
-    template <class Archive> void serialize(Archive& archive, XMFLOAT4& v)
-    {
-        archive(cereal::make_nvp("x", v.x), cereal::make_nvp("y", v.y), cereal::make_nvp("z", v.z),
-                cereal::make_nvp("w", v.w));
-    }
-
-    template <class Archive> void serialize(Archive& archive, XMFLOAT4X4& m)
-    {
-        archive(
-            cereal::make_nvp("_11", m._11), cereal::make_nvp("_12", m._12), cereal::make_nvp("_13", m._13),
-            cereal::make_nvp("_14", m._14), cereal::make_nvp("_21", m._21), cereal::make_nvp("_22", m._22),
-            cereal::make_nvp("_23", m._23), cereal::make_nvp("_24", m._24), cereal::make_nvp("_31", m._31),
-            cereal::make_nvp("_32", m._32), cereal::make_nvp("_33", m._33), cereal::make_nvp("_34", m._34),
-            cereal::make_nvp("_41", m._41), cereal::make_nvp("_42", m._42), cereal::make_nvp("_43", m._43),
-            cereal::make_nvp("_44", m._44));
-    }
-}
 
 template <class Archive> void Model::Node::serialize(Archive& archive)
 {
@@ -156,16 +122,12 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate) : fil
 
     bool loaded = false;
 
-    // 独自形式のモデルファイルの存在確認
-    filepath.replace_extension(".cereal");
-
-    if (std::filesystem::exists(filepath))
+    // 明示指定された独自形式だけを読み込み、元データからの変換では古いキャッシュを使わない
+    if (extension == ".cereal")
     {
-        // 独自形式のモデルファイルの読み込み
-        loaded = Deserialize(filepath.string().c_str());
+        loaded = Deserialize(filename);
     }
-
-    // 別プロジェクトで作られた互換性のないキャッシュは元モデルから読み直す
+    // 独自形式の読み込み結果を記録
     profile.Step(loaded ? "cache_hit" : "cache_miss_or_incompatible");
 
     if (!loaded && (extension == ".gltf" || extension == ".glb"))
@@ -192,13 +154,11 @@ Model::Model(ID3D11Device* device, const char* filename, float sampleRate) : fil
         importer.LoadAnimations(animations, nodes, sampleRate);
         profile.Step("materials_meshes_animations");
 
-        // 独自形式のモデルファイルを保存
-
         loaded = true;
     }
     else if (!loaded)
     {
-        _ASSERT_EXPR_A(false, "found not model file");
+        throw std::runtime_error(std::string("Failed to load model: ") + filename);
     }
 
     // マテリアル構築
@@ -396,7 +356,7 @@ void Model::AppendAnimations(const char* filename)
     }
     else
     {
-        _ASSERT_EXPR_A(false, "found not model file");
+        throw std::runtime_error(std::string("Failed to load model: ") + filename);
     }
 }
 
@@ -540,23 +500,39 @@ void Model::GetNodePoses(std::vector<NodePose>& nodePoses) const
     }
 }
 
+// 元データから独自形式へ変換
+void Model::ConvertToCereal(const char* sourceFilename, float sampleRate)
+{
+    Model model;
+    GLTFImporter importer(sourceFilename);
+    importer.LoadMaterials(model.materials);
+    importer.LoadNodes(model.nodes);
+    importer.LoadMeshes(model.meshes, model.nodes);
+    importer.LoadAnimations(model.animations, model.nodes, sampleRate);
+    if (model.meshes.empty())
+    {
+        throw std::runtime_error(std::string("No meshes in model: ") + sourceFilename);
+    }
+    std::filesystem::path output(sourceFilename);
+    output.replace_extension(".cereal");
+    model.Serialize(output.string().c_str());
+}
+
 // シリアライズ
 void Model::Serialize(const char* filename)
 {
-    std::ofstream ostream(filename, std::ios::binary);
-
-    if (ostream.is_open())
+    std::ofstream ostream(filename, std::ios::binary | std::ios::trunc);
+    if (!ostream)
     {
-        cereal::BinaryOutputArchive archive(ostream);
-
-        try
-        {
-            archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
-        }
-        catch (...)
-        {
-            _ASSERT_EXPR_A(false, "Model serialize failed.");
-        }
+        throw std::runtime_error(std::string("Cannot write model: ") + filename);
+    }
+    ostream.write("JAMMDL01", 8);
+    cereal::BinaryOutputArchive archive(ostream);
+    archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
+    ostream.flush();
+    if (!ostream)
+    {
+        throw std::runtime_error(std::string("Failed to write model: ") + filename);
     }
 }
 
@@ -572,13 +548,19 @@ bool Model::Deserialize(const char* filename)
 
     try
     {
+        char magic[8] = {};
+        istream.read(magic, sizeof(magic));
+        if (std::string(magic, sizeof(magic)) != "JAMMDL01")
+        {
+            return false;
+        }
         cereal::BinaryInputArchive archive(istream);
         archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
         return true;
     }
     catch (const std::exception& exception)
     {
-        std::string message = "Model cache is incompatible; loading source model instead: ";
+        std::string message = "Model cereal load failed: ";
         message += filename;
         message += " (";
         message += exception.what();
@@ -587,7 +569,7 @@ bool Model::Deserialize(const char* filename)
     }
     catch (...)
     {
-        std::string message = "Model cache is incompatible; loading source model instead: ";
+        std::string message = "Model cereal load failed: ";
         message += filename;
         message += "\n";
         OutputDebugStringA(message.c_str());

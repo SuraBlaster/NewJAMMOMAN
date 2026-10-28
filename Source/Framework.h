@@ -7,16 +7,14 @@
 
 class Framework
 {
-  public:
-
+public:
     // コンストラクタ
     Framework(HWND hWnd);
 
     // デストラクタ
     ~Framework();
 
-  private:
-
+private:
     // 更新処理
     void Update(float elapsedTime);
 
@@ -29,13 +27,11 @@ class Framework
 
     void CalculateFrameStats();
 
-  public:
-
+public:
     int Run();
     LRESULT CALLBACK HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-  private:
-
+private:
     std::unique_ptr<Audio> audio;
     const HWND hWnd;
     HighResolutionTimer timer;

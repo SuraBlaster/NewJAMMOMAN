@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <array>
 #include <DirectXMath.h>
 #include <optional>
 #include "Scene.h"
@@ -17,10 +18,9 @@
 
 class GameScene : public Scene
 {
-  public:
-
+public:
     // コンストラクタ
-    GameScene();
+    explicit GameScene(std::optional<DirectX::XMFLOAT3> savePosition = std::nullopt);
 
     // デストラクタ
     ~GameScene() override;
@@ -42,8 +42,7 @@ class GameScene : public Scene
         return backgroundEditor && backgroundEditor->IsEditing();
     }
 
-  private:
-
+private:
     // 1つの落下復帰エリアとXY座標を比較し、範囲内にいるかを返す
     bool IsInsideFallRespawnZone(const DirectX::XMFLOAT3& position, const FallRespawnZoneData& zone) const;
 
@@ -57,11 +56,9 @@ class GameScene : public Scene
     bool IsInsideCameraLimitZone(const DirectX::XMFLOAT3& position, const CameraLimitZoneData& zone) const;
 
     // プレイヤーが入っているボス前通路のカメラエリアを返す
-    // どのエリアにも入っていない場合はnullptrを返す
     const BossApproachCameraZoneData* FindBossApproachCameraZone(const DirectX::XMFLOAT3& position) const;
 
     // プレイヤーが入っているボス戦エリアを返す
-    // どのエリアにも入っていない場合はnullptrを返す
     const BossEncounterZoneData* FindBossEncounterZone(const DirectX::XMFLOAT3& position) const;
 
     // プレイヤーが入っているエリアを返す
@@ -70,7 +67,23 @@ class GameScene : public Scene
     // 空中のプレイヤーが落下復帰エリアへ入った場合、最後の安全位置へ戻す
     void HandleFallRespawn();
 
+    void MakeSafetyMargin();
+
+    void EnqueueReady();
+    void RenderReady();
+    static constexpr float READY_DURATION = 2.2f;
+    std::unique_ptr<Sprite> readySprite;
+    bool readyPlaying = false;
+    float readyTime = 0.0f;
+
     void TryStartBossEncounter();
+    void UpdateBossWarning(float elapsedTime);
+    void EnqueueBossWarning();
+    void RenderBossWarning();
+    static constexpr float WARNING_DURATION = 3.2f;
+    std::array<std::unique_ptr<Sprite>, 7> warningLetters;
+    bool warningPlaying = false;
+    float warningTime = 0.0f;
 
     // UpdateBossGates の更新処理
     void UpdateBossGates(float elapsedTime);
@@ -83,8 +96,7 @@ class GameScene : public Scene
     // カメラの更新処理
     void UpdateCamera(float elapsedTime);
 
-  private:
-
+private:
     TileTypeManager tileTypeManager;
     StageData stageData;
     std::optional<EnemySpawnData> pendingBossSpawnData;
@@ -98,20 +110,12 @@ class GameScene : public Scene
     std::unique_ptr<BackgroundFog> backgroundFog;
     std::unique_ptr<BackgroundCity> backgroundCity;
     CameraController cameraController;
+    // 0: hidden, 1: before merging, 2: after merging, 3: both
+    int terrainAabbDisplay = 3;
     bool isPaused = false;
     std::unique_ptr<HealthGaugeUI> healthGaugeUI;
 
-    std::array<AABB, 3> testTerrainBoxes = {// 床：上面がY=0
-                                            AABB{{-6.0f, -1.0f, -2.0f}, {6.0f, 0.0f, 2.0f}},
-
-                                            // 右の壁：左面がX=3
-                                            AABB{{3.0f, 0.0f, -2.0f}, {4.0f, 4.0f, 2.0f}},
-
-                                            // 天井：下面がY=2.4
-                                            AABB{{-3.0f, 2.4f, -2.0f}, {3.0f, 3.4f, 2.0f}}};
-
-  private:
-
+private:
     // プレイヤーが最後に接地していた位置。落下時の復帰先として使用する
     DirectX::XMFLOAT3 lastSafePosition = {};
 };

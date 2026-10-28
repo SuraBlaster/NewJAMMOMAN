@@ -2,12 +2,13 @@
 #include <math.h>
 #include <Xinput.h>
 #include "GamePad.h"
+#include "TimeUtils.h"
 #include <algorithm>
 
 // 更新
 void GamePad::Update()
 {
-    if (vibrating && std::chrono::steady_clock::now() >= vibrationEnd)
+    if (vibrating && GetTimeMilliseconds() >= vibrationEndMilliseconds)
     {
         StopVibration();
     }
@@ -160,9 +161,7 @@ void GamePad::Vibrate(float left, float right, float duration)
     }
 
     vibrating = true;
-    vibrationEnd =
-        std::chrono::steady_clock::now() + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                                               std::chrono::duration<float>(duration));
+    vibrationEndMilliseconds = GetTimeMilliseconds() + duration * 1000.0;
 }
 
 void GamePad::StopVibration()

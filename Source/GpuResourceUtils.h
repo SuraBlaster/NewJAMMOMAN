@@ -5,8 +5,7 @@
 // GPUリソースユーティリティ
 class GpuResourceUtils
 {
-  public:
-
+public:
     // 頂点シェーダー読み込み
     static HRESULT LoadVertexShader(ID3D11Device* device, const char* filename,
                                     const D3D11_INPUT_ELEMENT_DESC inputElementDescs[],

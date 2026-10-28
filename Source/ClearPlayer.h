@@ -4,8 +4,7 @@ class ModelRenderer;
 
 class ClearPlayer : public Character
 {
-  public:
-
+public:
     // コンストラクタ
     ClearPlayer();
     void BeginEntrance();
@@ -21,8 +20,7 @@ class ClearPlayer : public Character
         return state == State::Wave;
     }
 
-  private:
-
+private:
     enum class State
     {
         Waiting,

@@ -3,8 +3,7 @@
 
 class SetStage
 {
-  public:
-
+public:
     struct outputData
     {
         std::string filename;

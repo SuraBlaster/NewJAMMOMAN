@@ -14,8 +14,7 @@ class Player;
 
 class EnemyBoss final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyBoss(ID3D11Device* device, Player* player);
 
@@ -46,8 +45,7 @@ class EnemyBoss final : public Enemy
     void SetActionEnable(bool value);
     void SetArenaBounds(float minX, float maxX);
 
-  private:
-
+private:
     // 状態遷移と現在の状態の更新処理
     void UpdateStateMachine(float elapsedTime);
     void FireAtPlayer(float angleOffset = 0.0f);
@@ -65,8 +63,7 @@ class EnemyBoss final : public Enemy
     void UpdateBackWindVisual(bool warning);
     void ApplyBackWindPush(float elapsedTime);
 
-  private:
-
+private:
     Player* player = nullptr;
     CameraController* cameraController = nullptr;
     std::vector<EnemyProjectile> projectiles;
@@ -112,8 +109,7 @@ class EnemyBoss final : public Enemy
     static constexpr float BACK_WIND_ACCELERATION = 50.0f;
     static constexpr float BACK_WIND_MAX_SPEED = 8.0f;
 
-  private:
-
+private:
     enum class StateId
     {
         None = 0,
@@ -131,50 +127,35 @@ class EnemyBoss final : public Enemy
 
     std::vector<StateId> candidates;
 
-  public:
-
+public:
     class State
     {
-      public:
-
+    public:
         // コンストラクタ
-        State(EnemyBoss* owner) : owner(owner)
-        {
-        }
+        State(EnemyBoss* owner) : owner(owner) {}
 
         // デストラクタ
         virtual ~State() = default;
 
-      public:
-
+    public:
         // 状態に入るときの処理
-        virtual void OnEnter()
-        {
-        }
+        virtual void OnEnter() {}
 
         // 状態を抜けるときの処理
-        virtual void OnExit()
-        {
-        }
+        virtual void OnExit() {}
 
         // 現在の状態の更新処理
-        virtual void OnUpdate(float elapsedTime)
-        {
-        }
+        virtual void OnUpdate(float elapsedTime) {}
 
-      protected:
-
+    protected:
         EnemyBoss* owner;
     };
 
     class IdleState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        IdleState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        IdleState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -186,12 +167,9 @@ class EnemyBoss final : public Enemy
 
     class JumpMoveState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        JumpMoveState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        JumpMoveState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -199,8 +177,7 @@ class EnemyBoss final : public Enemy
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         enum class Phase
         {
             Ready,
@@ -232,12 +209,9 @@ class EnemyBoss final : public Enemy
 
     class AttackState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        AttackState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        AttackState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -245,8 +219,7 @@ class EnemyBoss final : public Enemy
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         enum class Phase
         {
             Windup,
@@ -284,12 +257,9 @@ class EnemyBoss final : public Enemy
 
     class ContinuousState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        ContinuousState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        ContinuousState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -297,8 +267,7 @@ class EnemyBoss final : public Enemy
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         void FireVolley();
         std::array<DirectX::XMFLOAT3, 5> GenerateSpawnPositions();
         static constexpr int SHOT_COUNT = 5;
@@ -328,12 +297,9 @@ class EnemyBoss final : public Enemy
 
     class ChargeAttackState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        ChargeAttackState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        ChargeAttackState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -344,8 +310,7 @@ class EnemyBoss final : public Enemy
         // 状態を抜けるときの処理
         void OnExit() override;
 
-      private:
-
+    private:
         enum class Phase
         {
             Ready,
@@ -367,12 +332,9 @@ class EnemyBoss final : public Enemy
 
     class TornadoState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        TornadoState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        TornadoState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -386,8 +348,7 @@ class EnemyBoss final : public Enemy
         // 当たり判定などのデバッグ描画処理
         void DrawDebugPrimitive(ShapeRenderer* renderer) const;
 
-      private:
-
+    private:
         // UpdatePullAndCollision の更新処理
         void UpdatePullAndCollision(float elapsedTime);
 
@@ -425,12 +386,9 @@ class EnemyBoss final : public Enemy
 
     class DeathState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        DeathState(EnemyBoss* owner) : State(owner)
-        {
-        }
+        DeathState(EnemyBoss* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -441,8 +399,7 @@ class EnemyBoss final : public Enemy
         // 状態を抜けるときの処理
         void OnExit() override;
 
-      private:
-
+    private:
         enum class Visual
         {
             Light,
