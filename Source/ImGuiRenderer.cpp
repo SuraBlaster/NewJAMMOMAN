@@ -1,6 +1,7 @@
 ﻿#include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
 #include <ImGuizmo.h>
+#include <imgui_internal.h>
 #include "ImGuiRenderer.h"
 #include "TextRenderer.h"
 #include <stdexcept>
@@ -113,12 +114,64 @@ void ImGuiRenderer::NewFrame()
 }
 
 // 描画
-void ImGuiRenderer::Render(ID3D11DeviceContext* context)
+void ImGuiRenderer::Render(ID3D11DeviceContext* context, ID3D11RenderTargetView* hudTarget,
+                           ID3D11RenderTargetView* mainTarget, bool hideWindows)
 {
 
     ImGui::Render();
 
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    ImDrawData* drawData = ImGui::GetDrawData();
+
+    // HUDやタイトル文字は最前面の描画リストに積まれているため、デバッグ用のウインドウと分けて描けるようにする
+    ImDrawList* hudList = ImGui::GetForegroundDrawList(ImGui::GetMainViewport());
+    ImVector<ImDrawList*> windowLists;
+    bool hasHud = false;
+
+    for (int i = 0; i < drawData->CmdListsCount; i++)
+    {
+        if (drawData->CmdLists[i] == hudList)
+        {
+            hasHud = true;
+        }
+        else
+        {
+            windowLists.push_back(drawData->CmdLists[i]);
+        }
+    }
+
+    ImDrawData hudData;
+    hudData.Valid = true;
+    hudData.CmdLists = &hudList;
+    hudData.CmdListsCount = hasHud ? 1 : 0;
+    hudData.TotalVtxCount = hasHud ? hudList->VtxBuffer.Size : 0;
+    hudData.TotalIdxCount = hasHud ? hudList->IdxBuffer.Size : 0;
+    hudData.DisplayPos = drawData->DisplayPos;
+    hudData.DisplaySize = drawData->DisplaySize;
+    hudData.FramebufferScale = drawData->FramebufferScale;
+    hudData.OwnerViewport = drawData->OwnerViewport;
+
+    if (hideWindows)
+    {
+        ImGui_ImplDX11_RenderDrawData(&hudData);
+    }
+    // ウインドウをドラッグ中はドッキングの案内も最前面に描かれるため、画面側に描く
+    else if (hudTarget && GImGui->MovingWindow == nullptr)
+    {
+        // ゲーム画面をパネル表示するときは、HUDをゲーム画面の中へ描く
+        context->OMSetRenderTargets(1, &hudTarget, nullptr);
+        ImGui_ImplDX11_RenderDrawData(&hudData);
+        context->OMSetRenderTargets(1, &mainTarget, nullptr);
+
+        drawData->CmdLists = windowLists.Data;
+        drawData->CmdListsCount = windowLists.Size;
+        drawData->TotalVtxCount -= hudData.TotalVtxCount;
+        drawData->TotalIdxCount -= hudData.TotalIdxCount;
+        ImGui_ImplDX11_RenderDrawData(drawData);
+    }
+    else
+    {
+        ImGui_ImplDX11_RenderDrawData(drawData);
+    }
 
     ImGuiIO& io = ImGui::GetIO();
 

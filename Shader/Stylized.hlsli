@@ -17,6 +17,10 @@ cbuffer CbStylize : register(b1)
     float cbRimThreshold; // リムライトが出始める位置（0〜1）
     float cbRimSoftness;  // リムライトの縁のぼかし幅
     float cbAmbientStrength;
+    float cbTintCompensation;   // 敵の色を掛けて暗くなる分を補う量
+    float cbGhostCenterAlpha;   // 残像の中心の濃さ
+    float cbGhostColorize;      // 残像を指定色で染める強さ
+    float cbGltfMetalRoughness; // 1でglTFの並び（G:ラフネス B:メタルネス）として読む
 };
 
 // threshold を境に、softness の幅で 0→1 へ切り替える

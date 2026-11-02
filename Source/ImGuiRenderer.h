@@ -16,7 +16,10 @@ public:
     static void NewFrame();
 
     // 描画実行
-    static void Render(ID3D11DeviceContext* context);
+    // hudTargetを指定すると、HUDだけをそこへ描いてからmainTargetへGUIを描く
+    // hideWindowsがtrueのときは、デバッグ用のウインドウを描かずHUDだけを描く
+    static void Render(ID3D11DeviceContext* context, ID3D11RenderTargetView* hudTarget = nullptr,
+                       ID3D11RenderTargetView* mainTarget = nullptr, bool hideWindows = false);
 
     // WIN32メッセージハンドラー
     static LRESULT HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

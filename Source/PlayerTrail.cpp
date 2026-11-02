@@ -1,6 +1,7 @@
 ﻿#include "PlayerTrail.h"
 #include "SwordTrailRenderer.h"
 #include "ModelRenderer.h"
+#include "StylizedShading.h"
 #include <algorithm>
 #include <cmath>
 
@@ -175,8 +176,16 @@ void PlayerTrail::RenderSword(SwordTrailRenderer* swordTrailRenderer) const
 // RenderMotion の描画処理
 void PlayerTrail::RenderMotion(ModelRenderer* modelRenderer) const
 {
+    // 古い残像ほど薄くする（先頭が最も古い）
+    const StylizedShading::AfterimageSettings& afterimage =
+        StylizedShading::Instance().GetAfterimageSettings();
+    const float count = static_cast<float>(trails.size());
+    float index = 0.0f;
+
     for (const auto& trail : trails)
     {
+        index += 1.0f;
+
         if (trail.trailModel)
         {
             DirectX::XMMATRIX s = DirectX::XMMatrixScaling(trail.scale.x, trail.scale.y, trail.scale.z);
@@ -188,7 +197,10 @@ void PlayerTrail::RenderMotion(ModelRenderer* modelRenderer) const
             DirectX::XMStoreFloat4x4(&world, s * r * t);
 
             trail.trailModel->UpdateTransform(world);
-            modelRenderer->Draw(ShaderId::Model, trail.trailModel, trail.drawColor, trail.alpha);
+            const float newness = count > 1.0f ? (index - 1.0f) / (count - 1.0f) : 1.0f;
+            const float alpha =
+                afterimage.oldestAlpha + (afterimage.newestAlpha - afterimage.oldestAlpha) * newness;
+            modelRenderer->Draw(ShaderId::Model, trail.trailModel, trail.drawColor, alpha);
         }
     }
 }

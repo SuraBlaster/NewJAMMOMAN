@@ -41,8 +41,8 @@ private:
                         ID3D11RenderTargetView* target, UINT targetWidth, UINT targetHeight);
 
     bool enabled = true;
-    float threshold = 1.0f; // これより明るい部分だけを光らせる
-    float knee = 0.5f;      // しきい値付近をなめらかにつなぐ幅
+    float threshold = 1.3f; // 白いキャラが光らないよう、剣などのより明るい部分だけを光らせる
+    float knee = 0.1f; // しきい値付近をなめらかにつなぐ幅
     float intensity = 0.65f;
 
     UINT sceneWidth = 0;

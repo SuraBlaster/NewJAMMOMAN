@@ -49,9 +49,11 @@ float4 main(VsOutput pin) : SV_TARGET
     }
 
     // PBRパラメータ取得
+    // 元の読み方（R:メタルネス A:スムースネス）とglTFの並び（G:ラフネス B:メタルネス）を見比べられるようにしている
     float4 metalnessSmoothness = metalnessSmoothnessMap.Sample(linearSampler, pin.texcoord);
-    float metalness = metalnessSmoothness.r * cbMetalness;
-    float smoothness = metalnessSmoothness.a * cbSmoothness;
+    float metalness = lerp(metalnessSmoothness.r, metalnessSmoothness.b, cbGltfMetalRoughness) * cbMetalness;
+    float smoothness = lerp(metalnessSmoothness.a * cbSmoothness,
+                            1.0f - metalnessSmoothness.g * (1.0f - cbSmoothness), cbGltfMetalRoughness);
 
     float3 viewDirection = normalize(cbCameraPosition.xyz - pin.position);
 
@@ -70,7 +72,27 @@ float4 main(VsOutput pin) : SV_TARGET
     float3 emissive = emissiveMap.Sample(linearSampler, pin.texcoord).rgb;
     color.rgb += emissive * cbEmissive;
 
-    color.rgb *= cbTransparencyColor.rgb;
+    float3 tint = cbTransparencyColor.rgb;
+    float tintGain = max(tint.r, max(tint.g, tint.b));
+    float3 tintHue = tint / max(tintGain, 0.0001f);
+    float alpha = finalAlpha;
 
-    return float4(color, albedo.a);
+    // 色をそのまま掛けると彩度の高い色ほど暗くなるため、その分を補えるようにしておく
+    float tintLuminance = dot(tintHue, float3(0.299f, 0.587f, 0.114f));
+    float3 compensatedHue = tintHue / lerp(1.0f, max(tintLuminance, 0.0001f), cbTintCompensation);
+    float3 tintedColor = color.rgb * tintGain * compensatedHue;
+
+    if (cbTransparencyAlpha < 0.999f)
+    {
+        // 残像などの半透明は、指定色に染めたり中心を薄くしたりして実体感を減らせるようにする
+        float luminance = dot(color.rgb, float3(0.299f, 0.587f, 0.114f));
+        float3 colorizedColor = tintHue * tintGain * (0.35f + luminance);
+        tintedColor = lerp(tintedColor, colorizedColor, cbGhostColorize);
+        float rim = 1.0f - saturate(dot(normal, viewDirection));
+        alpha *= lerp(cbGhostCenterAlpha, 1.0f, rim);
+    }
+
+    color.rgb = tintedColor;
+
+    return float4(color, alpha);
 }

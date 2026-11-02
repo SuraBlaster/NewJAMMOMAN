@@ -115,6 +115,18 @@ void Graphics::Initialize(HWND hWnd)
         hr = device->CreateShaderResourceView(texture2d.Get(), nullptr,
                                               sceneShaderResourceView.GetAddressOf());
         _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+        // デバッグ時にゲーム画面をGUIのパネルへ表示するためのバッファ
+        texture2dDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> gameViewTexture;
+        hr = device->CreateTexture2D(&texture2dDesc, nullptr, gameViewTexture.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = device->CreateRenderTargetView(gameViewTexture.Get(), nullptr,
+                                            gameViewRenderTargetView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = device->CreateShaderResourceView(gameViewTexture.Get(), nullptr,
+                                              gameViewShaderResourceView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
     // ビューポート

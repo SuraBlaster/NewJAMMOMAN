@@ -51,6 +51,17 @@ public:
         return renderTargetView.Get();
     }
 
+    // GUIのパネルに表示するゲーム画面のバッファ取得
+    ID3D11RenderTargetView* GetGameViewRenderTargetView() const
+    {
+        return gameViewRenderTargetView.Get();
+    }
+
+    ID3D11ShaderResourceView* GetGameViewShaderResourceView() const
+    {
+        return gameViewShaderResourceView.Get();
+    }
+
     // ビューポート取得
     const D3D11_VIEWPORT& GetViewport() const
     {
@@ -129,6 +140,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> sceneRenderTargetView;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> sceneShaderResourceView;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> gameViewRenderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> gameViewShaderResourceView;
     D3D11_VIEWPORT viewport;
 
     float screenWidth = 0;

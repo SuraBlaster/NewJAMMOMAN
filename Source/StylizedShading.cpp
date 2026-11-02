@@ -41,11 +41,31 @@ void StylizedShading::DrawGUI()
             ImGui::Checkbox(u8"ステージ等にも描く##outline", &outlineSettings.drawOnStatic);
         }
 
+        if (ImGui::CollapsingHeader(u8"敵の色", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat(u8"暗くなる分の補正", &settings.tintCompensation, 0.0f, 1.0f);
+
+            bool gltfMetalRoughness = settings.gltfMetalRoughness > 0.5f;
+            if (ImGui::Checkbox(u8"金属感をglTFの並びで読む", &gltfMetalRoughness))
+            {
+                settings.gltfMetalRoughness = gltfMetalRoughness ? 1.0f : 0.0f;
+            }
+        }
+
+        if (ImGui::CollapsingHeader(u8"残像", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat(u8"一番新しい残像の濃さ", &afterimageSettings.newestAlpha, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"一番古い残像の濃さ", &afterimageSettings.oldestAlpha, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"中心の濃さ", &settings.ghostCenterAlpha, 0.0f, 1.0f);
+            ImGui::SliderFloat(u8"指定色で染める強さ", &settings.ghostColorize, 0.0f, 1.0f);
+        }
+
         if (ImGui::Button(u8"初期値に戻す"))
         {
             settings = Settings();
             staticRimScale = 0.0f;
             outlineSettings = OutlineSettings();
+            afterimageSettings = AfterimageSettings();
         }
     }
     ImGui::End();
