@@ -1,8 +1,6 @@
 #include "Basic.hlsli"
 
-cbuffer CbMesh : register(b0){
-
-                 };
+cbuffer CbMesh : register(b0){};
 
 cbuffer CbTransparency : register(b9)
 {

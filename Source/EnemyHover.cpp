@@ -11,7 +11,7 @@
 // コンストラクタ
 EnemyHover::EnemyHover(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/FlyEnemy.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/FlyEnemy.cereal");
     scale = {0.01f, 0.01f, 0.01f};
     rotation.y = DirectX::XMConvertToRadians(20.0f);
     radius = 0.5f;
@@ -82,7 +82,7 @@ void EnemyHover::FireRadialProjectiles()
         const float angle = DirectX::XM_2PI * i / PROJECTILE_COUNT;
         const DirectX::XMFLOAT3 velocity = {std::cos(angle) * PROJECTILE_SPEED,
                                             std::sin(angle) * PROJECTILE_SPEED, 0.0f};
-        projectiles.emplace_back(start, velocity);
+        projectiles.emplace_back(start, velocity,0.10f);
         projectiles.back().AttachEffect(projectileEffect, 0.5f);
         projectiles.back().EnableTerrainCollision(terrainImpactEffect);
     }
@@ -94,6 +94,7 @@ void EnemyHover::UpdateProjectiles(float elapsedTime)
     for (auto& projectile : projectiles)
     {
         projectile.Update(elapsedTime);
+        projectile.HitPlayerAttack(*player);
         projectile.HitPlayer(*player, 1.2f);
     }
 

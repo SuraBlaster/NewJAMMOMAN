@@ -5,13 +5,11 @@
 // スタイライズドPBR（トゥーン寄り）の調整値を管理する
 class StylizedShading
 {
-  private:
-
+private:
     StylizedShading() = default;
     ~StylizedShading() = default;
 
-  public:
-
+public:
     // Shader/Stylized.hlsli の CbStylize と同じ並びにすること
     struct Settings
     {
@@ -66,8 +64,7 @@ class StylizedShading
     // 調整用GUI
     void DrawGUI();
 
-  private:
-
+private:
     Settings settings;
     float staticRimScale = 0.0f;
     OutlineSettings outlineSettings;

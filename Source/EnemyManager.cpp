@@ -4,17 +4,14 @@
 #include "Camera.h"
 #include "ViewVolume.h"
 
-namespace
+static bool Visible(const Enemy& enemy, const ViewVolume& volume)
 {
-    bool Visible(const Enemy& enemy, const ViewVolume& volume)
-    {
-        const auto& p = enemy.GetPosition();
+    const auto& p = enemy.GetPosition();
 
-        const float horizontal = (std::max)(4.0f, enemy.GetRadius() * 3.0f);
-        const float vertical = (std::max)(4.0f, enemy.GetHeight() * 2.0f);
-        return volume.Intersects(DirectX::BoundingBox({p.x, p.y + enemy.GetHeight() * 0.5f, p.z},
-                                                      {horizontal, vertical, horizontal}));
-    }
+    const float horizontal = (std::max)(4.0f, enemy.GetRadius() * 3.0f);
+    const float vertical = (std::max)(4.0f, enemy.GetHeight() * 2.0f);
+    return volume.Intersects(
+        DirectX::BoundingBox({p.x, p.y + enemy.GetHeight() * 0.5f, p.z}, {horizontal, vertical, horizontal}));
 }
 
 void EnemyManager::FlushPendingEnemies()

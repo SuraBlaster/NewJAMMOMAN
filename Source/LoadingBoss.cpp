@@ -8,7 +8,7 @@
 LoadingBoss::LoadingBoss()
 {
     model = ModelManager::Instance().CreateInstance(Graphics::Instance().GetDevice(),
-                                                    "Data/Model/Enemy/Boss.gltf");
+                                                    "Data/Model/Enemy/Boss.cereal");
     position = {8.0f, -4.7f, 0};
     rotation = {0, DirectX::XMConvertToRadians(180), 0};
     scale = {0.06f, 0.06f, 0.06f};

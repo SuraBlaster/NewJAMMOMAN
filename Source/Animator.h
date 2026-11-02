@@ -54,8 +54,7 @@ struct AnimationLayer
 
 class Animator
 {
-  public:
-
+public:
     // コンストラクタ
     Animator(Model* model, int maxLayers = 1);
 
@@ -89,8 +88,7 @@ class Animator
 
     void SetLayerSpeed(int layerIndex, float speed);
 
-  private:
-
+private:
     void EvaluateLayerPoses(AnimationLayer& layer, float elapsedTime);
     void ApplyLayerToFinalPoses(std::vector<Model::NodePose>& ioFinalPoses, const AnimationLayer& layer);
 
@@ -99,8 +97,7 @@ class Animator
     void BlendSingleNode(Model::NodePose& dst, const Model::NodePose& src0, const Model::NodePose& src1,
                          float blendFactor);
 
-  private:
-
+private:
     Model* model = nullptr;
     std::vector<AnimationLayer> layers;
 

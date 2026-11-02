@@ -7,16 +7,14 @@ class Player;
 
 class EnemyScatter final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyScatter(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition);
 
     // 更新処理
     void Update(float elapsedTime) override;
 
-  private:
-
+private:
     enum class State
     {
         Scatter,

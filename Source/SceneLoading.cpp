@@ -73,7 +73,7 @@ void SceneLoading::Initialize()
     loadComplete.store(false);
     LoadingProfile::gameReady = false;
     LoadingProfile::firstGameFrame = false;
-    LoadingProfile::loadingStart = LoadingProfile::Clock::now();
+    LoadingProfile::loadingStart = GetTimeMilliseconds();
     LoadingProfile::Scope profile("Loading.prepare");
     timer = 0.0f;
     presented = requested = false;
@@ -93,7 +93,7 @@ void SceneLoading::Initialize()
 
     player = std::make_unique<LoadingPlayer>();
     profile.Step("player");
-    LoadingProfile::waitStart = LoadingProfile::Clock::now();
+    LoadingProfile::waitStart = GetTimeMilliseconds();
 }
 
 // 終了処理

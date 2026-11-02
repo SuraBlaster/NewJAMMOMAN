@@ -5,8 +5,7 @@
 
 class CommandManager
 {
-  public:
-
+public:
     void Execute(std::unique_ptr<ICommand> command);
     void Undo();
     void Redo();
@@ -22,8 +21,7 @@ class CommandManager
         return !redoStack.empty();
     }
 
-  private:
-
+private:
     std::stack<std::unique_ptr<ICommand>> undoStack;
     std::stack<std::unique_ptr<ICommand>> redoStack;
 };

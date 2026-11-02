@@ -20,8 +20,7 @@ struct BackgroundObject
 
 class BackgroundEditor
 {
-  public:
-
+public:
     // コンストラクタ
     explicit BackgroundEditor(ID3D11Device* device, std::string filename = "Data/Stage/Background.stage.json",
                               std::string patternFilename = "Data/Stage/Background.patterns.json");
@@ -87,8 +86,7 @@ class BackgroundEditor
     void MoveSelection(const DirectX::XMFLOAT3& delta);
     void SelectRectangle(float x1, float y1, float x2, float y2, bool additive);
 
-  private:
-
+private:
     friend class BackgroundStateCommand;
     void Apply(const std::vector<BackgroundObject>& state, const std::vector<int>& selection);
     void Commit(const std::vector<BackgroundObject>& before, const std::vector<int>& oldSelection);

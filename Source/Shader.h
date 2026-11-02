@@ -5,17 +5,12 @@
 
 class Shader
 {
-  public:
-
+public:
     // コンストラクタ
-    Shader()
-    {
-    }
+    Shader() {}
 
     // デストラクタ
-    virtual ~Shader()
-    {
-    }
+    virtual ~Shader() {}
 
     // 開始処理
     virtual void Begin(const RenderContext& rc) = 0;

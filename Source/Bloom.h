@@ -6,8 +6,7 @@
 // 明るい部分を縮小と拡大を繰り返してぼかし、光のにじみとしてシーンに足す
 class Bloom
 {
-  public:
-
+public:
     Bloom(ID3D11Device* device, UINT width, UINT height);
 
     // sceneをブルーム付きでtargetへ書き出す
@@ -17,8 +16,7 @@ class Bloom
     // 調整用GUI
     void DrawGUI();
 
-  private:
-
+private:
     static constexpr int MIP_COUNT = 6;
 
     struct CbBloom

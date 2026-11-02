@@ -5,16 +5,14 @@
 // カメラ
 class Camera
 {
-  private:
-
+private:
     // コンストラクタ
     Camera();
 
     // デストラクタ
     ~Camera() = default;
 
-  public:
-
+public:
     // インスタンス取得
     static Camera& Instance()
     {
@@ -80,8 +78,7 @@ class Camera
         return right;
     }
 
-  private:
-
+private:
     DirectX::XMFLOAT4X4 view;
     DirectX::XMFLOAT4X4 projection;
 
@@ -92,8 +89,7 @@ class Camera
     DirectX::XMFLOAT3 front;
     DirectX::XMFLOAT3 right;
 
-  private:
-
+private:
     float orthoWeight;
     float perspectiveWeight;
 

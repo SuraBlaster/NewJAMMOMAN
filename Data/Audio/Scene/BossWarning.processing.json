@@ -1,0 +1,17 @@
+{
+  "source": "C:\\Users\\2230190\\Downloads\\420661__kinoton__alarm-siren-fast-oscillations.wav",
+  "source_url": "https://freesound.org/people/Kinoton/sounds/420661/",
+  "author": "Kinoton",
+  "title": "Alarm Siren, Fast Oscillations",
+  "source_license_label": "CC0; author also links terms of use on their profile",
+  "source_start_seconds": 0.0,
+  "duration_seconds": 3.2,
+  "sample_rate": 48000,
+  "channels": 2,
+  "bits": 16,
+  "peak_dbfs": -3.0,
+  "fade_in_seconds": 0.012,
+  "fade_out_seconds": 0.18,
+  "pitch_change": false,
+  "time_stretch": false
+}

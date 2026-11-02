@@ -9,8 +9,7 @@
 // 光学剣の軌跡と、そこから散る光の粒を描画する
 class SwordTrailRenderer
 {
-  public:
-
+public:
     struct Params
     {
         float fade;       // 0:表示中 1:消えきった
@@ -40,8 +39,7 @@ class SwordTrailRenderer
     void Render(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
                 const DirectX::XMFLOAT4X4& projection);
 
-  private:
-
+private:
     static const UINT VERTEX_CAPACITY = 4096;
     static const UINT MAX_SPARKS = 256;
 

@@ -102,13 +102,9 @@ std::shared_ptr<Enemy> EnemyFactory::CreateFromSpawnData(ID3D11Device* device, P
         return enemyWalker;
     }
 
-    case EnemyType::Unknown:
-    {
-    }
+    case EnemyType::Unknown: {}
 
-    default:
-    {
-    }
+    default: {}
     }
 
     return nullptr;

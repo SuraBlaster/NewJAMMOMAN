@@ -5,16 +5,16 @@ UseTab: Never
 ColumnLimit: 110
 BreakBeforeBraces: Allman
 InsertBraces: true
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
 SeparateDefinitionBlocks: Always
 EmptyLineBeforeAccessModifier: Always
-EmptyLineAfterAccessModifier: Always
+EmptyLineAfterAccessModifier: Never
 MaxEmptyLinesToKeep: 1
 SortIncludes: Never
 FixNamespaceComments: false
@@ -22,3 +22,8 @@ ReflowComments: false
 PointerAlignment: Left
 BreakStringLiterals: false
 NamespaceIndentation: All
+AccessModifierOffset: -4
+BraceWrapping:
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false

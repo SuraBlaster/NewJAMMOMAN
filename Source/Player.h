@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <optional>
 #include "Character.h"
 #include "Effect/Effect.h"
 #include "PlayerTrail.h"
@@ -11,8 +12,7 @@ class Enemy;
 
 class Player final : public Character
 {
-  public:
-
+public:
     // コンストラクタ
     Player(ID3D11Device* device);
 
@@ -47,10 +47,14 @@ class Player final : public Character
     void SetBladeActive(bool active);
     void SetTrailActive(bool active);
 
+    bool IntersectsSword(const DirectX::XMFLOAT3& spherePosition, float sphereRadius) const;
+
     AABB GetBodyAABB() const;
 
-  private:
+    void Respawn(const DirectX::XMFLOAT3& respawnPosition);
+    std::optional<DirectX::XMFLOAT3> deathRespawnPosition;
 
+private:
     void OnDamaged() override;
     void OnDead() override;
 
@@ -86,14 +90,12 @@ class Player final : public Character
     void HoldJump();
     void GravityChange(float elapsedTime);
 
-    /// Trueは前に壁が存在する
-
+    // Trueは前に壁が存在する
     bool WallJudgement(float elapsedTime);
 
     void MoveAndCollide(float elapsedTime);
 
-  private:
-
+private:
     float gravity = 10.0f;
     float acceleration = 50.0f;
     float deceleration = 20.0f;
@@ -125,6 +127,12 @@ class Player final : public Character
 
     // 壁つかまりフラグ
     bool wallClimb = false;
+    bool showWallProbes = true;
+    float waistHeightRatio = 0.325f;
+    float chestHeightRatio = 0.75f;
+    float wallProbeHalfHeightRatio = 0.03f;
+    float wallCheckDistance = 0.003f;
+    bool wallProbeHits[2][2] = {};
 
     // 壁の法線
     DirectX::XMFLOAT3 wallNormal = {};
@@ -146,6 +154,7 @@ class Player final : public Character
     DirectX::XMFLOAT3 debugPreviousBladeRoot = {0, 0, 0};
     DirectX::XMFLOAT3 debugPreviousBladeTip = {0, 0, 0};
     bool hasSwordCollisionDebugData = false;
+    bool showCollisionDebug = false;
     bool showSwordCollision = false;
 
     // 自機AABB関連
@@ -154,9 +163,14 @@ class Player final : public Character
     float bodyHeight = 1.4f;
 
     bool showBodyAabb = true;
+    bool showDamageCylinder = true;
 
     // 開始時点のめり込みを確認するためのフラグ
     bool hasBodyOverlap = false;
+
+    // ダッシュ開始直後の入力硬直を管理するタイマー
+    float rigidTimer = 0.0f;
+    const float rigidTime = 0.2f;
 
     std::shared_ptr<Effect> spawnEffect;
     std::shared_ptr<Effect> slashEffect;
@@ -167,8 +181,7 @@ class Player final : public Character
     Effekseer::Handle explosionHandle = -1;
     Effekseer::Handle damagedHandle = -1;
 
-  private:
-
+private:
     enum class StateId
     {
         None = 0,
@@ -187,17 +200,18 @@ class Player final : public Character
         EnumCount
     };
 
+    void SetState(StateId stateId);
+
     std::string debugStateNames[static_cast<int>(StateId::EnumCount)] = {
         "None",      "Idle",     "Move",  "Attack", "Jump",  "JumpFall", "Dash",
         "WallSlide", "WallKick", "Clear", "Damage", "Death", "Spawn"};
 
-    void SetState(StateId stateId);
+    
 
     PlayerTrail trail;
     std::unique_ptr<class SwordTrailRenderer> swordTrailRenderer;
 
-  public:
-
+public:
     using TrailData = PlayerTrail::MotionSnapshot;
 
     const std::deque<TrailData>& GetTrails() const
@@ -206,49 +220,34 @@ class Player final : public Character
     }
 
 public:
-
     class State
     {
-      public:
-
+    public:
         // コンストラクタ
-        State(Player* owner) : owner(owner)
-        {
-        }
+        State(Player* owner) : owner(owner) {}
 
         // デストラクタ
         virtual ~State() = default;
 
-      public:
-
+    public:
         // 状態に入るときの処理
-        virtual void OnEnter()
-        {
-        }
+        virtual void OnEnter() {}
 
         // 状態を抜けるときの処理
-        virtual void OnExit()
-        {
-        }
+        virtual void OnExit() {}
 
         // 現在の状態の更新処理
-        virtual void OnUpdate(float elapsedTime)
-        {
-        }
+        virtual void OnUpdate(float elapsedTime) {}
 
-      protected:
-
+    protected:
         Player* owner;
     };
 
     class IdleState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        IdleState(Player* owner) : State(owner)
-        {
-        }
+        IdleState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -259,12 +258,9 @@ public:
 
     class MoveState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        MoveState(Player* owner) : State(owner)
-        {
-        }
+        MoveState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -275,12 +271,9 @@ public:
 
     class AttackState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        AttackState(Player* owner) : State(owner)
-        {
-        }
+        AttackState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -291,12 +284,9 @@ public:
 
     class JumpState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        JumpState(Player* owner) : State(owner)
-        {
-        }
+        JumpState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -307,12 +297,9 @@ public:
 
     class DashState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        DashState(Player* owner) : State(owner)
-        {
-        }
+        DashState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -326,12 +313,9 @@ public:
 
     class JumpFallState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        JumpFallState(Player* owner) : State(owner)
-        {
-        }
+        JumpFallState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -343,11 +327,8 @@ public:
     class WallSlideState : public State
     {
     public:
-
         // コンストラクタ
-        WallSlideState(Player* owner) : State(owner)
-        {
-        }
+        WallSlideState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -358,19 +339,15 @@ public:
         // 状態を抜けるときの処理
         void OnExit() override;
 
-      private:
-
+    private:
         float kickPower = 5.0f;
     };
 
     class WallKickState : public State
     {
     public:
-
         // コンストラクタ
-        WallKickState(Player* owner) : State(owner)
-        {
-        }
+        WallKickState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -381,12 +358,9 @@ public:
 
     class DamageState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        DamageState(Player* owner) : State(owner)
-        {
-        }
+        DamageState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -398,11 +372,8 @@ public:
     class DeathState : public State
     {
     public:
-
         // コンストラクタ
-        DeathState(Player* owner) : State(owner)
-        {
-        }
+        DeathState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -413,8 +384,7 @@ public:
         // 状態を抜けるときの処理
         void OnExit() override;
 
-      private:
-
+    private:
         static constexpr float RETRY_DELAY = 3.0f;
         static constexpr float EFFECT_SCALE = 0.2f;
         static constexpr float VIBRATION_POWER = 1.0f;
@@ -428,12 +398,9 @@ public:
 
     class ClearState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        ClearState(Player* owner) : State(owner)
-        {
-        }
+        ClearState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -445,7 +412,6 @@ public:
         void OnExit() override;
 
     private:
-
         static constexpr float CLEAR_AUDIO_TIME = 5.0f;
         static constexpr float EXIT_EFFECT_TIME = 11.0f;
         static constexpr float SCENE_CHANGE_TIME = 13.0f;
@@ -459,12 +425,9 @@ public:
 
     class SpawnState : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        SpawnState(Player* owner) : State(owner)
-        {
-        }
+        SpawnState(Player* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -472,13 +435,11 @@ public:
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         float spawnTimer = 0.0f;
         static constexpr float SPAWN_ANIM_START_TIME = 0.5f;
         static constexpr float SPAWN_END_TIME = 1.0f;
         bool hasSpawned = false;
-        ;
     };
 
     StateId currentState = StateId::None;

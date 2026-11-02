@@ -7,16 +7,14 @@ class Player;
 
 class EnemyEgg final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyEgg(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition);
 
     // 更新処理
     void Update(float elapsedTime) override;
 
-  private:
-
+private:
     void OnLanding() override;
 
     void OnDead() override

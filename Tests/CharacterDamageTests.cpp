@@ -4,8 +4,7 @@
 
 class TestCharacter final : public Character
 {
-  public:
-
+public:
     void Update(float elapsedTime) override
     {
         UpdateInvincibleTimer(elapsedTime);
@@ -14,8 +13,7 @@ class TestCharacter final : public Character
     int damageEvents = 0;
     int deathEvents = 0;
 
-  private:
-
+private:
     void OnDamaged() override
     {
         ++damageEvents;

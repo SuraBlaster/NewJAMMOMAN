@@ -10,7 +10,7 @@
 LoadingPlayer::LoadingPlayer()
 {
     auto* device = Graphics::Instance().GetDevice();
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Jammo/Jammo_Player.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Jammo/Jammo_Player.cereal");
     position = {6.1f, -6.75f, 0};
     rotation = {0, DirectX::XMConvertToRadians(-90), 0};
     scale = {0.012f, 0.012f, 0.012f};

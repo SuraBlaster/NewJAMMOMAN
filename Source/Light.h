@@ -10,16 +10,14 @@ struct DirectionalLight
 
 class LightManager
 {
-  private:
-
+private:
     // コンストラクタ
     LightManager() = default;
 
     // デストラクタ
     ~LightManager() = default;
 
-  public:
-
+public:
     static LightManager& Instance()
     {
         static LightManager instance;
@@ -54,8 +52,7 @@ class LightManager
         return hemisphereWeight;
     }
 
-  private:
-
+private:
     DirectionalLight directionalLight;
     DirectX::XMFLOAT3 skyColor = {0.5f, 0.5f, 1.0f};
     DirectX::XMFLOAT3 groundColor = {0.5f, 0.5f, 0.5f};

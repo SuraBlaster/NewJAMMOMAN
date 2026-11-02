@@ -1,13 +1,11 @@
 ﻿#pragma once
-#include <chrono>
 
 using GamePadButton = unsigned int;
 
 // ゲームパッド
 class GamePad
 {
-  public:
-
+public:
     static const GamePadButton BTN_UP = (1 << 0);
     static const GamePadButton BTN_RIGHT = (1 << 1);
     static const GamePadButton BTN_DOWN = (1 << 2);
@@ -25,13 +23,11 @@ class GamePad
     static const GamePadButton BTN_LEFT_TRIGGER = (1 << 14);
     static const GamePadButton BTN_RIGHT_TRIGGER = (1 << 15);
 
-  private:
-
-    std::chrono::steady_clock::time_point vibrationEnd{};
+private:
+    double vibrationEndMilliseconds = 0.0;
     bool vibrating = false;
 
-  public:
-
+public:
     // コンストラクタ
     GamePad() = default;
 
@@ -110,8 +106,7 @@ class GamePad
         return triggerR;
     }
 
-  private:
-
+private:
     GamePadButton buttonState[2] = {0};
     GamePadButton buttonDown = 0;
     GamePadButton buttonUp = 0;

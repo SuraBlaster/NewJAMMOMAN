@@ -6,50 +6,45 @@
 #include <cmath>
 #include <cstddef>
 
-namespace
+static bool TryMergeTerrainBoxes(const AABB& a, const AABB& b, int mergeAxis, AABB& merged)
 {
-    bool TryMergeTerrainBoxes(const AABB& a, const AABB& b, int mergeAxis, AABB& merged)
+    // 座標変換による微小な誤差だけを許容する
+    constexpr float TOLERANCE = 0.00001f;
+
+    const float aMin[3] = {a.min.x, a.min.y, a.min.z};
+
+    const float aMax[3] = {a.max.x, a.max.y, a.max.z};
+
+    const float bMin[3] = {b.min.x, b.min.y, b.min.z};
+
+    const float bMax[3] = {b.max.x, b.max.y, b.max.z};
+
+    for (int axis = 0; axis < 3; ++axis)
     {
-        // 座標変換による微小な誤差だけを許容する
-        constexpr float TOLERANCE = 0.00001f;
-
-        const float aMin[3] = {a.min.x, a.min.y, a.min.z};
-
-        const float aMax[3] = {a.max.x, a.max.y, a.max.z};
-
-        const float bMin[3] = {b.min.x, b.min.y, b.min.z};
-
-        const float bMax[3] = {b.max.x, b.max.y, b.max.z};
-
-        for (int axis = 0; axis < 3; ++axis)
+        if (axis == mergeAxis)
         {
-            if (axis == mergeAxis)
+            // 統合方向に隙間があれば、まとめない
+            if (aMax[axis] < bMin[axis] - TOLERANCE || bMax[axis] < aMin[axis] - TOLERANCE)
             {
-                // 統合方向に隙間があれば、まとめない
-                if (aMax[axis] < bMin[axis] - TOLERANCE || bMax[axis] < aMin[axis] - TOLERANCE)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // 他の2軸は、範囲が一致する必要がある
-                if (std::abs(aMin[axis] - bMin[axis]) > TOLERANCE ||
-                    std::abs(aMax[axis] - bMax[axis]) > TOLERANCE)
-                {
-                    return false;
-                }
+                return false;
             }
         }
-
-        merged.min = {(std::min)(a.min.x, b.min.x), (std::min)(a.min.y, b.min.y),
-                      (std::min)(a.min.z, b.min.z)};
-
-        merged.max = {(std::max)(a.max.x, b.max.x), (std::max)(a.max.y, b.max.y),
-                      (std::max)(a.max.z, b.max.z)};
-
-        return true;
+        else
+        {
+            // 他の2軸は、範囲が一致する必要がある
+            if (std::abs(aMin[axis] - bMin[axis]) > TOLERANCE ||
+                std::abs(aMax[axis] - bMax[axis]) > TOLERANCE)
+            {
+                return false;
+            }
+        }
     }
+
+    merged.min = {(std::min)(a.min.x, b.min.x), (std::min)(a.min.y, b.min.y), (std::min)(a.min.z, b.min.z)};
+
+    merged.max = {(std::max)(a.max.x, b.max.x), (std::max)(a.max.y, b.max.y), (std::max)(a.max.z, b.max.z)};
+
+    return true;
 }
 
 // コンストラクタ

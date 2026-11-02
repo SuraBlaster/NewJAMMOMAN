@@ -4,8 +4,7 @@
 
 class ModelShader : public Shader
 {
-  public:
-
+public:
     // コンストラクタ
     ModelShader(ID3D11Device* device);
 
@@ -21,8 +20,7 @@ class ModelShader : public Shader
     // 終了処理
     void End(const RenderContext& rc) override;
 
-  private:
-
+private:
     struct CbMesh
     {
         DirectX::XMFLOAT4 materialColor;

@@ -10,7 +10,7 @@
 // コンストラクタ
 EnemyVacuum::EnemyVacuum(ID3D11Device* device, Player* player) : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/lab_spiked_vacuum.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/lab_spiked_vacuum.cereal");
     scale = {0.75f, 0.75f, 0.75f};
     rotation.y = DirectX::XMConvertToRadians(-90.0f);
     radius = 0.6f;

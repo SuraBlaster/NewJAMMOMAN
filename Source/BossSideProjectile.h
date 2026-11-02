@@ -7,8 +7,7 @@ class ShapeRenderer;
 
 class BossSideProjectile final
 {
-  public:
-
+public:
     enum class Motion
     {
         ScatterAndAccelerate,
@@ -43,8 +42,7 @@ class BossSideProjectile final
         return RADIUS;
     }
 
-  private:
-
+private:
     enum class Phase
     {
         Scattering,

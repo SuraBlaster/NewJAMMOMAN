@@ -10,8 +10,7 @@ class Player;
 
 class EnemyHover final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyHover(ID3D11Device* device, Player* player);
 
@@ -21,8 +20,7 @@ class EnemyHover final : public Enemy
     // DrawPrimitive の描画処理
     void DrawPrimitive(ShapeRenderer* shapeRenderer) const override;
 
-  private:
-
+private:
     void FireRadialProjectiles();
 
     // UpdateProjectiles の更新処理

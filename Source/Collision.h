@@ -7,8 +7,7 @@
 struct AABB
 {
 
-  public:
-
+public:
     DirectX::XMFLOAT3 min;
     DirectX::XMFLOAT3 max;
 
@@ -41,8 +40,7 @@ struct SweepHit
 
 class Collision
 {
-  public:
-
+public:
     static SweepStatus SweepAABB(const AABB& movingBox, const DirectX::XMFLOAT3& displacement,
                                  const AABB& obstacle, SweepHit& hit);
 

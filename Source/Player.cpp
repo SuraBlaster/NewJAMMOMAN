@@ -13,46 +13,41 @@
 #include <ImGui.h>
 #include "SwordTrailRenderer.h"
 
-namespace
+static bool BuildCapsuleTransform(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end,
+                                  DirectX::XMFLOAT4X4& transform, float& height)
 {
+    const DirectX::XMVECTOR startVector = DirectX::XMLoadFloat3(&start);
+    const DirectX::XMVECTOR endVector = DirectX::XMLoadFloat3(&end);
+    const DirectX::XMVECTOR difference = DirectX::XMVectorSubtract(endVector, startVector);
+    height = DirectX::XMVectorGetX(DirectX::XMVector3Length(difference));
 
-    bool BuildCapsuleTransform(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end,
-                               DirectX::XMFLOAT4X4& transform, float& height)
+    if (height <= 0.0001f)
     {
-        const DirectX::XMVECTOR startVector = DirectX::XMLoadFloat3(&start);
-        const DirectX::XMVECTOR endVector = DirectX::XMLoadFloat3(&end);
-        const DirectX::XMVECTOR difference = DirectX::XMVectorSubtract(endVector, startVector);
-        height = DirectX::XMVectorGetX(DirectX::XMVector3Length(difference));
-
-        if (height <= 0.0001f)
-        {
-            return false;
-        }
-
-        const DirectX::XMVECTOR yAxis = DirectX::XMVectorScale(difference, 1.0f / height);
-        const float upDot = std::abs(DirectX::XMVectorGetY(yAxis));
-        const DirectX::XMVECTOR reference =
-            upDot > 0.99f ? DirectX::XMVectorSet(1, 0, 0, 0) : DirectX::XMVectorSet(0, 1, 0, 0);
-        const DirectX::XMVECTOR xAxis =
-            DirectX::XMVector3Normalize(DirectX::XMVector3Cross(reference, yAxis));
-        const DirectX::XMVECTOR zAxis = DirectX::XMVector3Cross(yAxis, xAxis);
-        const DirectX::XMVECTOR center =
-            DirectX::XMVectorScale(DirectX::XMVectorAdd(startVector, endVector), 0.5f);
-
-        DirectX::XMMATRIX world;
-        world.r[0] = DirectX::XMVectorSetW(xAxis, 0.0f);
-        world.r[1] = DirectX::XMVectorSetW(yAxis, 0.0f);
-        world.r[2] = DirectX::XMVectorSetW(zAxis, 0.0f);
-        world.r[3] = DirectX::XMVectorSetW(center, 1.0f);
-        DirectX::XMStoreFloat4x4(&transform, world);
-        return true;
+        return false;
     }
+
+    const DirectX::XMVECTOR yAxis = DirectX::XMVectorScale(difference, 1.0f / height);
+    const float upDot = std::abs(DirectX::XMVectorGetY(yAxis));
+    const DirectX::XMVECTOR reference =
+        upDot > 0.99f ? DirectX::XMVectorSet(1, 0, 0, 0) : DirectX::XMVectorSet(0, 1, 0, 0);
+    const DirectX::XMVECTOR xAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(reference, yAxis));
+    const DirectX::XMVECTOR zAxis = DirectX::XMVector3Cross(yAxis, xAxis);
+    const DirectX::XMVECTOR center =
+        DirectX::XMVectorScale(DirectX::XMVectorAdd(startVector, endVector), 0.5f);
+
+    DirectX::XMMATRIX world;
+    world.r[0] = DirectX::XMVectorSetW(xAxis, 0.0f);
+    world.r[1] = DirectX::XMVectorSetW(yAxis, 0.0f);
+    world.r[2] = DirectX::XMVectorSetW(zAxis, 0.0f);
+    world.r[3] = DirectX::XMVectorSetW(center, 1.0f);
+    DirectX::XMStoreFloat4x4(&transform, world);
+    return true;
 }
 
 // コンストラクタ
 Player::Player(ID3D11Device* device)
 {
-    const char* filename = "./Data/Model/Jammo/Jammo_Player.gltf";
+    const char* filename = "./Data/Model/Jammo/Jammo_Player.cereal";
     model = ModelManager::Instance().CreateInstance(device, filename);
     animator = std::make_unique<Animator>(model.get(), 2);
     swordTrailRenderer = std::make_unique<SwordTrailRenderer>(device);
@@ -61,7 +56,7 @@ Player::Player(ID3D11Device* device)
     upperBodyMask.BuildLayerMaskFromRoot(model.get(), "mixamorig:Spine1");
 
     position.z = 0.0f;
-    height = 2.0f;
+    height = 1.4f;
     rotation.y = DirectX::XMConvertToRadians(90);
 
     scale.x = scale.y = scale.z = 0.0f;
@@ -85,6 +80,9 @@ Player::Player(ID3D11Device* device)
     states[static_cast<size_t>(StateId::Spawn)] = std::make_unique<SpawnState>(this);
 
     SetState(StateId::Spawn);
+
+    // 最初の更新より前に描画されても、出現前の非表示スケールをモデルへ反映する
+    Character::UpdateTransform();
 }
 
 // デストラクタ
@@ -194,12 +192,53 @@ void Player::DrawGUI()
         ImGui::Text("Gravity enabled: %s", useGravity ? "true" : "false");
         ImGui::Text("Gravity: %.3f | Wall slide: %s", gravity, wallClimb ? "true" : "false");
 #endif
+        ImGui::Checkbox("Show player collision", &showCollisionDebug);
         ImGui::Checkbox("Show sword collision", &showSwordCollision);
         ImGui::Checkbox("Show body AABB", &showBodyAabb);
+        ImGui::Checkbox("Show damage cylinder (cyan)", &showDamageCylinder);
+        ImGui::Text("Damage cylinder radius: %.2f | height: %.2f", GetRadius(), GetHeight());
         ImGui::SliderFloat("Body half width", &bodyHalfWidth, 0.05f, 2.0f);
         ImGui::SliderFloat("Body half depth", &bodyHalfDepth, 0.05f, 2.0f);
         ImGui::SliderFloat("Body height", &bodyHeight, 0.1f, 4.0f);
         ImGui::Text("Grounded: %s", isGround ? "true" : "false");
+        ImGui::Checkbox("Show wall probes", &showWallProbes);
+        ImGui::SliderFloat("Waist height ratio", &waistHeightRatio, 0.15f, 0.60f);
+        ImGui::SliderFloat("Chest height ratio", &chestHeightRatio, 0.65f, 0.90f);
+        ImGui::SliderFloat("Probe half height ratio", &wallProbeHalfHeightRatio, 0.005f, 0.10f);
+        ImGui::SliderFloat("Wall check distance", &wallCheckDistance, 0.001f, 0.05f, "%.3f");
+        if (ImGui::Button("Reset wall probes"))
+        {
+            waistHeightRatio = 0.45f;
+            chestHeightRatio = 0.70f;
+            wallProbeHalfHeightRatio = 0.03f;
+            wallCheckDistance = 0.003f;
+        }
+        const AABB debugBody = GetBodyAABB();
+        const float debugHeight = debugBody.max.y - debugBody.min.y;
+        const float debugRatios[] = {waistHeightRatio, chestHeightRatio};
+        for (int level = 0; level < 2; ++level)
+        {
+            AABB probe = debugBody;
+            const float centerY = debugBody.min.y + debugHeight * debugRatios[level];
+            probe.min.y = centerY - debugHeight * wallProbeHalfHeightRatio;
+            probe.max.y = centerY + debugHeight * wallProbeHalfHeightRatio;
+            for (int side = 0; side < 2; ++side)
+            {
+                TerrainSweepHit hit;
+                wallProbeHits[level][side] = CollisionManager::Instance().CheckWall(
+                    probe, (side == 0 ? -1.0f : 1.0f) * wallCheckDistance, hit);
+            }
+        }
+        ImGui::Text("Waist L:%s R:%s", wallProbeHits[0][0] ? "hit" : "miss",
+                    wallProbeHits[0][1] ? "hit" : "miss");
+        ImGui::Text("Chest L:%s R:%s", wallProbeHits[1][0] ? "hit" : "miss",
+                    wallProbeHits[1][1] ? "hit" : "miss");
+        ImGui::Text("Both L:%s R:%s", wallProbeHits[0][0] && wallProbeHits[1][0] ? "yes" : "no",
+                    wallProbeHits[0][1] && wallProbeHits[1][1] ? "yes" : "no");
+        ImGui::Text("Wall grab gate: %s", isGround                   ? "grounded"
+                                          : wallKickLockTimer > 0.0f ? "kick locked"
+                                                                     : "open");
+        ImGui::Text("Probes: green=hit, red=miss (current position)");
 
         ImGui::Text("Body overlap: %s", hasBodyOverlap ? "true" : "false");
     }
@@ -226,9 +265,16 @@ void Player::DrawGUI()
 // 当たり判定などのデバッグ描画処理
 void Player::DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const
 {
-    if (!shapeRenderer)
+    if (!shapeRenderer || !showCollisionDebug)
     {
         return;
+    }
+
+    // 敵弾との衝突判定に使う円柱を描画
+    if (showDamageCylinder)
+    {
+        shapeRenderer->DrawCylinder(GetPosition(), GetRadius(), GetHeight(),
+                                    DirectX::XMFLOAT4{0.0f, 1.0f, 1.0f, 1.0f});
     }
 
     // 身体のAABBを描画
@@ -240,6 +286,40 @@ void Player::DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const
                                DirectX::XMFLOAT4{0.0f, 1.0f, 0.0f, 1.0f});
     }
 
+    if (showWallProbes)
+    {
+        const float ratios[] = {waistHeightRatio, chestHeightRatio};
+        const AABB body = GetBodyAABB();
+        const float height = body.max.y - body.min.y;
+        for (int level = 0; level < 2; ++level)
+        {
+            AABB probe = body;
+            const float centerY = body.min.y + height * ratios[level];
+            probe.min.y = centerY - height * wallProbeHalfHeightRatio;
+            probe.max.y = centerY + height * wallProbeHalfHeightRatio;
+            for (int side = 0; side < 2; ++side)
+            {
+                const float direction = side == 0 ? -1.0f : 1.0f;
+                TerrainSweepHit hit;
+                const bool probeHit =
+                    CollisionManager::Instance().CheckWall(probe, direction * wallCheckDistance, hit);
+                AABB display = probe;
+                if (side == 0)
+                {
+                    display.max.x = body.GetCenter().x;
+                    display.min.x -= wallCheckDistance;
+                }
+                else
+                {
+                    display.min.x = body.GetCenter().x;
+                    display.max.x += wallCheckDistance;
+                }
+                const DirectX::XMFLOAT4 color =
+                    probeHit ? DirectX::XMFLOAT4{0, 1, 0, 1} : DirectX::XMFLOAT4{1, 0, 0, 1};
+                shapeRenderer->DrawBox(display.GetCenter(), {0, 0, 0}, display.GetHalfSize(), color);
+            }
+        }
+    }
     if (!shapeRenderer || !showSwordCollision || !isBladeActive || !hasSwordCollisionDebugData)
     {
         return;
@@ -314,6 +394,13 @@ void Player::RenderTrail(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& vie
 // 移動速度の更新処理
 void Player::UpdateVelocity(float elapsedTime)
 {
+    // 出現演出が終わるまでは、重力や移動入力で復帰位置から動かさない。
+    if (currentState == StateId::Spawn)
+    {
+        velocity = {0.0f, 0.0f, 0.0f};
+        return;
+    }
+
     if (wallKickLockTimer > 0.0f)
     {
         wallKickLockTimer -= elapsedTime;
@@ -499,6 +586,8 @@ void Player::UpdateMotionTrail(float elapsedTime)
 // 剣の軌跡と当たり判定の更新処理
 void Player::UpdateSwordTrail(float elapsedTime)
 {
+    hasSwordCollisionDebugData = false;
+
     // プレイヤーの右手ノードを取得
     int handNodeIndex = model->GetNodeIndex("mixamorig:RightHandThumb2");
 
@@ -561,6 +650,34 @@ void Player::UpdateSwordTrail(float elapsedTime)
 
     prevBladeActive = isBladeActive;
     prevTrailActive = isTrailActive;
+}
+
+// 剣の軌跡と球の接触を判定
+bool Player::IntersectsSword(const DirectX::XMFLOAT3& spherePosition, float sphereRadius) const
+{
+    if (!isBladeActive || !hasSwordCollisionDebugData)
+    {
+        return false;
+    }
+
+    for (int step = 0; step <= SWORD_SWEEP_STEPS; ++step)
+    {
+        const float t = step / static_cast<float>(SWORD_SWEEP_STEPS);
+        DirectX::XMFLOAT3 root, tip, contact;
+        DirectX::XMStoreFloat3(&root, DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&debugPreviousBladeRoot),
+                                                            DirectX::XMLoadFloat3(&debugBladeRoot), t));
+        DirectX::XMStoreFloat3(&tip, DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&debugPreviousBladeTip),
+                                                           DirectX::XMLoadFloat3(&debugBladeTip), t));
+
+        // 高さゼロのカプセルとして球を扱う
+        if (Collision::IntersectCapsuleVsCylinder(root, tip, SWORD_COLLISION_RADIUS, spherePosition,
+                                                  sphereRadius, 0.0f, contact))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void Player::CheckSwordCollision(const DirectX::XMFLOAT3& bladeRoot, const DirectX::XMFLOAT3& bladeTip,
@@ -635,11 +752,16 @@ bool Player::InputMove()
     InputManager& gamePad = InputManager::Instance();
     float axisX = gamePad.GetAxisLX();
 
+    // 微小な横入力を無視する
+    if (std::abs(axisX) <= 0.1f)
+    {
+        axisX = 0.0f;
+    }
+
     inputMoveX = axisX;
     inputMoveZ = 0.0f;
 
-    // 入力がある場合
-    if (std::abs(axisX) > 0.1f)
+    if (axisX != 0.0f)
     {
         rotation.y = DirectX::XMConvertToRadians(axisX < 0.0f ? -90.0f : 90.0f);
         return true;
@@ -782,24 +904,39 @@ bool Player::WallJudgement(float elapsedTime)
         return false;
     }
 
-    constexpr float CHECK_DISTANCE = 0.003f;
+    const float CHECK_DISTANCE = wallCheckDistance;
 
     CollisionManager& manager = CollisionManager::Instance();
 
     const AABB body = GetBodyAABB();
+    const float height = body.max.y - body.min.y;
 
-    auto checkWall = [&](float direction, DirectX::XMFLOAT3& outNormal)
+    // 指定した高さに、薄い判定ボックスを作る
+    auto makeProbe = [&](float heightRatio)
+    {
+        AABB probe = body;
+        const float centerY = body.min.y + height * heightRatio;
+        const float halfHeight = height * wallProbeHalfHeightRatio;
+
+        probe.min.y = centerY - halfHeight;
+        probe.max.y = centerY + halfHeight;
+        return probe;
+    };
+
+    const AABB waistProbe = makeProbe(waistHeightRatio); // 腰
+    const AABB chestProbe = makeProbe(chestHeightRatio); // 胸
+
+    auto checkProbe = [&](const AABB& probe, float direction, DirectX::XMFLOAT3& outNormal)
     {
         TerrainSweepHit hit;
 
-        if (!manager.CheckWall(body, direction * CHECK_DISTANCE, hit))
+        if (!manager.CheckWall(probe, direction * CHECK_DISTANCE, hit))
         {
             return false;
         }
 
-        for (const DirectX::XMFLOAT3& normal : hit.normals)
+        for (const auto& normal : hit.normals)
         {
-            // 調べた方向と向かい合う側面だけを採用する
             if (normal.x * direction < -0.5f)
             {
                 outNormal = normal;
@@ -808,6 +945,22 @@ bool Player::WallJudgement(float elapsedTime)
         }
 
         return false;
+    };
+
+    auto checkWall = [&](float direction, DirectX::XMFLOAT3& outNormal)
+    {
+        DirectX::XMFLOAT3 waistNormal = {};
+        DirectX::XMFLOAT3 chestNormal = {};
+
+        const bool waistHit = checkProbe(waistProbe, direction, waistNormal);
+        const bool chestHit = checkProbe(chestProbe, direction, chestNormal);
+        if (!waistHit || !chestHit)
+        {
+            return false;
+        }
+
+        outNormal = chestNormal;
+        return true;
     };
 
     DirectX::XMFLOAT3 rightNormal = {};
@@ -976,6 +1129,13 @@ void Player::MoveAndCollide(float elapsedTime)
     }
 }
 
+void Player::Respawn(const DirectX::XMFLOAT3& respawnPosition)
+{
+    SetPosition(respawnPosition);
+    SetVelocity({0.0f, 0.0f, 0.0f});
+    SetState(StateId::Spawn);
+}
+
 void Player::SetState(StateId stateId)
 {
     nextState = stateId;
@@ -985,6 +1145,7 @@ void Player::OnDamaged()
 {
     SetState(StateId::Damage);
     velocity = {0.0f, 0.0f, 0.0f};
+    isDashJump = false;
     inputMoveX = 0.0f;
     inputMoveZ = 0.0f;
     SetBladeActive(false);

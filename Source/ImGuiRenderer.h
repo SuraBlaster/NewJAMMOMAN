@@ -5,8 +5,7 @@
 
 class ImGuiRenderer
 {
-  public:
-
+public:
     // 初期化
     static void Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* dc);
 

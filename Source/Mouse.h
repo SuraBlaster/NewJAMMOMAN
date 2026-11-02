@@ -7,21 +7,17 @@ using MouseButton = unsigned int;
 // マウス
 class Mouse
 {
-  public:
-
+public:
     static const MouseButton BTN_LEFT = (1 << 0);
     static const MouseButton BTN_MIDDLE = (1 << 1);
     static const MouseButton BTN_RIGHT = (1 << 2);
 
-  public:
-
+public:
     // コンストラクタ
     Mouse(HWND hWnd);
 
     // デストラクタ
-    ~Mouse()
-    {
-    }
+    ~Mouse() {}
 
     // 更新
     void Update();
@@ -104,8 +100,7 @@ class Mouse
         return screenHeight;
     }
 
-  private:
-
+private:
     MouseButton buttonState[2] = {0};
     MouseButton buttonDown = 0;
     MouseButton buttonUp = 0;

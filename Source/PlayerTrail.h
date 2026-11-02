@@ -8,8 +8,7 @@ class ModelRenderer;
 
 class PlayerTrail
 {
-  public:
-
+public:
     struct MotionSnapshot
     {
         std::shared_ptr<Model> trailModel;
@@ -76,8 +75,7 @@ class PlayerTrail
     // RenderMotion の描画処理
     void RenderMotion(ModelRenderer* modelRenderer) const;
 
-  private:
-
+private:
     struct SwordSample
     {
         DirectX::XMFLOAT3 root;

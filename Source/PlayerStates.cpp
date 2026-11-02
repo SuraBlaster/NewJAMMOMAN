@@ -8,12 +8,9 @@
 #include "InputManager.h"
 #include "HitStopManager.h"
 
-namespace
-{
-    constexpr float GROUND_ATTACK_PLAYBACK_SPEED = 1.3f;
-    constexpr float AIR_ATTACK_PLAYBACK_SPEED = 2.0f;
-    constexpr float AIR_COMBO_CANCEL_START = 0.30f;
-}
+constexpr float GROUND_ATTACK_PLAYBACK_SPEED = 1.3f;
+constexpr float AIR_ATTACK_PLAYBACK_SPEED = 2.0f;
+constexpr float AIR_COMBO_CANCEL_START = 0.30f;
 
 // 状態に入るときの処理
 void Player::IdleState::OnEnter()
@@ -37,6 +34,7 @@ void Player::IdleState::OnUpdate(float elapsedTime)
     if (owner->InputDash() && owner->IsGround())
     {
         owner->SetState(StateId::Dash);
+        return;
     }
 
     if (owner->InputShot())
@@ -192,6 +190,8 @@ void Player::DashState::OnEnter()
 
     owner->velocity.x = 0.0f;
     owner->inputMoveX = 0.0f;
+
+    owner->rigidTimer = owner->rigidTime;
 }
 
 // 現在の状態の更新処理
@@ -199,11 +199,18 @@ void Player::DashState::OnUpdate(float elapsedTime)
 {
     owner->UpdateDash();
     owner->dashTimer -= elapsedTime;
+    owner->rigidTimer -= elapsedTime;
     owner->UpdateMotionTrail(elapsedTime);
+
+    // 開始直後の硬直中は操作によるダッシュの中断を受け付けない
+    if (owner->rigidTimer > 0.0f)
+    {
+        return;
+    }
 
     InputManager& gamePad = InputManager::Instance();
 
-    if ((gamePad.GetButtonUp() & InputManager::BTN_B) || owner->dashTimer <= 0.0f)
+    if (!(gamePad.GetButton() & InputManager::BTN_B) || owner->dashTimer <= 0.0f)
     {
         owner->trail.ClearMotion();
         owner->velocity.x = 0.0f;
@@ -225,12 +232,21 @@ void Player::DashState::OnUpdate(float elapsedTime)
 
         Audio::Instance().Stop("SE_PLAYER_DASH");
         owner->SetState(StateId::Jump);
+        return;
     }
 
-    if (!owner->IsGround() && owner->InputShot())
+    if (owner->WallJudgement(elapsedTime) && owner->InputTowardWall())
+    {
+        owner->isDashJump = false;
+        owner->SetState(StateId::WallSlide);
+        return;
+    }
+
+    if (owner->InputShot())
     {
         owner->trail.ClearMotion();
         Audio::Instance().Stop("SE_PLAYER_DASH");
+        owner->SetState(StateId::Attack);
         return;
     }
 }
@@ -239,6 +255,7 @@ void Player::DashState::OnUpdate(float elapsedTime)
 void Player::DashState::OnExit()
 {
     owner->useGravity = true;
+    owner->rigidTimer = 0.0f;
 }
 
 // 状態に入るときの処理
@@ -288,6 +305,11 @@ void Player::WallSlideState::OnUpdate(float elapsedTime)
 
         owner->SetState(StateId::WallKick);
         return;
+    }
+
+    if (owner->InputShot())
+    {
+        owner->SetState(StateId::Attack);
     }
 }
 
@@ -342,6 +364,12 @@ void Player::WallKickState::OnUpdate(float elapsedTime)
             owner->isDashJump = false;
             owner->SetState(StateId::Idle);
         }
+    }
+
+    if (owner->InputShot())
+    {
+        owner->SetState(StateId::Attack);
+        owner->trail.ClearMotion();
     }
 }
 
@@ -605,6 +633,7 @@ void Player::DamageState::OnEnter()
     Camera::Instance().StartShake(0.3f, 0.15f);
     HitStopManager::Instance().Request(0.1f);
     owner->animator->Play(0, "Hit_Combat_F_Seq_0", false);
+    owner->animator->SetLayerSpeed(0, 2.0f);
     Audio::Instance().Play("SE_PLAYER_DAMAGE");
 
     if (!owner->damagedEffect)
@@ -629,6 +658,13 @@ void Player::DamageState::OnUpdate(float elapsedTime)
     {
         owner->SetState(StateId::Idle);
         owner->damagedEffect->Stop(owner->damagedHandle);
+        owner->animator->SetLayerSpeed(0, 1.0f);
+    }
+    else if (owner->animator->GetProgress(0) > 0.5f && owner->InputMove())
+    {
+        owner->SetState(StateId::Move);
+        owner->damagedEffect->Stop(owner->damagedHandle);
+        owner->animator->SetLayerSpeed(0, 1.0f);
     }
 }
 
@@ -649,7 +685,11 @@ void Player::DeathState::OnUpdate(float elapsedTime)
         sceneRequested = true;
         OnExit();
         SceneManager::Instance().ChangeScene(
-            []() { return std::make_shared<SceneLoading>([]() { return std::make_shared<GameScene>(); }); });
+            [savePosition = owner->deathRespawnPosition]()
+            {
+                return std::make_shared<SceneLoading>([savePosition]()
+                                                      { return std::make_shared<GameScene>(savePosition); });
+            });
     }
 }
 
@@ -674,6 +714,14 @@ void Player::DeathState::OnExit()
 // 状態に入るときの処理
 void Player::SpawnState::OnEnter()
 {
+    owner->velocity = {0.0f, 0.0f, 0.0f};
+    owner->inputMoveX = 0.0f;
+    owner->inputMoveZ = 0.0f;
+    owner->isDashJump = false;
+    owner->wallKickLockTimer = 0.0f;
+    hasSpawned = false;
+    spawnTimer = 0.0f;
+    owner->scale = {0.0f, 0.0f, 0.0f};
 
     if (!owner->spawnEffect)
     {
@@ -681,7 +729,6 @@ void Player::SpawnState::OnEnter()
     }
 
     owner->spawnHandle = owner->spawnEffect->Play(owner->position);
-    spawnTimer = 0.0f;
     Audio::Instance().Play("SE_PLAYER_APPEAR");
 }
 

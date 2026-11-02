@@ -5,22 +5,19 @@
 
 #include "Framework.h"
 
-namespace
+struct ComApartment
 {
-    struct ComApartment
-    {
-        HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-        // 繝�繧ｹ繝医Λ繧ｯ繧ｿ
-        ~ComApartment()
+    // 繝�繧ｹ繝医Λ繧ｯ繧ｿ
+    ~ComApartment()
+    {
+        if (SUCCEEDED(result))
         {
-            if (SUCCEEDED(result))
-            {
-                CoUninitialize();
-            }
+            CoUninitialize();
         }
-    };
-}
+    }
+};
 
 // GPUが2つあるノートPCで高性能側を使わせる（該当しない環境では無視される）
 extern "C"

@@ -8,8 +8,7 @@
 
 class StageObject
 {
-  public:
-
+public:
     // コンストラクタ
     StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData,
                 const TileInfo& tileInfo, float positionZ, std::shared_ptr<Model> collisionModel = nullptr);
@@ -36,12 +35,10 @@ class StageObject
         return true;
     }
 
-  private:
-
+private:
     void BuildCollisionAABB();
 
-  private:
-
+private:
     std::shared_ptr<Model> model;
     std::shared_ptr<Model> collisionModel;
     CollisionMesh collisionMesh;

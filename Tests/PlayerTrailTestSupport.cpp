@@ -3,13 +3,9 @@
 #include "ModelRenderer.h"
 #include <cstdlib>
 
-Model::Model(ID3D11Device*, const char*, float)
-{
-}
+Model::Model(ID3D11Device*, const char*, float) {}
 
-Model::Model(const Model&)
-{
-}
+Model::Model(const Model&) {}
 
 void Model::UpdateTransform(const DirectX::XMFLOAT4X4&)
 {

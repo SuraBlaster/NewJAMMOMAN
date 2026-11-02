@@ -14,8 +14,7 @@ static void Check(bool ok, const char* message)
 
 class GroundProbe final : public Character
 {
-  public:
-
+public:
     int landings = 0;
 
     GroundProbe()
@@ -39,8 +38,7 @@ class GroundProbe final : public Character
         velocity.y = 4;
     }
 
-  private:
-
+private:
     void OnLanding() override
     {
         landings++;

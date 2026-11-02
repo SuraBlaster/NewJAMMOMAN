@@ -7,17 +7,17 @@ namespace LaboratoryAssets
                                   "Computer (height 1.5)", "Capsule (height 2)",    "Pipes (width 3)",
                                   "Vent (width 0.75)",     "Wall pipes (height 2)", "Double door (height 3)",
                                   "Crate (height 0.75)",   "Vessel (height 2)"};
-    inline const char* paths[] = {"Data/Model/laboratory/Generated/LabWall_1m.gltf",
-                                  "Data/Model/laboratory/Generated/LabColumn_3m.gltf",
-                                  "Data/Model/laboratory/Generated/LabBlock_1m.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Props_Computer.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Props_Capsule.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Pipes.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Details_Vent_1.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Details_Pipes_Long.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Door_Double.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Props_Crate.gltf",
-                                  "Data/Model/laboratory/Generated/Lab_Props_Vessel_Tall.gltf"};
+    inline const char* paths[] = {"Data/Model/laboratory/Generated/LabWall_1m.cereal",
+                                  "Data/Model/laboratory/Generated/LabColumn_3m.cereal",
+                                  "Data/Model/laboratory/Generated/LabBlock_1m.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Props_Computer.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Props_Capsule.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Pipes.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Details_Vent_1.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Details_Pipes_Long.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Door_Double.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Props_Crate.cereal",
+                                  "Data/Model/laboratory/Generated/Lab_Props_Vessel_Tall.cereal"};
     inline const DirectX::BoundingBox bounds[] = {
         {{0.0000000f, 0.0000000f, 0.0000000f}, {0.5000000f, 0.5000000f, 0.0650000f}},
         {{0.0000000f, 1.5000000f, 0.0000000f}, {0.2299669f, 1.5000000f, 0.2299672f}},

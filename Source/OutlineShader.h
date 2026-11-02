@@ -5,8 +5,7 @@
 // 輪郭線（背面法）シェーダー
 class OutlineShader : public Shader
 {
-  public:
-
+public:
     OutlineShader(ID3D11Device* device);
     ~OutlineShader() override = default;
 
@@ -19,8 +18,7 @@ class OutlineShader : public Shader
     // 終了処理
     void End(const RenderContext& rc) override;
 
-  private:
-
+private:
     // Shader/Outline.hlsli の CbOutline と同じ並びにすること
     struct CbOutline
     {

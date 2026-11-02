@@ -4,8 +4,7 @@ class ModelRenderer;
 
 class TitlePlayer : public Character
 {
-  public:
-
+public:
     // コンストラクタ
     TitlePlayer();
 
@@ -17,8 +16,7 @@ class TitlePlayer : public Character
     void BeginStart();
     void Reset();
 
-  private:
-
+private:
     enum class State
     {
         Idle,

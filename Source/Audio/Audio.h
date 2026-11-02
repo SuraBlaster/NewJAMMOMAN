@@ -10,8 +10,7 @@
 // オーディオ
 class Audio
 {
-  public:
-
+public:
     // コンストラクタ
     Audio();
 
@@ -22,8 +21,7 @@ class Audio
     // デストラクタ
     ~Audio();
 
-  public:
-
+public:
     // インスタンス取得
     static Audio& Instance()
     {
@@ -54,8 +52,7 @@ class Audio
     // オーディオソース読み込み
     std::unique_ptr<AudioSource> LoadAudioSource(const char* filename);
 
-  private:
-
+private:
     bool comInitialized = false;
     static Audio* instance;
 

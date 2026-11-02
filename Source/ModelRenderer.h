@@ -18,15 +18,12 @@ enum class ShaderId
 
 class ModelRenderer
 {
-  public:
-
+public:
     // コンストラクタ
     ModelRenderer(ID3D11Device* device);
 
     // デストラクタ
-    ~ModelRenderer()
-    {
-    }
+    ~ModelRenderer() {}
 
     // 箱描画
     void Draw(ShaderId shaderId, std::shared_ptr<Model> model);
@@ -37,8 +34,7 @@ class ModelRenderer
     // 描画実行
     void Render(const RenderContext& rc);
 
-  private:
-
+private:
     struct CbScene
     {
         DirectX::XMFLOAT4X4 viewProjection;

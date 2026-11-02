@@ -8,7 +8,7 @@
 EnemyEgg::EnemyEgg(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition)
     : device(device), player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/egg.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/egg.cereal");
     position = spawnPosition;
     scale = {0.1f, 0.1f, 0.1f};
     radius = 0.25f;

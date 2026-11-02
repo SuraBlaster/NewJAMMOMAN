@@ -9,8 +9,7 @@
 // カメラコントローラー
 class CameraController
 {
-  public:
-
+public:
     // カメラモードの定義
     enum class CameraMode
     {
@@ -61,8 +60,7 @@ class CameraController
         mode = newMode;
     }
 
-  private:
-
+private:
     CameraMode mode = CameraMode::Follow2D;
 
     DirectX::XMFLOAT3 target = {0, 0, 0};                              // 注視点

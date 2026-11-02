@@ -65,6 +65,20 @@ void ShapeRenderer::DrawSphere(const DirectX::XMFLOAT3& position, float radius,
     DirectX::XMStoreFloat4x4(&instance.worldTransform, s * t);
 }
 
+// 円柱描画（positionは底面の中心）
+void ShapeRenderer::DrawCylinder(const DirectX::XMFLOAT3& position, float radius, float height,
+                                 const DirectX::XMFLOAT4& color)
+{
+    Instance& instance = instances.emplace_back();
+    instance.mesh = &cylinderMesh;
+    instance.color = color;
+
+    const DirectX::XMMATRIX s = DirectX::XMMatrixScaling(radius, height, radius);
+    const DirectX::XMMATRIX t =
+        DirectX::XMMatrixTranslation(position.x, position.y + height * 0.5f, position.z);
+    DirectX::XMStoreFloat4x4(&instance.worldTransform, s * t);
+}
+
 // カプセル描画
 void ShapeRenderer::DrawCapsule(const DirectX::XMFLOAT4X4& transform, float radius, float height,
                                 const DirectX::XMFLOAT4& color)

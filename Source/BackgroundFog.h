@@ -9,8 +9,7 @@
 
 class BackgroundFog
 {
-  public:
-
+public:
     // コンストラクタ
     explicit BackgroundFog(ID3D11Device* device)
     {
@@ -140,8 +139,7 @@ class BackgroundFog
         dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::TestAndWrite), 0);
     }
 
-  private:
-
+private:
     struct Constants
     {
         DirectX::XMFLOAT4 parameters, tint, placement;

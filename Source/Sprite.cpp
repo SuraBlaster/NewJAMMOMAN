@@ -4,9 +4,7 @@
 #include "GpuResourceUtils.h"
 
 // コンストラクタ
-Sprite::Sprite(ID3D11Device* device) : Sprite(device, nullptr)
-{
-}
+Sprite::Sprite(ID3D11Device* device) : Sprite(device, nullptr) {}
 
 // コンストラクタ
 Sprite::Sprite(ID3D11Device* device, const char* filename, bool ignoreSRGB, const char* pixelShaderFile)

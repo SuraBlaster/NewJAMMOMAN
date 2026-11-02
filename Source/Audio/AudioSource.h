@@ -7,8 +7,7 @@
 // オーディオソース
 class AudioSource
 {
-  public:
-
+public:
     // コンストラクタ
     AudioSource(IXAudio2* xaudio, const std::shared_ptr<AudioResource>& resource);
 
@@ -28,12 +27,10 @@ class AudioSource
     //音量設定
     void SetVolume(float volume);
 
-  private:
-
+private:
     IXAudio2SourceVoice* FindFreeVoice();
 
-  private:
-
+private:
     IXAudio2* xaudio = nullptr;
 
     std::shared_ptr<AudioResource> resource;

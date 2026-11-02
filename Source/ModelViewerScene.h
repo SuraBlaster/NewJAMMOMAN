@@ -9,8 +9,7 @@
 // モデルビューアシーン
 class ModelViewerScene : public Scene
 {
-  public:
-
+public:
     // コンストラクタ
     ModelViewerScene();
 
@@ -26,8 +25,7 @@ class ModelViewerScene : public Scene
     // GUI描画処理
     void DrawGUI() override;
 
-  private:
-
+private:
     // メニューGUI描画
     void DrawMenuGUI();
 
@@ -43,8 +41,7 @@ class ModelViewerScene : public Scene
     // マテリアルGUI描画
     void DrawMaterialGUI();
 
-  private:
-
+private:
     FreeCameraController cameraController;
     std::shared_ptr<Model> model;
     Model::Node* selectionNode = nullptr;

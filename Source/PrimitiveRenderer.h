@@ -7,8 +7,7 @@
 
 class PrimitiveRenderer
 {
-  public:
-
+public:
     // コンストラクタ
     PrimitiveRenderer(ID3D11Device* device);
 
@@ -26,8 +25,7 @@ class PrimitiveRenderer
     void Render(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
                 const DirectX::XMFLOAT4X4& projection, D3D11_PRIMITIVE_TOPOLOGY primitiveTopology);
 
-  private:
-
+private:
     static const UINT VERTEX_CAPACITY = 3 * 1024;
 
     struct CbScene

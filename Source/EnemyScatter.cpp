@@ -10,7 +10,7 @@
 EnemyScatter::EnemyScatter(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition)
     : player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.cereal");
     position = spawnPosition;
     scale = {0.002f, 0.002f, 0.002f};
     radius = 0.18f;

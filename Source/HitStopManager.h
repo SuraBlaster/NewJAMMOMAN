@@ -2,8 +2,7 @@
 
 class HitStopManager
 {
-  public:
-
+public:
     static HitStopManager& Instance()
     {
         static HitStopManager instance;
@@ -41,8 +40,7 @@ class HitStopManager
         return (timer > 0.0f) ? slowScale : 1.0f;
     }
 
-  private:
-
+private:
     // コンストラクタ
     HitStopManager() = default;
     float timer = 0.0f;

@@ -11,13 +11,10 @@
 
 class SceneLoading : public Scene
 {
-  public:
-
+public:
     // コンストラクタ
     explicit SceneLoading(SceneManager::SceneFactory factory, bool fromTitle = false)
-        : factory(std::move(factory)), showTitleIntro(fromTitle)
-    {
-    }
+        : factory(std::move(factory)), showTitleIntro(fromTitle) {}
 
     // デストラクタ
     ~SceneLoading() override;
@@ -37,8 +34,7 @@ class SceneLoading : public Scene
     // デバッグ画面の描画処理
     void DrawGUI() override;
 
-  private:
-
+private:
     void StartLoading();
     void JoinLoading();
     std::thread loadingThread;

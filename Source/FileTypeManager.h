@@ -21,8 +21,7 @@ struct TileInfo
 // タイル定義ファイルの読み込み、検証、typeIdによる検索を管理するクラス
 class TileTypeManager
 {
-  private:
-
+private:
     // typeIdをキーにして、対応するタイル定義を保持する
     std::unordered_map<int, TileInfo> idToInfoMap;
 
@@ -32,8 +31,7 @@ class TileTypeManager
     // モデルパスがプロジェクト内の安全な実在ファイルを指すか検証する
     bool ValidateModelPath(const std::string& modelPath);
 
-  public:
-
+public:
     // JSONを検証して読み込む。成功時はtrue、失敗時は既存の定義を変更せずfalseを返す
     bool LoadDefinitions(const std::string& jsonPath);
 

@@ -8,13 +8,15 @@
 
 class Model
 {
-  public:
-
+public:
     // コンストラクタ
     Model(const Model& other);
 
     // コンストラクタ
     Model(ID3D11Device* device, const char* filename, float sampleRate = 60);
+
+    // 元データから独自形式へ変換
+    static void ConvertToCereal(const char* sourceFilename, float sampleRate = 60);
 
     static const std::vector<D3D11_INPUT_ELEMENT_DESC> INPUT_ELEMENT_DESCS;
 
@@ -207,7 +209,8 @@ class Model
         return filename;
     }
 
-  private:
+private:
+    Model() = default;
 
     // シリアライズ
     void Serialize(const char* filename);
@@ -215,8 +218,7 @@ class Model
     // デシリアライズ
     bool Deserialize(const char* filename);
 
-  private:
-
+private:
     std::vector<Material> materials;
     std::vector<Mesh> meshes;
     std::vector<Node> nodes;

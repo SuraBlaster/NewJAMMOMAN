@@ -9,8 +9,7 @@ class Effect;
 
 class EnemyProjectile
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyProjectile(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& velocity,
                     float radius = 0.18f, float lifetime = 5.0f, int damage = 1);
@@ -32,6 +31,7 @@ class EnemyProjectile
     // 更新処理
     void Update(float elapsedTime);
     bool HitPlayer(Player& player, float invincibleTime);
+    bool HitPlayerAttack(const Player& player);
 
     // 当たり判定などのデバッグ描画処理
     void DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const;
@@ -43,8 +43,7 @@ class EnemyProjectile
 
     void Destroy();
 
-  private:
-
+private:
     struct VisualEffect;
     std::unique_ptr<VisualEffect> visualEffect;
     std::shared_ptr<Effect> terrainImpactEffect;

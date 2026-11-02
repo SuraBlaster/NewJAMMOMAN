@@ -11,7 +11,7 @@
 // コンストラクタ
 EnemyFly::EnemyFly(ID3D11Device* device, Player* player) : device(device), player(player)
 {
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.gltf");
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Swarm08.cereal");
     scale = {0.01f, 0.01f, 0.01f};
     rotation.y = DirectX::XMConvertToRadians(-90.0f);
     radius = 0.45f;

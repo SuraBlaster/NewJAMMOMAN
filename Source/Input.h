@@ -4,8 +4,7 @@
 
 class Input
 {
-  public:
-
+public:
     // 更新処理
     void Update();
 
@@ -24,8 +23,7 @@ class Input
         return Valid(key) && !current[key] && previous[key];
     }
 
-  private:
-
+private:
     static bool Valid(int key)
     {
         return key >= 0 && key < 256;

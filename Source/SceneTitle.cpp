@@ -30,7 +30,7 @@ void SceneTitle::Initialize()
     xMark = std::make_unique<Sprite>(device, "Data/Sprite/X.png", keepPngColors);
     whiteSprite = std::make_unique<Sprite>(device);
     titlePlayer = std::make_unique<TitlePlayer>();
-    earth = std::make_shared<Model>(device, "Data/Model/earth/Earth.gltf");
+    earth = std::make_shared<Model>(device, "Data/Model/earth/Earth.cereal");
     earthSpin = 0;
     UpdateDecorations(0);
 }
@@ -342,14 +342,14 @@ void SceneTitle::RenderLine(ID3D11DeviceContext* dc, TitleAnimation::Point from,
 // RenderImages の描画処理
 void SceneTitle::RenderImages(ID3D11DeviceContext* dc, const TitleAnimation::State& animation)
 {
-    namespace Anim = TitleAnimation;
     const float scale = screenScale;
 
     if (animation.triangleAlpha > 0)
     {
-        triangle->Render(dc, screenOffsetX + Anim::TRIANGLE_ORIGIN.x * scale,
-                         screenOffsetY + Anim::TRIANGLE_ORIGIN.y * scale, 0, Anim::TRIANGLE_WIDTH * scale,
-                         Anim::TRIANGLE_HEIGHT * scale, 0, 1, 1, 1, animation.triangleAlpha);
+        triangle->Render(dc, screenOffsetX + TitleAnimation::TRIANGLE_ORIGIN.x * scale,
+                         screenOffsetY + TitleAnimation::TRIANGLE_ORIGIN.y * scale, 0,
+                         TitleAnimation::TRIANGLE_WIDTH * scale, TitleAnimation::TRIANGLE_HEIGHT * scale, 0,
+                         1, 1, 1, animation.triangleAlpha);
     }
 
     if (animation.logoProgress > 0)

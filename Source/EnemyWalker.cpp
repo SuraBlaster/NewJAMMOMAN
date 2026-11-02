@@ -13,7 +13,7 @@
 EnemyWalker::EnemyWalker(ID3D11Device* device, Player* player) : player(player)
 {
 
-    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Walker/robot.gltf", 24.0f);
+    model = ModelManager::Instance().CreateInstance(device, "Data/Model/Enemy/Walker/robot.cereal", 24.0f);
 
     scale = {0.15f, 0.15f, 0.15f};
     radius = 0.35f;

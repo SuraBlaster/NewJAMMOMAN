@@ -7,8 +7,7 @@ class Player;
 
 class EnemyVacuum final : public Enemy
 {
-  public:
-
+public:
     // コンストラクタ
     EnemyVacuum(ID3D11Device* device, Player* player);
 
@@ -35,12 +34,9 @@ class EnemyVacuum final : public Enemy
 
     class State
     {
-      public:
-
+    public:
         // コンストラクタ
-        explicit State(EnemyVacuum* owner) : owner(owner)
-        {
-        }
+        explicit State(EnemyVacuum* owner) : owner(owner) {}
 
         // デストラクタ
         virtual ~State() = default;
@@ -51,19 +47,15 @@ class EnemyVacuum final : public Enemy
         // 現在の状態の更新処理
         virtual void OnUpdate(float elapsedTime) = 0;
 
-      protected:
-
+    protected:
         EnemyVacuum* owner;
     };
 
     class MoveState final : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        explicit MoveState(EnemyVacuum* owner) : State(owner)
-        {
-        }
+        explicit MoveState(EnemyVacuum* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -71,19 +63,15 @@ class EnemyVacuum final : public Enemy
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         const float NORMAL_ROTATION_SPEED = 10.0f;
     };
 
     class PursuitState final : public State
     {
-      public:
-
+    public:
         // コンストラクタ
-        explicit PursuitState(EnemyVacuum* owner) : State(owner)
-        {
-        }
+        explicit PursuitState(EnemyVacuum* owner) : State(owner) {}
 
         // 状態に入るときの処理
         void OnEnter() override;
@@ -91,13 +79,11 @@ class EnemyVacuum final : public Enemy
         // 現在の状態の更新処理
         void OnUpdate(float elapsedTime) override;
 
-      private:
-
+    private:
         const float PURSUIT_ROTATION_SPEED = 20.0f;
     };
 
-  private:
-
+private:
     void SetState(StateId stateId);
 
     // 状態遷移と現在の状態の更新処理

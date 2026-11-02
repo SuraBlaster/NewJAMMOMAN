@@ -9,8 +9,7 @@
 
 class BackgroundCity
 {
-  public:
-
+public:
     // コンストラクタ
     explicit BackgroundCity(ID3D11Device* device)
     {
@@ -92,8 +91,7 @@ class BackgroundCity
         dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::TestAndWrite), 0);
     }
 
-  private:
-
+private:
     struct Constants
     {
         DirectX::XMFLOAT4 settings, view;

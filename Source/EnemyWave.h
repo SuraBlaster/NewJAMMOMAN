@@ -9,8 +9,7 @@ class Player;
 
 class EnemyWave final : public Enemy
 {
-  public:
-
+public:
     enum class Direction
     {
         Left,
@@ -34,8 +33,7 @@ class EnemyWave final : public Enemy
         waveAmplitude = amplitude;
     }
 
-  private:
-
+private:
     // UpdateAttacking の更新処理
     void UpdateAttacking(float elapsedTime);
     void CollideWithPlayer();

@@ -197,6 +197,8 @@
     <ClInclude Include="Source\SceneClear.h" />
     <ClInclude Include="Source\SceneLoading.h" />
     <ClInclude Include="Source\LoadingProfile.h" />
+    <ClInclude Include="Source\TimeUtils.h" />
+    <ClInclude Include="Source\ModelSerialization.h" />
     <ClInclude Include="Source\ModelManager.h" />
     <ClInclude Include="Source\SceneManager.h" />
     <ClInclude Include="Source\SceneTitle.h" />

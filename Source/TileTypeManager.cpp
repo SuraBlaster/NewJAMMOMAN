@@ -11,22 +11,19 @@
 #include <system_error>
 #include <utility>
 
-namespace
+constexpr int SUPPORTED_FORMAT_VERSION = 1;
+
+constexpr std::array<std::string_view, 6> REQUIRED_DEFINITION_FIELDS{
+    "typeId", "name", "category", "modelPath", "collision", "defaultScale"};
+
+constexpr std::array<std::string_view, 3> SCALE_FIELDS{"x", "y", "z"};
+
+constexpr std::array<std::string_view, 6> SUPPORTED_CATEGORIES{"Ground", "Wall",          "Decoration",
+                                                               "Hazard", "CollisionOnly", "Gate"};
+
+static void PrintDefinitionError(const std::string& message)
 {
-    constexpr int SUPPORTED_FORMAT_VERSION = 1;
-
-    constexpr std::array<std::string_view, 6> REQUIRED_DEFINITION_FIELDS{
-        "typeId", "name", "category", "modelPath", "collision", "defaultScale"};
-
-    constexpr std::array<std::string_view, 3> SCALE_FIELDS{"x", "y", "z"};
-
-    constexpr std::array<std::string_view, 6> SUPPORTED_CATEGORIES{"Ground", "Wall",          "Decoration",
-                                                                   "Hazard", "CollisionOnly", "Gate"};
-
-    void PrintDefinitionError(const std::string& message)
-    {
-        std::cerr << "TileTypes definition error: " << message << std::endl;
-    }
+    std::cerr << "TileTypes definition error: " << message << std::endl;
 }
 
 bool TileTypeManager::DefinitionsVerification(const json& item)
@@ -222,9 +219,9 @@ bool TileTypeManager::ValidateModelPath(const std::string& modelPath)
     std::transform(extension.begin(), extension.end(), extension.begin(),
                    [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
 
-    if (extension != ".gltf" && extension != ".glb")
+    if (extension != ".cereal" && extension != ".gltf" && extension != ".glb")
     {
-        PrintDefinitionError("modelPath extension must be .gltf or .glb: " + modelPath);
+        PrintDefinitionError("modelPath extension must be .cereal, .gltf or .glb: " + modelPath);
         return false;
     }
 

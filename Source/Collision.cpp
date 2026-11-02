@@ -4,87 +4,84 @@
 #include <cmath>
 #include <limits>
 
-namespace
+static float Dot(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b)
 {
-    float Dot(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b)
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+static DirectX::XMFLOAT3 Subtract(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b)
+{
+    return {a.x - b.x, a.y - b.y, a.z - b.z};
+}
+
+static DirectX::XMFLOAT3 AddScaled(const DirectX::XMFLOAT3& value, const DirectX::XMFLOAT3& direction,
+                                   float scale)
+{
+    return {value.x + direction.x * scale, value.y + direction.y * scale, value.z + direction.z * scale};
+}
+
+static float ClosestPointsOnSegments(const DirectX::XMFLOAT3& p1, const DirectX::XMFLOAT3& q1,
+                                     const DirectX::XMFLOAT3& p2, const DirectX::XMFLOAT3& q2,
+                                     DirectX::XMFLOAT3& closest1, DirectX::XMFLOAT3& closest2)
+{
+    constexpr float EPSILON = 1.0e-6f;
+    const DirectX::XMFLOAT3 d1 = Subtract(q1, p1);
+    const DirectX::XMFLOAT3 d2 = Subtract(q2, p2);
+    const DirectX::XMFLOAT3 r = Subtract(p1, p2);
+    const float a = Dot(d1, d1);
+    const float e = Dot(d2, d2);
+    const float f = Dot(d2, r);
+    float s = 0.0f;
+    float t = 0.0f;
+
+    if (a <= EPSILON && e <= EPSILON)
     {
-        return a.x * b.x + a.y * b.y + a.z * b.z;
+        closest1 = p1;
+        closest2 = p2;
+        return Dot(r, r);
     }
 
-    DirectX::XMFLOAT3 Subtract(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b)
+    if (a <= EPSILON)
     {
-        return {a.x - b.x, a.y - b.y, a.z - b.z};
+        t = (std::clamp)(f / e, 0.0f, 1.0f);
     }
-
-    DirectX::XMFLOAT3 AddScaled(const DirectX::XMFLOAT3& value, const DirectX::XMFLOAT3& direction,
-                                float scale)
+    else
     {
-        return {value.x + direction.x * scale, value.y + direction.y * scale, value.z + direction.z * scale};
-    }
+        const float c = Dot(d1, r);
 
-    float ClosestPointsOnSegments(const DirectX::XMFLOAT3& p1, const DirectX::XMFLOAT3& q1,
-                                  const DirectX::XMFLOAT3& p2, const DirectX::XMFLOAT3& q2,
-                                  DirectX::XMFLOAT3& closest1, DirectX::XMFLOAT3& closest2)
-    {
-        constexpr float EPSILON = 1.0e-6f;
-        const DirectX::XMFLOAT3 d1 = Subtract(q1, p1);
-        const DirectX::XMFLOAT3 d2 = Subtract(q2, p2);
-        const DirectX::XMFLOAT3 r = Subtract(p1, p2);
-        const float a = Dot(d1, d1);
-        const float e = Dot(d2, d2);
-        const float f = Dot(d2, r);
-        float s = 0.0f;
-        float t = 0.0f;
-
-        if (a <= EPSILON && e <= EPSILON)
+        if (e <= EPSILON)
         {
-            closest1 = p1;
-            closest2 = p2;
-            return Dot(r, r);
-        }
-
-        if (a <= EPSILON)
-        {
-            t = (std::clamp)(f / e, 0.0f, 1.0f);
+            s = (std::clamp)(-c / a, 0.0f, 1.0f);
         }
         else
         {
-            const float c = Dot(d1, r);
+            const float b = Dot(d1, d2);
+            const float denominator = a * e - b * b;
 
-            if (e <= EPSILON)
+            if (denominator != 0.0f)
             {
+                s = (std::clamp)((b * f - c * e) / denominator, 0.0f, 1.0f);
+            }
+
+            t = (b * s + f) / e;
+
+            if (t < 0.0f)
+            {
+                t = 0.0f;
                 s = (std::clamp)(-c / a, 0.0f, 1.0f);
             }
-            else
+            else if (t > 1.0f)
             {
-                const float b = Dot(d1, d2);
-                const float denominator = a * e - b * b;
-
-                if (denominator != 0.0f)
-                {
-                    s = (std::clamp)((b * f - c * e) / denominator, 0.0f, 1.0f);
-                }
-
-                t = (b * s + f) / e;
-
-                if (t < 0.0f)
-                {
-                    t = 0.0f;
-                    s = (std::clamp)(-c / a, 0.0f, 1.0f);
-                }
-                else if (t > 1.0f)
-                {
-                    t = 1.0f;
-                    s = (std::clamp)((b - c) / a, 0.0f, 1.0f);
-                }
+                t = 1.0f;
+                s = (std::clamp)((b - c) / a, 0.0f, 1.0f);
             }
         }
-
-        closest1 = AddScaled(p1, d1, s);
-        closest2 = AddScaled(p2, d2, t);
-        const DirectX::XMFLOAT3 difference = Subtract(closest1, closest2);
-        return Dot(difference, difference);
     }
+
+    closest1 = AddScaled(p1, d1, s);
+    closest2 = AddScaled(p2, d2, t);
+    const DirectX::XMFLOAT3 difference = Subtract(closest1, closest2);
+    return Dot(difference, difference);
 }
 
 bool Collision::IntersectSphereVsSphere(const DirectX::XMFLOAT3& positionA, float radiusA,

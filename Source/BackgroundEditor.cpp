@@ -19,87 +19,84 @@
 using namespace DirectX;
 using json = nlohmann::json;
 
-namespace
+using namespace LaboratoryAssets;
+
+static bool Valid(const BackgroundObject& o)
 {
-    using namespace LaboratoryAssets;
-
-    bool Valid(const BackgroundObject& o)
+    const auto finite = [](const XMFLOAT3& v)
     {
-        const auto finite = [](const XMFLOAT3& v)
-        {
-            return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z);
-        };
-        return o.id > 0 && o.id < 1000000000 && o.asset >= 0 && o.asset < COUNT && finite(o.position) &&
-               finite(o.rotation) && finite(o.scale) && o.scale.x >= 0.01f && o.scale.y >= 0.01f &&
-               o.scale.z >= 0.01f;
+        return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z);
+    };
+    return o.id > 0 && o.id < 1000000000 && o.asset >= 0 && o.asset < COUNT && finite(o.position) &&
+           finite(o.rotation) && finite(o.scale) && o.scale.x >= 0.01f && o.scale.y >= 0.01f &&
+           o.scale.z >= 0.01f;
+}
+
+static XMFLOAT4X4 Matrix(const BackgroundObject& o)
+{
+    XMFLOAT4X4 m;
+    ImGuizmo::RecomposeMatrixFromComponents(&o.position.x, &o.rotation.x, &o.scale.x, &m._11);
+    return m;
+}
+
+static json Encode(const std::vector<BackgroundObject>& objects)
+{
+    json array = json::array();
+
+    for (const auto& o : objects)
+    {
+        array.push_back({{"id", o.id},
+                         {"asset", o.asset},
+                         {"position", {o.position.x, o.position.y, o.position.z}},
+                         {"rotation", {o.rotation.x, o.rotation.y, o.rotation.z}},
+                         {"scale", {o.scale.x, o.scale.y, o.scale.z}}});
     }
 
-    XMFLOAT4X4 Matrix(const BackgroundObject& o)
-    {
-        XMFLOAT4X4 m;
-        ImGuizmo::RecomposeMatrixFromComponents(&o.position.x, &o.rotation.x, &o.scale.x, &m._11);
-        return m;
-    }
+    return {{"formatVersion", 1}, {"objects", array}};
+}
 
-    json Encode(const std::vector<BackgroundObject>& objects)
-    {
-        json array = json::array();
+static bool ScreenBounds(const BackgroundObject& o, ImVec2& low, ImVec2& high)
+{
+    const auto& camera = Camera::Instance();
+    const auto* vp = ImGui::GetMainViewport();
+    const auto size = ImGui::GetIO().DisplaySize;
+    const auto matrix = Matrix(o);
+    const auto world = XMLoadFloat4x4(&matrix), view = XMLoadFloat4x4(&camera.GetView()),
+               projection = XMLoadFloat4x4(&camera.GetProjection());
+    const auto& bounds = LaboratoryAssets::bounds[o.asset];
+    XMFLOAT3 corners[8];
+    bounds.GetCorners(corners);
+    low = {FLT_MAX, FLT_MAX};
+    high = {-FLT_MAX, -FLT_MAX};
+    bool visible = false;
 
-        for (const auto& o : objects)
+    for (const auto& corner : corners)
+    {
+        const auto clip =
+            XMVector4Transform(XMVectorSet(corner.x, corner.y, corner.z, 1), world * view * projection);
+
+        if (XMVectorGetW(clip) <= 0.001f)
         {
-            array.push_back({{"id", o.id},
-                             {"asset", o.asset},
-                             {"position", {o.position.x, o.position.y, o.position.z}},
-                             {"rotation", {o.rotation.x, o.rotation.y, o.rotation.z}},
-                             {"scale", {o.scale.x, o.scale.y, o.scale.z}}});
+            continue;
         }
 
-        return {{"formatVersion", 1}, {"objects", array}};
-    }
+        XMFLOAT3 screen;
+        XMStoreFloat3(&screen, XMVector3Project(XMLoadFloat3(&corner), vp->Pos.x, vp->Pos.y, size.x, size.y,
+                                                0, 1, projection, view, world));
 
-    bool ScreenBounds(const BackgroundObject& o, ImVec2& low, ImVec2& high)
-    {
-        const auto& camera = Camera::Instance();
-        const auto* vp = ImGui::GetMainViewport();
-        const auto size = ImGui::GetIO().DisplaySize;
-        const auto matrix = Matrix(o);
-        const auto world = XMLoadFloat4x4(&matrix), view = XMLoadFloat4x4(&camera.GetView()),
-                   projection = XMLoadFloat4x4(&camera.GetProjection());
-        const auto& bounds = LaboratoryAssets::bounds[o.asset];
-        XMFLOAT3 corners[8];
-        bounds.GetCorners(corners);
-        low = {FLT_MAX, FLT_MAX};
-        high = {-FLT_MAX, -FLT_MAX};
-        bool visible = false;
-
-        for (const auto& corner : corners)
+        if (screen.z < 0 || screen.z > 1)
         {
-            const auto clip =
-                XMVector4Transform(XMVectorSet(corner.x, corner.y, corner.z, 1), world * view * projection);
-
-            if (XMVectorGetW(clip) <= 0.001f)
-            {
-                continue;
-            }
-
-            XMFLOAT3 screen;
-            XMStoreFloat3(&screen, XMVector3Project(XMLoadFloat3(&corner), vp->Pos.x, vp->Pos.y, size.x,
-                                                    size.y, 0, 1, projection, view, world));
-
-            if (screen.z < 0 || screen.z > 1)
-            {
-                continue;
-            }
-
-            visible = true;
-            low.x = (std::min)(low.x, screen.x);
-            low.y = (std::min)(low.y, screen.y);
-            high.x = (std::max)(high.x, screen.x);
-            high.y = (std::max)(high.y, screen.y);
+            continue;
         }
 
-        return visible;
+        visible = true;
+        low.x = (std::min)(low.x, screen.x);
+        low.y = (std::min)(low.y, screen.y);
+        high.x = (std::max)(high.x, screen.x);
+        high.y = (std::max)(high.y, screen.y);
     }
+
+    return visible;
 }
 
 void BackgroundEditor::SelectRectangle(float x1, float y1, float x2, float y2, bool additive)
@@ -122,8 +119,7 @@ void BackgroundEditor::SelectRectangle(float x1, float y1, float x2, float y2, b
 
 class BackgroundStateCommand : public ICommand
 {
-  public:
-
+public:
     // コンストラクタ
     BackgroundStateCommand(BackgroundEditor& editor, std::vector<BackgroundObject> before,
                            std::vector<BackgroundObject> after, std::vector<int> oldSelection,
@@ -143,8 +139,7 @@ class BackgroundStateCommand : public ICommand
         editor.Apply(before, oldSelection);
     }
 
-  private:
-
+private:
     BackgroundEditor& editor;
     std::vector<BackgroundObject> before, after;
     std::vector<int> oldSelection, newSelection;
@@ -195,7 +190,6 @@ void BackgroundEditor::LoadPatterns()
             {
                 const auto xyz = [](const json& a)
                 {
-
                     if (!a.is_array() || a.size() != 3)
                     {
                         throw std::runtime_error("Invalid pattern XYZ");
@@ -739,7 +733,6 @@ bool BackgroundEditor::Load()
         std::set<int> ids;
         const auto vector = [](const json& a)
         {
-
             if (!a.is_array() || a.size() != 3)
             {
                 throw std::runtime_error("Expected XYZ array");
@@ -1202,7 +1195,6 @@ void BackgroundEditor::DrawUI()
         {
             auto field = [&](const char* label, XMFLOAT3& value, float speed)
             {
-
                 const auto before = objects[selected];
                 const bool changed = ImGui::DragFloat3(label, &value.x, speed);
 

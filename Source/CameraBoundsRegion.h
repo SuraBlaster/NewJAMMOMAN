@@ -6,8 +6,7 @@
 
 class CameraBoundsRegion
 {
-  public:
-
+public:
     struct Rect
     {
         float minX, maxX, minY, maxY;
@@ -188,8 +187,7 @@ class CameraBoundsRegion
         y = std::clamp(bestY, visible.minY, visible.maxY);
     }
 
-  private:
-
+private:
     static constexpr float HALF_WIDTH = 8.176f;
     static constexpr float BELOW = 4.622f;
     static constexpr float ABOVE = 4.338f;

@@ -8,8 +8,7 @@
 
 class Character
 {
-  public:
-
+public:
     // コンストラクタ
     Character() = default;
 
@@ -122,8 +121,7 @@ class Character
         return transform;
     }
 
-  protected:
-
+protected:
     // 変換行列の更新処理
     void UpdateTransform();
 
@@ -138,20 +136,13 @@ class Character
     void PlayAnimation(int clip, bool loop, float blendDuration = 0.1f);
     void SetHealth(int value);
 
-    virtual void OnLanding()
-    {
-    }
+    virtual void OnLanding() {}
 
-    virtual void OnDamaged()
-    {
-    }
+    virtual void OnDamaged() {}
 
-    virtual void OnDead()
-    {
-    }
+    virtual void OnDead() {}
 
-  protected:
-
+protected:
     std::shared_ptr<Model> model;
     std::unique_ptr<Animator> animator;
     DirectX::XMFLOAT3 position = {0, 0, 0};

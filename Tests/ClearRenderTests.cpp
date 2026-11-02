@@ -11,11 +11,8 @@
 
 class ObservedClear : public SceneClear
 {
-  public:
-
-    explicit ObservedClear(bool& finished) : finished(finished)
-    {
-    }
+public:
+    explicit ObservedClear(bool& finished) : finished(finished) {}
 
     void Finalize() override
     {
@@ -23,8 +20,7 @@ class ObservedClear : public SceneClear
         SceneClear::Finalize();
     }
 
-  private:
-
+private:
     bool& finished;
 };
 

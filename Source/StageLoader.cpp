@@ -12,733 +12,728 @@
 
 using json = nlohmann::json;
 
-// このCPP内だけで使用する、ステージJSON解析用の補助関数をまとめる
-namespace
+// ステージJSONの各要素を検証する補助関数
+// objects配列の1件を検証し、StageObjectDataへ変換する
+// 成功時だけoutputObjectを更新するため、失敗時に途中までの値は残らない
+static bool ParseStageObject(const json& item, std::size_t objectIndex,
+                             const TileTypeManager& tileTypeManager, StageObjectData& outputObject)
 {
-    // objects配列の1件を検証し、StageObjectDataへ変換する
-    // 成功時だけoutputObjectを更新するため、失敗時に途中までの値は残らない
-    bool ParseStageObject(const json& item, std::size_t objectIndex, const TileTypeManager& tileTypeManager,
-                          StageObjectData& outputObject)
+    // 省略可能な回転とスケールには、StageObjectDataの初期値を使用する
+    StageObjectData loadedObjectData;
+
+    // objects配列の各要素は、配置情報を持つJSONオブジェクトである必要がある
+    if (!item.is_object())
     {
-        // 省略可能な回転とスケールには、StageObjectDataの初期値を使用する
-        StageObjectData loadedObjectData;
+        std::cerr << "エラー: objects[" << objectIndex << "].typeIdが存在しません。" << std::endl;
+        return false;
+    }
 
-        // objects配列の各要素は、配置情報を持つJSONオブジェクトである必要がある
-        if (!item.is_object())
+    // タイル定義との対応付けに必要なtypeIdが存在するか確認する
+    if (!item.count("typeId"))
+    {
+        std::cerr << "エラー: typeId が存在しません。" << std::endl;
+        return false;
+    }
+
+    // 配置座標を表すpositionが存在するか確認する
+    if (!item.count("position"))
+    {
+        std::cerr << "エラー: position が存在しません。" << std::endl;
+        return false;
+    }
+
+    // typeIdは小数や文字列を許可せず、JSON整数に限定する
+    if (!item.at("typeId").is_number_integer())
+    {
+        std::cerr << "エラー: typeIdが正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    // 型を確認した後で、検証に使用するtypeIdを整数として取得する
+    int typeId = item["typeId"].get<int>();
+
+    // 0は未設定値として扱うため、typeIdは1以上に限定する
+    if (typeId <= 0)
+    {
+        std::cerr << "エラー: typeIdが正しい値ではありません。" << std::endl;
+        return false;
+    }
+
+    // TileTypes.jsonに登録されていないtypeIdは配置できない
+    if (tileTypeManager.GetTileInfo(typeId) == nullptr)
+    {
+        std::cerr << "エラー: ステージJSONが存在しないタイルです。" << std::endl;
+        return false;
+    }
+
+    // 検証済みのIDを一時データへ保存する
+    loadedObjectData.typeId = typeId;
+
+    // 2.5Dの配置座標として、positionはxとyを持つオブジェクトに限定する
+    const json& position = item.at("position");
+
+    if (!position.is_object())
+    {
+        std::cerr << "エラー: positionはオブジェクトではありません。" << std::endl;
+        return false;
+    }
+
+    // positionではxとyの両方を必須とする。Zはゲーム側で固定するため読み込まない
+    if (!position.count("x"))
+    {
+        std::cerr << "エラー: position.x が存在しません。" << std::endl;
+        return false;
+    }
+
+    if (!position.count("y"))
+    {
+        std::cerr << "エラー: position.y が存在しません。" << std::endl;
+        return false;
+    }
+
+    // 座標は整数表記と小数表記のどちらも許可する
+    if (!position.at("x").is_number())
+    {
+        std::cerr << "エラー: position.x が正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    // 座標は整数表記と小数表記のどちらも許可する
+    if (!position.at("y").is_number())
+    {
+        std::cerr << "エラー: position.y が正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    // 座標計算に使用できないNaNや無限大を拒否する
+    if (!std::isfinite(position.at("x").get<float>()))
+    {
+        std::cerr << "エラー: position.x が有限値ではありません。" << std::endl;
+        return false;
+    }
+
+    if (!std::isfinite(position.at("y").get<float>()))
+    {
+        std::cerr << "エラー: position.y が有限値ではありません。" << std::endl;
+        return false;
+    }
+
+    // 検証済みの座標を、ゲーム側で扱う1件分のデータへ格納する
+    loadedObjectData.positionX = position.at("x").get<float>();
+
+    loadedObjectData.positionY = position.at("y").get<float>();
+
+    // rotationDegreesは省略可能。省略時はStageObjectDataの初期値0度を使用する
+    if (item.count("rotationDegrees"))
+    {
+        // 回転角度は整数表記と小数表記のどちらも許可する
+        if (!item.at("rotationDegrees").is_number())
         {
-            std::cerr << "エラー: objects[" << objectIndex << "].typeIdが存在しません。" << std::endl;
+            std::cerr << "エラー: rotationDegrees が正しい型ではありません。" << std::endl;
             return false;
         }
 
-        // タイル定義との対応付けに必要なtypeIdが存在するか確認する
-        if (!item.count("typeId"))
+        float rotationDegrees = item.at("rotationDegrees").get<float>();
+
+        // 回転計算に使用できないNaNや無限大を拒否する
+        if (!std::isfinite(rotationDegrees))
         {
-            std::cerr << "エラー: typeId が存在しません。" << std::endl;
+            std::cerr << "エラー: rotationDegrees が有限値ではありません。" << std::endl;
             return false;
         }
 
-        // 配置座標を表すpositionが存在するか確認する
-        if (!item.count("position"))
+        loadedObjectData.rotationDegrees = rotationDegrees;
+    }
+
+    // scaleは省略可能。省略時はStageObjectDataの初期値1.0を使用する
+    if (item.count("scale"))
+    {
+        const json& scale = item.at("scale");
+
+        if (!scale.is_object())
         {
-            std::cerr << "エラー: position が存在しません。" << std::endl;
+            std::cerr << "エラー: scaleはオブジェクトではありません。" << std::endl;
             return false;
         }
 
-        // typeIdは小数や文字列を許可せず、JSON整数に限定する
-        if (!item.at("typeId").is_number_integer())
+        // scaleを指定する場合はxとyの両方を必須とする
+        if (!scale.count("x"))
         {
-            std::cerr << "エラー: typeIdが正しい型ではありません。" << std::endl;
+            std::cerr << "エラー: scale.x が存在しません。" << std::endl;
             return false;
         }
 
-        // 型を確認した後で、検証に使用するtypeIdを整数として取得する
-        int typeId = item["typeId"].get<int>();
-
-        // 0は未設定値として扱うため、typeIdは1以上に限定する
-        if (typeId <= 0)
+        if (!scale.count("y"))
         {
-            std::cerr << "エラー: typeIdが正しい値ではありません。" << std::endl;
+            std::cerr << "エラー: scale.y が存在しません。" << std::endl;
             return false;
         }
 
-        // TileTypes.jsonに登録されていないtypeIdは配置できない
-        if (tileTypeManager.GetTileInfo(typeId) == nullptr)
+        // 拡大率は整数表記と小数表記のどちらも許可する
+        if (!scale.at("x").is_number())
         {
-            std::cerr << "エラー: ステージJSONが存在しないタイルです。" << std::endl;
+            std::cerr << "エラー: scale.x が正しい型ではありません。" << std::endl;
             return false;
         }
 
-        // 検証済みのIDを一時データへ保存する
-        loadedObjectData.typeId = typeId;
-
-        // 2.5Dの配置座標として、positionはxとyを持つオブジェクトに限定する
-        const json& position = item.at("position");
-
-        if (!position.is_object())
+        if (!scale.at("y").is_number())
         {
-            std::cerr << "エラー: positionはオブジェクトではありません。" << std::endl;
+            std::cerr << "エラー: scale.y が正しい型ではありません。" << std::endl;
             return false;
         }
 
-        // positionではxとyの両方を必須とする。Zはゲーム側で固定するため読み込まない
-        if (!position.count("x"))
+        // 拡大率として使用できないNaNや無限大を拒否する
+        if (!std::isfinite(scale.at("x").get<float>()))
         {
-            std::cerr << "エラー: position.x が存在しません。" << std::endl;
+            std::cerr << "エラー: scale.x が有限値ではありません。" << std::endl;
             return false;
         }
 
-        if (!position.count("y"))
+        if (!std::isfinite(scale.at("y").get<float>()))
         {
-            std::cerr << "エラー: position.y が存在しません。" << std::endl;
+            std::cerr << "エラー: scale.y が有限値ではありません。" << std::endl;
             return false;
         }
 
-        // 座標は整数表記と小数表記のどちらも許可する
-        if (!position.at("x").is_number())
+        // 反転や大きさ0のモデルを意図せず作らないよう、正の値だけを許可する
+        if (scale.at("x").get<float>() <= 0.0f)
         {
-            std::cerr << "エラー: position.x が正しい型ではありません。" << std::endl;
+            std::cerr << "エラー: scale.x が0以下です。" << std::endl;
             return false;
         }
 
-        // 座標は整数表記と小数表記のどちらも許可する
-        if (!position.at("y").is_number())
+        if (scale.at("y").get<float>() <= 0.0f)
         {
-            std::cerr << "エラー: position.y が正しい型ではありません。" << std::endl;
+            std::cerr << "エラー: scale.y が0以下です。" << std::endl;
             return false;
         }
 
-        // 座標計算に使用できないNaNや無限大を拒否する
-        if (!std::isfinite(position.at("x").get<float>()))
+        loadedObjectData.scaleX = scale.at("x").get<float>();
+        loadedObjectData.scaleY = scale.at("y").get<float>();
+    }
+
+    // すべて成功した場合だけ出力先へ代入し、途中までのデータを残さない
+    if (BossGate::IsGateType(loadedObjectData.typeId) &&
+        (loadedObjectData.rotationDegrees != 0.0f || loadedObjectData.scaleX != 1.0f))
+    {
+        std::cerr << "Gate placements require rotationDegrees=0 and scale.x=1." << std::endl;
+        return false;
+    }
+
+    outputObject = loadedObjectData;
+
+    return true;
+}
+
+// JSON上の敵名をEnemyTypeへ変換する。未対応名では出力を変更せずfalseを返す
+static bool TryParseEnemyType(std::string_view enemyTypeName, EnemyType& outputEnemyType)
+{
+    constexpr std::array<std::pair<std::string_view, EnemyType>, 10> ENEMY_TYPE_MAPPINGS = {
+        {{"Wave", EnemyType::Wave},
+         {"Scatter", EnemyType::Scatter},
+         {"Mage", EnemyType::Mage},
+         {"Fan", EnemyType::Fan},
+         {"Hover", EnemyType::Hover},
+         {"Fly", EnemyType::Fly},
+         {"Egg", EnemyType::Egg},
+         {"Boss", EnemyType::Boss},
+         {"Vacuum", EnemyType::Vacuum},
+         {"Walker", EnemyType::Walker}}};
+
+    for (auto maps : ENEMY_TYPE_MAPPINGS)
+    {
+        if (maps.first == enemyTypeName)
         {
-            std::cerr << "エラー: position.x が有限値ではありません。" << std::endl;
-            return false;
+            outputEnemyType = maps.second;
+            return true;
         }
+    }
 
-        if (!std::isfinite(position.at("y").get<float>()))
-        {
-            std::cerr << "エラー: position.y が有限値ではありません。" << std::endl;
-            return false;
-        }
+    return false;
+}
 
-        // 検証済みの座標を、ゲーム側で扱う1件分のデータへ格納する
-        loadedObjectData.positionX = position.at("x").get<float>();
-
-        loadedObjectData.positionY = position.at("y").get<float>();
-
-        // rotationDegreesは省略可能。省略時はStageObjectDataの初期値0度を使用する
-        if (item.count("rotationDegrees"))
-        {
-            // 回転角度は整数表記と小数表記のどちらも許可する
-            if (!item.at("rotationDegrees").is_number())
-            {
-                std::cerr << "エラー: rotationDegrees が正しい型ではありません。" << std::endl;
-                return false;
-            }
-
-            float rotationDegrees = item.at("rotationDegrees").get<float>();
-
-            // 回転計算に使用できないNaNや無限大を拒否する
-            if (!std::isfinite(rotationDegrees))
-            {
-                std::cerr << "エラー: rotationDegrees が有限値ではありません。" << std::endl;
-                return false;
-            }
-
-            loadedObjectData.rotationDegrees = rotationDegrees;
-        }
-
-        // scaleは省略可能。省略時はStageObjectDataの初期値1.0を使用する
-        if (item.count("scale"))
-        {
-            const json& scale = item.at("scale");
-
-            if (!scale.is_object())
-            {
-                std::cerr << "エラー: scaleはオブジェクトではありません。" << std::endl;
-                return false;
-            }
-
-            // scaleを指定する場合はxとyの両方を必須とする
-            if (!scale.count("x"))
-            {
-                std::cerr << "エラー: scale.x が存在しません。" << std::endl;
-                return false;
-            }
-
-            if (!scale.count("y"))
-            {
-                std::cerr << "エラー: scale.y が存在しません。" << std::endl;
-                return false;
-            }
-
-            // 拡大率は整数表記と小数表記のどちらも許可する
-            if (!scale.at("x").is_number())
-            {
-                std::cerr << "エラー: scale.x が正しい型ではありません。" << std::endl;
-                return false;
-            }
-
-            if (!scale.at("y").is_number())
-            {
-                std::cerr << "エラー: scale.y が正しい型ではありません。" << std::endl;
-                return false;
-            }
-
-            // 拡大率として使用できないNaNや無限大を拒否する
-            if (!std::isfinite(scale.at("x").get<float>()))
-            {
-                std::cerr << "エラー: scale.x が有限値ではありません。" << std::endl;
-                return false;
-            }
-
-            if (!std::isfinite(scale.at("y").get<float>()))
-            {
-                std::cerr << "エラー: scale.y が有限値ではありません。" << std::endl;
-                return false;
-            }
-
-            // 反転や大きさ0のモデルを意図せず作らないよう、正の値だけを許可する
-            if (scale.at("x").get<float>() <= 0.0f)
-            {
-                std::cerr << "エラー: scale.x が0以下です。" << std::endl;
-                return false;
-            }
-
-            if (scale.at("y").get<float>() <= 0.0f)
-            {
-                std::cerr << "エラー: scale.y が0以下です。" << std::endl;
-                return false;
-            }
-
-            loadedObjectData.scaleX = scale.at("x").get<float>();
-            loadedObjectData.scaleY = scale.at("y").get<float>();
-        }
-
-        // すべて成功した場合だけ出力先へ代入し、途中までのデータを残さない
-        if (BossGate::IsGateType(loadedObjectData.typeId) &&
-            (loadedObjectData.rotationDegrees != 0.0f || loadedObjectData.scaleX != 1.0f))
-        {
-            std::cerr << "Gate placements require rotationDegrees=0 and scale.x=1." << std::endl;
-            return false;
-        }
-
-        outputObject = loadedObjectData;
-
+// JSON上の方向名を配置用の列挙型へ変換し、表記揺れや不正値を拒否する
+static bool TryParseEnemySpawnDirection(std::string_view directionName, EnemySpawnDirection& outputDirection)
+{
+    if (directionName == "Left")
+    {
+        outputDirection = EnemySpawnDirection::Left;
         return true;
     }
 
-    // JSON上の敵名をEnemyTypeへ変換する。未対応名では出力を変更せずfalseを返す
-    bool TryParseEnemyType(std::string_view enemyTypeName, EnemyType& outputEnemyType)
+    if (directionName == "Right")
     {
-        constexpr std::array<std::pair<std::string_view, EnemyType>, 10> ENEMY_TYPE_MAPPINGS = {
-            {{"Wave", EnemyType::Wave},
-             {"Scatter", EnemyType::Scatter},
-             {"Mage", EnemyType::Mage},
-             {"Fan", EnemyType::Fan},
-             {"Hover", EnemyType::Hover},
-             {"Fly", EnemyType::Fly},
-             {"Egg", EnemyType::Egg},
-             {"Boss", EnemyType::Boss},
-             {"Vacuum", EnemyType::Vacuum},
-             {"Walker", EnemyType::Walker}}};
+        outputDirection = EnemySpawnDirection::Right;
+        return true;
+    }
 
-        for (auto maps : ENEMY_TYPE_MAPPINGS)
+    return false;
+}
+
+// enemies配列の1件を検証し、ゲーム側で生成に使えるEnemySpawnDataへ変換する
+// 途中で失敗してもoutputEnemyを変更しないよう、一時データへ読み込んでから反映する
+static bool ParseEnemySpawn(const json& item, std::size_t enemyIndex, EnemySpawnData& outputEnemy)
+{
+    EnemySpawnData loadedEnemyData;
+
+    if (!item.is_object())
+    {
+        std::cerr << "エラー: enemies[" << enemyIndex << "]がJSONオブジェクトではありません。" << std::endl;
+        return false;
+    }
+
+    if (item.count("enemyType") == 0)
+    {
+        std::cerr << "エラー: enemyTypeが存在しません。" << std::endl;
+        return false;
+    }
+
+    if (!item.at("enemyType").is_string())
+    {
+        std::cerr << "エラー: enemyTypeが正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    std::string enemyTypeName = item.at("enemyType").get<std::string>();
+
+    if (!TryParseEnemyType(enemyTypeName, loadedEnemyData.enemyType))
+    {
+        std::cerr << "エラー: enemyIndex[" << enemyIndex << "]番目の" << enemyTypeName << "が未定義です。"
+                  << std::endl;
+        return false;
+    }
+
+    if (item.count("position") == 0)
+    {
+        std::cerr << "エラー: enemies[" << enemyIndex << "].positionが存在しません。" << std::endl;
+        return false;
+    }
+
+    const json& position = item.at("position");
+
+    if (!position.is_object())
+    {
+        std::cerr << "positionがJSONオブジェクトではありません。" << std::endl;
+        return false;
+    }
+
+    if (!position.count("x"))
+    {
+        std::cerr << "エラー: enemies[" << enemyIndex << "].position.xが存在しません。" << std::endl;
+        return false;
+    }
+
+    if (!position.count("y"))
+    {
+        std::cerr << "エラー: enemies[" << enemyIndex << "].position.yが存在しません。" << std::endl;
+        return false;
+    }
+
+    if (!position.at("x").is_number())
+    {
+        std::cerr << "エラー: position.xが正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    if (!position.at("y").is_number())
+    {
+        std::cerr << "エラー: position.yが正しい型ではありません。" << std::endl;
+        return false;
+    }
+
+    float positionX = position.at("x").get<float>();
+    float positionY = position.at("y").get<float>();
+
+    if (!std::isfinite(positionX))
+    {
+        std::cerr << "エラー: position.x が有限値ではありません。" << std::endl;
+        return false;
+    }
+
+    if (!std::isfinite(positionY))
+    {
+        std::cerr << "エラー: position.y が有限値ではありません。" << std::endl;
+        return false;
+    }
+
+    loadedEnemyData.positionX = positionX;
+    loadedEnemyData.positionY = positionY;
+
+    // directionは省略可能。省略時はEnemySpawnDataの既定値Rightを使用する
+    if (item.count("direction") > 0)
+    {
+        if (!item.at("direction").is_string())
         {
-            if (maps.first == enemyTypeName)
-            {
-                outputEnemyType = maps.second;
-                return true;
-            }
+            std::cerr << "エラー: enemies[" << enemyIndex << "].directionが文字列ではありません。"
+                      << std::endl;
+            return false;
         }
+
+        std::string directionName = item.at("direction").get<std::string>();
+
+        if (!TryParseEnemySpawnDirection(directionName, loadedEnemyData.enemySpawnDirection))
+        {
+            std::cerr << "エラー: enemies[" << enemyIndex
+                      << "].directionはLeftまたはRightである必要があります。" << std::endl;
+            return false;
+        }
+    }
+
+    // すべての項目が正常な場合だけ、呼び出し元の出力を更新する
+    outputEnemy = loadedEnemyData;
+    return true;
+}
+
+// fallRespawnZones配列の1件を検証し、ゲームで範囲判定に使えるデータへ変換する
+// 全項目の検証に成功した場合だけoutputZoneを更新する
+static bool ParseFallRespawnZone(const json& item, std::size_t zoneIndex, FallRespawnZoneData& outputZone)
+{
+    // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
+    FallRespawnZoneData loadedZoneData;
+
+    // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
+    if (!item.is_object())
+    {
+        std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]がJSONオブジェクトではありません。"
+                  << std::endl;
 
         return false;
     }
 
-    // JSON上の方向名を配置用の列挙型へ変換し、表記揺れや不正値を拒否する
-    bool TryParseEnemySpawnDirection(std::string_view directionName, EnemySpawnDirection& outputDirection)
+    // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
+    constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                              std::string_view("minY"), std::string_view("maxY")};
+
+    // 4つの境界について、存在・数値型・有限値を順番に確認する
+    for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
     {
-        if (directionName == "Left")
+        if (item.count(std::string(fieldName)) == 0)
         {
-            outputDirection = EnemySpawnDirection::Left;
-            return true;
+            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName << "が存在しません。"
+                      << std::endl;
+
+            return false;
         }
 
-        if (directionName == "Right")
+        // 存在確認後なので、atで安全に対象の値を参照できる
+        const json& fieldValue = item.at(std::string(fieldName));
+
+        if (!fieldValue.is_number())
         {
-            outputDirection = EnemySpawnDirection::Right;
-            return true;
+            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName
+                      << "が数値ではありません。" << std::endl;
+
+            return false;
         }
+
+        // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
+        const float fieldNumber = fieldValue.get<float>();
+
+        if (!std::isfinite(fieldNumber))
+        {
+            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName
+                      << "が有限値ではありません。" << std::endl;
+            return false;
+        }
+    }
+
+    // すべての値を検証してから、一時データへ境界を格納する
+    loadedZoneData.minX = item.at("minX").get<float>();
+    loadedZoneData.maxX = item.at("maxX").get<float>();
+    loadedZoneData.minY = item.at("minY").get<float>();
+    loadedZoneData.maxY = item.at("maxY").get<float>();
+
+    // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
+    if (loadedZoneData.minX >= loadedZoneData.maxX)
+    {
+        std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
+                  << std::endl;
 
         return false;
     }
 
-    // enemies配列の1件を検証し、ゲーム側で生成に使えるEnemySpawnDataへ変換する
-    // 途中で失敗してもoutputEnemyを変更しないよう、一時データへ読み込んでから反映する
-    bool ParseEnemySpawn(const json& item, std::size_t enemyIndex, EnemySpawnData& outputEnemy)
+    // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
+    if (loadedZoneData.minY >= loadedZoneData.maxY)
     {
-        EnemySpawnData loadedEnemyData;
+        std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
+                  << std::endl;
 
-        if (!item.is_object())
-        {
-            std::cerr << "エラー: enemies[" << enemyIndex << "]がJSONオブジェクトではありません。"
-                      << std::endl;
-            return false;
-        }
-
-        if (item.count("enemyType") == 0)
-        {
-            std::cerr << "エラー: enemyTypeが存在しません。" << std::endl;
-            return false;
-        }
-
-        if (!item.at("enemyType").is_string())
-        {
-            std::cerr << "エラー: enemyTypeが正しい型ではありません。" << std::endl;
-            return false;
-        }
-
-        std::string enemyTypeName = item.at("enemyType").get<std::string>();
-
-        if (!TryParseEnemyType(enemyTypeName, loadedEnemyData.enemyType))
-        {
-            std::cerr << "エラー: enemyIndex[" << enemyIndex << "]番目の" << enemyTypeName << "が未定義です。"
-                      << std::endl;
-            return false;
-        }
-
-        if (item.count("position") == 0)
-        {
-            std::cerr << "エラー: enemies[" << enemyIndex << "].positionが存在しません。" << std::endl;
-            return false;
-        }
-
-        const json& position = item.at("position");
-
-        if (!position.is_object())
-        {
-            std::cerr << "positionがJSONオブジェクトではありません。" << std::endl;
-            return false;
-        }
-
-        if (!position.count("x"))
-        {
-            std::cerr << "エラー: enemies[" << enemyIndex << "].position.xが存在しません。" << std::endl;
-            return false;
-        }
-
-        if (!position.count("y"))
-        {
-            std::cerr << "エラー: enemies[" << enemyIndex << "].position.yが存在しません。" << std::endl;
-            return false;
-        }
-
-        if (!position.at("x").is_number())
-        {
-            std::cerr << "エラー: position.xが正しい型ではありません。" << std::endl;
-            return false;
-        }
-
-        if (!position.at("y").is_number())
-        {
-            std::cerr << "エラー: position.yが正しい型ではありません。" << std::endl;
-            return false;
-        }
-
-        float positionX = position.at("x").get<float>();
-        float positionY = position.at("y").get<float>();
-
-        if (!std::isfinite(positionX))
-        {
-            std::cerr << "エラー: position.x が有限値ではありません。" << std::endl;
-            return false;
-        }
-
-        if (!std::isfinite(positionY))
-        {
-            std::cerr << "エラー: position.y が有限値ではありません。" << std::endl;
-            return false;
-        }
-
-        loadedEnemyData.positionX = positionX;
-        loadedEnemyData.positionY = positionY;
-
-        // directionは省略可能。省略時はEnemySpawnDataの既定値Rightを使用する
-        if (item.count("direction") > 0)
-        {
-            if (!item.at("direction").is_string())
-            {
-                std::cerr << "エラー: enemies[" << enemyIndex << "].directionが文字列ではありません。"
-                          << std::endl;
-                return false;
-            }
-
-            std::string directionName = item.at("direction").get<std::string>();
-
-            if (!TryParseEnemySpawnDirection(directionName, loadedEnemyData.enemySpawnDirection))
-            {
-                std::cerr << "エラー: enemies[" << enemyIndex
-                          << "].directionはLeftまたはRightである必要があります。" << std::endl;
-                return false;
-            }
-        }
-
-        // すべての項目が正常な場合だけ、呼び出し元の出力を更新する
-        outputEnemy = loadedEnemyData;
-        return true;
+        return false;
     }
 
-    // fallRespawnZones配列の1件を検証し、ゲームで範囲判定に使えるデータへ変換する
-    // 全項目の検証に成功した場合だけoutputZoneを更新する
-    bool ParseFallRespawnZone(const json& item, std::size_t zoneIndex, FallRespawnZoneData& outputZone)
+    // すべての検証を通過したデータだけを呼び出し元へ反映する
+    outputZone = loadedZoneData;
+
+    return true;
+}
+
+static bool ParseBossEncounterZone(const json& item, std::size_t zoneIndex, BossEncounterZoneData& outputZone)
+{
+    // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
+    BossEncounterZoneData loadedZoneData;
+
+    // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
+    if (!item.is_object())
     {
-        // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
-        FallRespawnZoneData loadedZoneData;
+        std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]がJSONオブジェクトではありません。"
+                  << std::endl;
 
-        // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
-        if (!item.is_object())
-        {
-            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]がJSONオブジェクトではありません。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
-        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
-                                                  std::string_view("minY"), std::string_view("maxY")};
-
-        // 4つの境界について、存在・数値型・有限値を順番に確認する
-        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
-        {
-            if (item.count(std::string(fieldName)) == 0)
-            {
-                std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName
-                          << "が存在しません。" << std::endl;
-
-                return false;
-            }
-
-            // 存在確認後なので、atで安全に対象の値を参照できる
-            const json& fieldValue = item.at(std::string(fieldName));
-
-            if (!fieldValue.is_number())
-            {
-                std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName
-                          << "が数値ではありません。" << std::endl;
-
-                return false;
-            }
-
-            // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
-            const float fieldNumber = fieldValue.get<float>();
-
-            if (!std::isfinite(fieldNumber))
-            {
-                std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]." << fieldName
-                          << "が有限値ではありません。" << std::endl;
-                return false;
-            }
-        }
-
-        // すべての値を検証してから、一時データへ境界を格納する
-        loadedZoneData.minX = item.at("minX").get<float>();
-        loadedZoneData.maxX = item.at("maxX").get<float>();
-        loadedZoneData.minY = item.at("minY").get<float>();
-        loadedZoneData.maxY = item.at("maxY").get<float>();
-
-        // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
-        if (loadedZoneData.minX >= loadedZoneData.maxX)
-        {
-            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
-        if (loadedZoneData.minY >= loadedZoneData.maxY)
-        {
-            std::cerr << "エラー: fallRespawnZones[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // すべての検証を通過したデータだけを呼び出し元へ反映する
-        outputZone = loadedZoneData;
-
-        return true;
+        return false;
     }
 
-    bool ParseBossEncounterZone(const json& item, std::size_t zoneIndex, BossEncounterZoneData& outputZone)
-    {
-        // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
-        BossEncounterZoneData loadedZoneData;
+    // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
+    constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                              std::string_view("minY"), std::string_view("maxY")};
 
-        // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
-        if (!item.is_object())
+    // 4つの境界について、存在・数値型・有限値を順番に確認する
+    for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
+    {
+        if (item.count(std::string(fieldName)) == 0)
         {
-            std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]がJSONオブジェクトではありません。"
+            std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName << "が存在しません。"
                       << std::endl;
 
             return false;
         }
 
-        // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
-        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
-                                                  std::string_view("minY"), std::string_view("maxY")};
+        // 存在確認後なので、atで安全に対象の値を参照できる
+        const json& fieldValue = item.at(std::string(fieldName));
 
-        // 4つの境界について、存在・数値型・有限値を順番に確認する
-        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
+        if (!fieldValue.is_number())
         {
-            if (item.count(std::string(fieldName)) == 0)
-            {
-                std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName
-                          << "が存在しません。" << std::endl;
-
-                return false;
-            }
-
-            // 存在確認後なので、atで安全に対象の値を参照できる
-            const json& fieldValue = item.at(std::string(fieldName));
-
-            if (!fieldValue.is_number())
-            {
-                std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName
-                          << "が数値ではありません。" << std::endl;
-
-                return false;
-            }
-
-            // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
-            const float fieldNumber = fieldValue.get<float>();
-
-            if (!std::isfinite(fieldNumber))
-            {
-                std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName
-                          << "が有限値ではありません。" << std::endl;
-                return false;
-            }
-        }
-
-        // すべての値を検証してから、一時データへ境界を格納する
-        loadedZoneData.minX = item.at("minX").get<float>();
-        loadedZoneData.maxX = item.at("maxX").get<float>();
-        loadedZoneData.minY = item.at("minY").get<float>();
-        loadedZoneData.maxY = item.at("maxY").get<float>();
-
-        // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
-        if (loadedZoneData.minX >= loadedZoneData.maxX)
-        {
-            std::cerr << "エラー: bossEncounterZones[" << zoneIndex
-                      << "]はminXよりmaxXが大きい必要があります。" << std::endl;
+            std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName
+                      << "が数値ではありません。" << std::endl;
 
             return false;
         }
 
-        // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
-        if (loadedZoneData.minY >= loadedZoneData.maxY)
-        {
-            std::cerr << "エラー: bossEncounterZones[" << zoneIndex
-                      << "]はminYよりmaxYが大きい必要があります。" << std::endl;
+        // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
+        const float fieldNumber = fieldValue.get<float>();
 
+        if (!std::isfinite(fieldNumber))
+        {
+            std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]." << fieldName
+                      << "が有限値ではありません。" << std::endl;
             return false;
         }
-
-        // すべての検証を通過したデータだけを呼び出し元へ反映する
-        outputZone = loadedZoneData;
-
-        return true;
     }
 
-    bool CameraLimitZone(const json& item, std::size_t zoneIndex, CameraLimitZoneData& outputZone)
+    // すべての値を検証してから、一時データへ境界を格納する
+    loadedZoneData.minX = item.at("minX").get<float>();
+    loadedZoneData.maxX = item.at("maxX").get<float>();
+    loadedZoneData.minY = item.at("minY").get<float>();
+    loadedZoneData.maxY = item.at("maxY").get<float>();
+
+    // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
+    if (loadedZoneData.minX >= loadedZoneData.maxX)
     {
-        // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
-        CameraLimitZoneData loadedZoneData;
+        std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
+                  << std::endl;
 
-        // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
-        if (!item.is_object())
-        {
-            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]がJSONオブジェクトではありません。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
-        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
-                                                  std::string_view("minY"), std::string_view("maxY")};
-
-        // 4つの境界について、存在・数値型・有限値を順番に確認する
-        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
-        {
-            if (item.count(std::string(fieldName)) == 0)
-            {
-                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が存在しません。"
-                          << std::endl;
-
-                return false;
-            }
-
-            // 存在確認後なので、atで安全に対象の値を参照できる
-            const json& fieldValue = item.at(std::string(fieldName));
-
-            if (!fieldValue.is_number())
-            {
-                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName
-                          << "が数値ではありません。" << std::endl;
-
-                return false;
-            }
-
-            // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
-            const float fieldNumber = fieldValue.get<float>();
-
-            if (!std::isfinite(fieldNumber))
-            {
-                std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName
-                          << "が有限値ではありません。" << std::endl;
-                return false;
-            }
-        }
-
-        // すべての値を検証してから、一時データへ境界を格納する
-        loadedZoneData.minX = item.at("minX").get<float>();
-        loadedZoneData.maxX = item.at("maxX").get<float>();
-        loadedZoneData.minY = item.at("minY").get<float>();
-        loadedZoneData.maxY = item.at("maxY").get<float>();
-
-        // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
-        if (loadedZoneData.minX >= loadedZoneData.maxX)
-        {
-            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
-        if (loadedZoneData.minY >= loadedZoneData.maxY)
-        {
-            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
-                      << std::endl;
-
-            return false;
-        }
-
-        // すべての検証を通過したデータだけを呼び出し元へ反映する
-        if (item.count("cameraSection") > 0)
-        {
-            if (!item.at("cameraSection").is_string())
-            {
-                return false;
-            }
-
-            loadedZoneData.cameraSection = item.at("cameraSection").get<std::string>();
-        }
-
-        if (item.count("isSectionTrigger") > 0)
-        {
-            if (!item.at("isSectionTrigger").is_boolean())
-            {
-                return false;
-            }
-
-            loadedZoneData.isSectionTrigger = item.at("isSectionTrigger").get<bool>();
-
-            if (loadedZoneData.isSectionTrigger && loadedZoneData.cameraSection.empty())
-            {
-                return false;
-            }
-        }
-
-        outputZone = loadedZoneData;
-
-        return true;
+        return false;
     }
 
-    bool ParseBossApproachCameraZone(const json& item, std::size_t zoneIndex,
-                                     BossApproachCameraZoneData& outputZone)
+    // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
+    if (loadedZoneData.minY >= loadedZoneData.maxY)
     {
-        // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
-        BossApproachCameraZoneData loadedZoneData;
+        std::cerr << "エラー: bossEncounterZones[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
+                  << std::endl;
 
-        // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
-        if (!item.is_object())
-        {
-            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex
-                      << "]がJSONオブジェクトではありません。" << std::endl;
-
-            return false;
-        }
-
-        // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
-        constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
-                                                  std::string_view("minY"), std::string_view("maxY")};
-
-        // 4つの境界について、存在・数値型・有限値を順番に確認する
-        for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
-        {
-            if (item.count(std::string(fieldName)) == 0)
-            {
-                std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
-                          << "が存在しません。" << std::endl;
-
-                return false;
-            }
-
-            // 存在確認後なので、atで安全に対象の値を参照できる
-            const json& fieldValue = item.at(std::string(fieldName));
-
-            if (!fieldValue.is_number())
-            {
-                std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
-                          << "が数値ではありません。" << std::endl;
-
-                return false;
-            }
-
-            // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
-            const float fieldNumber = fieldValue.get<float>();
-
-            if (!std::isfinite(fieldNumber))
-            {
-                std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
-                          << "が有限値ではありません。" << std::endl;
-                return false;
-            }
-        }
-
-        // すべての値を検証してから、一時データへ境界を格納する
-        loadedZoneData.minX = item.at("minX").get<float>();
-        loadedZoneData.maxX = item.at("maxX").get<float>();
-        loadedZoneData.minY = item.at("minY").get<float>();
-        loadedZoneData.maxY = item.at("maxY").get<float>();
-
-        // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
-        if (loadedZoneData.minX >= loadedZoneData.maxX)
-        {
-            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex
-                      << "]はminXよりmaxXが大きい必要があります。" << std::endl;
-
-            return false;
-        }
-
-        // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
-        if (loadedZoneData.minY >= loadedZoneData.maxY)
-        {
-            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex
-                      << "]はminYよりmaxYが大きい必要があります。" << std::endl;
-
-            return false;
-        }
-
-        // すべての検証を通過したデータだけを呼び出し元へ反映する
-        outputZone = loadedZoneData;
-
-        return true;
+        return false;
     }
 
+    // すべての検証を通過したデータだけを呼び出し元へ反映する
+    outputZone = loadedZoneData;
+
+    return true;
+}
+
+static bool CameraLimitZone(const json& item, std::size_t zoneIndex, CameraLimitZoneData& outputZone)
+{
+    // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
+    CameraLimitZoneData loadedZoneData;
+
+    // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
+    if (!item.is_object())
+    {
+        std::cerr << "エラー: cameraBounds[" << zoneIndex << "]がJSONオブジェクトではありません。"
+                  << std::endl;
+
+        return false;
+    }
+
+    // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
+    constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                              std::string_view("minY"), std::string_view("maxY")};
+
+    // 4つの境界について、存在・数値型・有限値を順番に確認する
+    for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
+    {
+        if (item.count(std::string(fieldName)) == 0)
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が存在しません。"
+                      << std::endl;
+
+            return false;
+        }
+
+        // 存在確認後なので、atで安全に対象の値を参照できる
+        const json& fieldValue = item.at(std::string(fieldName));
+
+        if (!fieldValue.is_number())
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName << "が数値ではありません。"
+                      << std::endl;
+
+            return false;
+        }
+
+        // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
+        const float fieldNumber = fieldValue.get<float>();
+
+        if (!std::isfinite(fieldNumber))
+        {
+            std::cerr << "エラー: cameraBounds[" << zoneIndex << "]." << fieldName
+                      << "が有限値ではありません。" << std::endl;
+            return false;
+        }
+    }
+
+    // すべての値を検証してから、一時データへ境界を格納する
+    loadedZoneData.minX = item.at("minX").get<float>();
+    loadedZoneData.maxX = item.at("maxX").get<float>();
+    loadedZoneData.minY = item.at("minY").get<float>();
+    loadedZoneData.maxY = item.at("maxY").get<float>();
+
+    // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
+    if (loadedZoneData.minX >= loadedZoneData.maxX)
+    {
+        std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminXよりmaxXが大きい必要があります。"
+                  << std::endl;
+
+        return false;
+    }
+
+    // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
+    if (loadedZoneData.minY >= loadedZoneData.maxY)
+    {
+        std::cerr << "エラー: cameraBounds[" << zoneIndex << "]はminYよりmaxYが大きい必要があります。"
+                  << std::endl;
+
+        return false;
+    }
+
+    // すべての検証を通過したデータだけを呼び出し元へ反映する
+    if (item.count("cameraSection") > 0)
+    {
+        if (!item.at("cameraSection").is_string())
+        {
+            return false;
+        }
+
+        loadedZoneData.cameraSection = item.at("cameraSection").get<std::string>();
+    }
+
+    if (item.count("isSectionTrigger") > 0)
+    {
+        if (!item.at("isSectionTrigger").is_boolean())
+        {
+            return false;
+        }
+
+        loadedZoneData.isSectionTrigger = item.at("isSectionTrigger").get<bool>();
+
+        if (loadedZoneData.isSectionTrigger && loadedZoneData.cameraSection.empty())
+        {
+            return false;
+        }
+    }
+
+    outputZone = loadedZoneData;
+
+    return true;
+}
+
+static bool ParseBossApproachCameraZone(const json& item, std::size_t zoneIndex,
+                                        BossApproachCameraZoneData& outputZone)
+{
+    // 読み込み途中の失敗で呼び出し元へ不完全な値を残さないため、一時データを使う
+    BossApproachCameraZoneData loadedZoneData;
+
+    // 配列の各要素は、4つの境界値を持つJSONオブジェクトである必要がある
+    if (!item.is_object())
+    {
+        std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]がJSONオブジェクトではありません。"
+                  << std::endl;
+
+        return false;
+    }
+
+    // 同じ検証処理をまとめて行えるよう、必須となる境界名を一覧化する
+    constexpr std::array REQUIRED_FIELD_NAMES{std::string_view("minX"), std::string_view("maxX"),
+                                              std::string_view("minY"), std::string_view("maxY")};
+
+    // 4つの境界について、存在・数値型・有限値を順番に確認する
+    for (const std::string_view fieldName : REQUIRED_FIELD_NAMES)
+    {
+        if (item.count(std::string(fieldName)) == 0)
+        {
+            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                      << "が存在しません。" << std::endl;
+
+            return false;
+        }
+
+        // 存在確認後なので、atで安全に対象の値を参照できる
+        const json& fieldValue = item.at(std::string(fieldName));
+
+        if (!fieldValue.is_number())
+        {
+            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                      << "が数値ではありません。" << std::endl;
+
+            return false;
+        }
+
+        // 座標計算に利用できないNaNや無限大を読み込み時点で拒否する
+        const float fieldNumber = fieldValue.get<float>();
+
+        if (!std::isfinite(fieldNumber))
+        {
+            std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex << "]." << fieldName
+                      << "が有限値ではありません。" << std::endl;
+            return false;
+        }
+    }
+
+    // すべての値を検証してから、一時データへ境界を格納する
+    loadedZoneData.minX = item.at("minX").get<float>();
+    loadedZoneData.maxX = item.at("maxX").get<float>();
+    loadedZoneData.minY = item.at("minY").get<float>();
+    loadedZoneData.maxY = item.at("maxY").get<float>();
+
+    // 幅が0の範囲や、左右が逆転した範囲は長方形として扱えない
+    if (loadedZoneData.minX >= loadedZoneData.maxX)
+    {
+        std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex
+                  << "]はminXよりmaxXが大きい必要があります。" << std::endl;
+
+        return false;
+    }
+
+    // 高さが0の範囲や、上下が逆転した範囲も入力ミスとして拒否する
+    if (loadedZoneData.minY >= loadedZoneData.maxY)
+    {
+        std::cerr << "エラー: bossApproachCameraZones[" << zoneIndex
+                  << "]はminYよりmaxYが大きい必要があります。" << std::endl;
+
+        return false;
+    }
+
+    // すべての検証を通過したデータだけを呼び出し元へ反映する
+    outputZone = loadedZoneData;
+
+    return true;
 }
 
 // ステージJSON全体を読み込み、全項目の検証に成功した場合だけ出力を更新する
@@ -910,6 +905,24 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
         }
 
         // 落下復帰エリアがある場合、各長方形を検証して読み込む
+        if (root.count("savePoints") > 0)
+        {
+            const auto& points = root.at("savePoints");
+            if (!points.is_array())
+            {
+                return false;
+            }
+            for (std::size_t i = 0; i < points.size(); ++i)
+            {
+                FallRespawnZoneData point;
+                if (!ParseFallRespawnZone(points[i], i, point))
+                {
+                    std::cerr << "Invalid savePoints entry: " << i << std::endl;
+                    return false;
+                }
+                loadedStageData.savePoints.push_back(point);
+            }
+        }
         if (root.count("fallRespawnZones") > 0)
         {
             const json& fallRespawnZones = root.at("fallRespawnZones");
@@ -1009,6 +1022,8 @@ bool StageLoader::Load(const std::string& jsonPath, const TileTypeManager& tileT
 
             if (!targetExists)
             {
+                std::cerr << "cameraBounds trigger target has no bounds: " << trigger.cameraSection
+                          << std::endl;
                 return false;
             }
         }

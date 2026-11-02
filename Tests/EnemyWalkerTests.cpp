@@ -20,8 +20,7 @@ static void Check(bool condition, const char* message)
 
 class PatrolProbe final : public Character
 {
-  public:
-
+public:
     PatrolProbe()
     {
         radius = 0.35f;

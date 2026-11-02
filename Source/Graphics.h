@@ -12,16 +12,14 @@
 // グラフィックス
 class Graphics
 {
-  private:
-
+private:
     // コンストラクタ
     Graphics() = default;
 
     // デストラクタ
     ~Graphics() = default;
 
-  public:
-
+public:
     // インスタンス取得
     static Graphics& Instance()
     {
@@ -122,8 +120,7 @@ class Graphics
         return modelRenderer.get();
     }
 
-  private:
-
+private:
     HWND hWnd = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Device> device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
