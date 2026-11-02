@@ -1,5 +1,5 @@
 ﻿#include "Model.h"
-#include "PrimitiveRenderer.h"
+#include "SwordTrailRenderer.h"
 #include "ModelRenderer.h"
 #include <cstdlib>
 
@@ -21,8 +21,12 @@ void ModelRenderer::Draw(ShaderId, std::shared_ptr<Model>, const DirectX::XMFLOA
     std::abort();
 }
 
-void PrimitiveRenderer::AddVertex(const DirectX::XMFLOAT3&, const DirectX::XMFLOAT4&,
-                                  const DirectX::XMFLOAT2&)
+void SwordTrailRenderer::Begin(const Params&)
+{
+    std::abort();
+}
+
+void SwordTrailRenderer::AddVertex(const DirectX::XMFLOAT3&, const DirectX::XMFLOAT2&)
 {
     std::abort();
 }

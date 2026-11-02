@@ -35,7 +35,8 @@ class Player final : public Character
 #endif
 
     // RenderTrail の描画処理
-    void RenderTrail(class PrimitiveRenderer* primitiveRenderer);
+    void RenderTrail(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
+                     const DirectX::XMFLOAT4X4& projection);
 
     // RenderMotionTrail の描画処理
     void RenderMotionTrail(class ModelRenderer* modelRenderer) const;
@@ -193,6 +194,7 @@ class Player final : public Character
     void SetState(StateId stateId);
 
     PlayerTrail trail;
+    std::unique_ptr<class SwordTrailRenderer> swordTrailRenderer;
 
   public:
 

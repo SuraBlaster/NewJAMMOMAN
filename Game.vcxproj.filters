@@ -282,6 +282,12 @@
     <ClInclude Include="Source\OutlineShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Source\SwordTrailRenderer.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Bloom.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
     <ClInclude Include="Source\ModelViewerScene.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
@@ -544,6 +550,12 @@
     <ClCompile Include="Source\OutlineShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\SwordTrailRenderer.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Bloom.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="Source\ModelViewerScene.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -642,6 +654,15 @@
     <None Include="Shader\Outline.hlsli">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\SwordTrail.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\Bloom.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\SwordSpark.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\SpriteVS.hlsl">
@@ -681,6 +702,33 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Shader\OutlinePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\SwordTrailVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\SwordTrailPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\BloomVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\BloomPrefilterPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\BloomDownsamplePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\BloomUpsamplePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\BloomCompositePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\SwordSparkVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\SwordSparkPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Shader\CityPS.hlsl">

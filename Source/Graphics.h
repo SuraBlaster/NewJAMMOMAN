@@ -7,6 +7,7 @@
 #include "PrimitiveRenderer.h"
 #include "ShapeRenderer.h"
 #include "ModelRenderer.h"
+#include "Bloom.h"
 
 // グラフィックス
 class Graphics
@@ -36,6 +37,33 @@ class Graphics
 
     // レンダーターゲット設定
     void SetRenderTargets();
+
+    // バックバッファ設定（ブルーム合成後のUI描画用）
+    void SetBackBufferTarget();
+
+    // シーンを描いたHDRバッファ取得
+    ID3D11ShaderResourceView* GetSceneShaderResourceView() const
+    {
+        return sceneShaderResourceView.Get();
+    }
+
+    // バックバッファ取得
+    ID3D11RenderTargetView* GetBackBufferRenderTargetView() const
+    {
+        return renderTargetView.Get();
+    }
+
+    // ビューポート取得
+    const D3D11_VIEWPORT& GetViewport() const
+    {
+        return viewport;
+    }
+
+    // ブルーム取得
+    Bloom* GetBloom() const
+    {
+        return bloom.get();
+    }
 
     // 画面表示
     void Present(UINT syncInterval);
@@ -102,6 +130,8 @@ class Graphics
     Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> sceneRenderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> sceneShaderResourceView;
     D3D11_VIEWPORT viewport;
 
     float screenWidth = 0;
@@ -111,4 +141,5 @@ class Graphics
     std::unique_ptr<PrimitiveRenderer> primitiveRenderer;
     std::unique_ptr<ShapeRenderer> shapeRenderer;
     std::unique_ptr<ModelRenderer> modelRenderer;
+    std::unique_ptr<Bloom> bloom;
 };

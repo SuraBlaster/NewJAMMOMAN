@@ -1,5 +1,5 @@
 ﻿#include "PlayerTrail.h"
-#include "PrimitiveRenderer.h"
+#include "SwordTrailRenderer.h"
 #include "ModelRenderer.h"
 #include <algorithm>
 #include <cmath>
@@ -29,32 +29,31 @@ void PlayerTrail::RecordMotion(float elapsedTime, const Model& model, const Dire
     }
 }
 
-void PlayerTrail::RecordSword(const DirectX::XMFLOAT3& root, const DirectX::XMFLOAT3& tip, bool reset)
+void PlayerTrail::RecordSword(const DirectX::XMFLOAT3& root, const DirectX::XMFLOAT3& tip, bool reset,
+                              float elapsedTime)
 {
     trailFadeTimer = TRAIL_FADE_DURATION;
+
     // 攻撃が開始された最初のフレームですべての座標を現在の位置で初期化する
     if (reset)
     {
-        for (int i = 0; i < MAX_POLYGON; i++)
+        for (SwordSample& sample : swordSamples)
         {
-            trailPositions[0][i] = root;
-            trailPositions[1][i] = tip;
-        }
-    }
-    else
-    {
-        // アクティブ中は頂点座標を1フレーム分ずらして最新を更新する
-        for (int i = 0; i < 2; i++)
-        {
-            for (int j = MAX_POLYGON - 1; j > 0; j--)
-            {
-                trailPositions[i][j] = trailPositions[i][j - 1];
-            }
+            sample = {root, tip, 0.0f};
         }
 
-        trailPositions[0][0] = root;
-        trailPositions[1][0] = tip;
+        swordSampleCount = 1;
+        return;
     }
+
+    for (int i = MAX_SWORD_SAMPLES - 1; i > 0; i--)
+    {
+        swordSamples[i] = swordSamples[i - 1];
+        swordSamples[i].age += elapsedTime;
+    }
+
+    swordSamples[0] = {root, tip, 0.0f};
+    swordSampleCount = (std::min)(swordSampleCount + 1, MAX_SWORD_SAMPLES);
 }
 
 void PlayerTrail::FadeSword(float elapsedTime)
@@ -66,112 +65,109 @@ void PlayerTrail::FadeSword(float elapsedTime)
 }
 
 // RenderSword の描画処理
-void PlayerTrail::RenderSword(PrimitiveRenderer* primitiveRenderer) const
+void PlayerTrail::RenderSword(SwordTrailRenderer* swordTrailRenderer) const
 {
-    const int segmentCount = MAX_POLYGON - 1;
-    const int division = 20;
-    const float trailHalfDepth = 0.10f;
+    const int division = 8;
     const float handleClearance = 0.12f;
-    const DirectX::XMFLOAT3 rootColor = {1.00f, 1.00f, 0.92f};
-    const DirectX::XMFLOAT3 tipColor = {0.08f, 1.00f, 0.38f};
+    const float glowMargin = 0.12f;
 
-    auto addTriangle =
-        [&](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT4& colorA, const DirectX::XMFLOAT2& uvA,
-            const DirectX::XMFLOAT3& b, const DirectX::XMFLOAT4& colorB, const DirectX::XMFLOAT2& uvB,
-            const DirectX::XMFLOAT3& c, const DirectX::XMFLOAT4& colorC, const DirectX::XMFLOAT2& uvC)
+    // 寿命内のサンプルだけを使い、最後は寿命ちょうどの位置へ補間して長さをそろえる
+    SwordSample samples[MAX_SWORD_SAMPLES];
+    int count = 0;
+
+    for (int i = 0; i < swordSampleCount; i++)
     {
-        primitiveRenderer->AddVertex(a, colorA, uvA);
-        primitiveRenderer->AddVertex(b, colorB, uvB);
-        primitiveRenderer->AddVertex(c, colorC, uvC);
-    };
+        const SwordSample& sample = swordSamples[i];
 
-    auto addQuad =
-        [&](const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT4& colorA, const DirectX::XMFLOAT2& uvA,
-            const DirectX::XMFLOAT3& b, const DirectX::XMFLOAT4& colorB, const DirectX::XMFLOAT2& uvB,
-            const DirectX::XMFLOAT3& c, const DirectX::XMFLOAT4& colorC, const DirectX::XMFLOAT2& uvC,
-            const DirectX::XMFLOAT3& d, const DirectX::XMFLOAT4& colorD, const DirectX::XMFLOAT2& uvD)
+        if (sample.age <= SWORD_TRAIL_LIFETIME)
+        {
+            samples[count++] = sample;
+            continue;
+        }
+
+        if (i > 0)
+        {
+            const SwordSample& newer = swordSamples[i - 1];
+            const float t = (SWORD_TRAIL_LIFETIME - newer.age) / (sample.age - newer.age);
+            DirectX::XMFLOAT3 root, tip;
+            DirectX::XMStoreFloat3(&root, DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&newer.root),
+                                                                DirectX::XMLoadFloat3(&sample.root), t));
+            DirectX::XMStoreFloat3(&tip, DirectX::XMVectorLerp(DirectX::XMLoadFloat3(&newer.tip),
+                                                               DirectX::XMLoadFloat3(&sample.tip), t));
+            samples[count++] = {root, tip, SWORD_TRAIL_LIFETIME};
+        }
+
+        break;
+    }
+
+    if (count < 2)
     {
-        addTriangle(a, colorA, uvA, b, colorB, uvB, c, colorC, uvC);
-        addTriangle(a, colorA, uvA, c, colorC, uvC, d, colorD, uvD);
-    };
+        return;
+    }
 
-    bool hasPreviousSlice = false;
+    // 刃は回転するので、根元と刃先を別々に直線補間すると弧が角ばる。根元の位置と刃の向きに分けて補間する
+    DirectX::XMVECTOR roots[MAX_SWORD_SAMPLES];
+    DirectX::XMVECTOR directions[MAX_SWORD_SAMPLES];
+    float lengths[MAX_SWORD_SAMPLES];
 
-    for (int i = 0; i < segmentCount; i++)
+    for (int i = 0; i < count; i++)
     {
-        const int idx0 = (std::max)(0, i - 1);
-        const int idx1 = i;
-        const int idx2 = (std::min)(MAX_POLYGON - 1, i + 1);
-        const int idx3 = (std::min)(MAX_POLYGON - 1, i + 2);
+        roots[i] = DirectX::XMLoadFloat3(&samples[i].root);
+        const DirectX::XMVECTOR blade =
+            DirectX::XMVectorSubtract(DirectX::XMLoadFloat3(&samples[i].tip), roots[i]);
+        lengths[i] = DirectX::XMVectorGetX(DirectX::XMVector3Length(blade));
+        directions[i] = lengths[i] > 0.0001f ? DirectX::XMVectorScale(blade, 1.0f / lengths[i])
+                                             : DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    }
 
-        const DirectX::XMVECTOR root0 = DirectX::XMLoadFloat3(&trailPositions[0][idx0]);
-        const DirectX::XMVECTOR root1 = DirectX::XMLoadFloat3(&trailPositions[0][idx1]);
-        const DirectX::XMVECTOR root2 = DirectX::XMLoadFloat3(&trailPositions[0][idx2]);
-        const DirectX::XMVECTOR root3 = DirectX::XMLoadFloat3(&trailPositions[0][idx3]);
-        const DirectX::XMVECTOR tip0 = DirectX::XMLoadFloat3(&trailPositions[1][idx0]);
-        const DirectX::XMVECTOR tip1 = DirectX::XMLoadFloat3(&trailPositions[1][idx1]);
-        const DirectX::XMVECTOR tip2 = DirectX::XMLoadFloat3(&trailPositions[1][idx2]);
-        const DirectX::XMVECTOR tip3 = DirectX::XMLoadFloat3(&trailPositions[1][idx3]);
+    SwordTrailRenderer::Params params{};
+    params.fade = std::clamp(1.0f - trailFadeTimer / TRAIL_FADE_DURATION, 0.0f, 1.0f);
+    params.glowMargin = glowMargin;
+    swordTrailRenderer->Begin(params);
 
-        const int endJ = (i == segmentCount - 1) ? division : division - 1;
+    for (int i = 0; i < count - 1; i++)
+    {
+        const int i0 = (std::max)(0, i - 1);
+        const int i1 = i;
+        const int i2 = i + 1;
+        const int i3 = (std::min)(count - 1, i + 2);
+        const int lastStep = (i == count - 2) ? division : division - 1;
 
-        for (int j = 0; j <= endJ; j++)
+        for (int j = 0; j <= lastStep; j++)
         {
             const float t = j / static_cast<float>(division);
-            const float age = (i + t) / static_cast<float>(segmentCount);
+            const float age =
+                (samples[i1].age + (samples[i2].age - samples[i1].age) * t) / SWORD_TRAIL_LIFETIME;
+            const float length = lengths[i1] + (lengths[i2] - lengths[i1]) * t;
 
-            DirectX::XMVECTOR root = DirectX::XMVectorCatmullRom(root0, root1, root2, root3, t);
-            DirectX::XMVECTOR tip = DirectX::XMVectorCatmullRom(tip0, tip1, tip2, tip3, t);
+            const DirectX::XMVECTOR root =
+                DirectX::XMVectorCatmullRom(roots[i0], roots[i1], roots[i2], roots[i3], t);
+            DirectX::XMVECTOR direction = DirectX::XMVectorCatmullRom(directions[i0], directions[i1],
+                                                                      directions[i2], directions[i3], t);
+            direction = DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(direction)) > 0.000001f
+                            ? DirectX::XMVector3Normalize(direction)
+                            : directions[i1];
 
-            const float fadeMul = 1.0f;
-            const float fadeShape = 1.0f;
-            const float taper = powf(1.0f - age, 1.15f) * fadeShape;
-            const DirectX::XMVECTOR mid = DirectX::XMVectorScale(DirectX::XMVectorAdd(root, tip), 0.5f);
-            root = DirectX::XMVectorLerp(mid, root, taper);
-            tip = DirectX::XMVectorLerp(mid, tip, taper);
-            root = DirectX::XMVectorLerp(root, tip, handleClearance);
+            DirectX::XMVECTOR bladeStart =
+                DirectX::XMVectorAdd(root, DirectX::XMVectorScale(direction, length * handleClearance));
+            DirectX::XMVECTOR bladeEnd =
+                DirectX::XMVectorAdd(root, DirectX::XMVectorScale(direction, length));
 
-            const float baseAlpha = powf(1.0f - age, 1.65f);
-            const float alpha = baseAlpha * fadeMul * fadeMul * fadeMul;
-            const float greenShift = age * 0.35f;
-            const DirectX::XMFLOAT4 rootDrawColor = {
-                rootColor.x * (1.0f - greenShift) + tipColor.x * greenShift,
-                rootColor.y * (1.0f - greenShift) + tipColor.y * greenShift,
-                rootColor.z * (1.0f - greenShift) + tipColor.z * greenShift, alpha * 0.15f};
-            const DirectX::XMFLOAT4 tipDrawColor = {tipColor.x, tipColor.y, tipColor.z, alpha};
-            DirectX::XMFLOAT4 rootSideColor = rootDrawColor;
-            DirectX::XMFLOAT4 tipSideColor = tipDrawColor;
-            rootSideColor.w *= 0.40f;
-            tipSideColor.w *= 0.40f;
+            // 古い部分ほど細くして、尾が自然にすぼまるようにする
+            const float taper = 1.0f - 0.3f * age;
+            const DirectX::XMVECTOR mid =
+                DirectX::XMVectorScale(DirectX::XMVectorAdd(bladeStart, bladeEnd), 0.5f);
+            bladeStart = DirectX::XMVectorLerp(mid, bladeStart, taper);
+            bladeEnd = DirectX::XMVectorLerp(mid, bladeEnd, taper);
+            const DirectX::XMVECTOR glowEnd = DirectX::XMVectorAdd(
+                bladeEnd,
+                DirectX::XMVectorScale(DirectX::XMVectorSubtract(bladeEnd, bladeStart), glowMargin));
 
-            DirectX::XMVECTOR sweepDirection = DirectX::XMVectorAdd(DirectX::XMVectorSubtract(root2, root1),
-                                                                    DirectX::XMVectorSubtract(tip2, tip1));
-
-            if (DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(sweepDirection)) < 0.0001f)
-            {
-                sweepDirection = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-            }
-
-            sweepDirection = DirectX::XMVector3Normalize(sweepDirection);
-
-            DirectX::XMFLOAT3 rootFront, tipFront;
-            DirectX::XMStoreFloat3(&rootFront, root);
-            DirectX::XMStoreFloat3(&tipFront, tip);
-
-            if (!hasPreviousSlice)
-            {
-                const DirectX::XMVECTOR leadingPoint =
-                    DirectX::XMVectorSubtract(DirectX::XMVectorScale(DirectX::XMVectorAdd(root, tip), 0.5f),
-                                              DirectX::XMVectorScale(sweepDirection, 0.45f));
-                DirectX::XMFLOAT3 apex;
-                DirectX::XMStoreFloat3(&apex, leadingPoint);
-                primitiveRenderer->AddVertex(apex, tipDrawColor, {0.5f, -0.15f});
-            }
-
-            primitiveRenderer->AddVertex(rootFront, rootDrawColor, {0.0f, age});
-            primitiveRenderer->AddVertex(tipFront, tipDrawColor, {1.0f, age});
-
-            hasPreviousSlice = true;
+            DirectX::XMFLOAT3 start, end;
+            DirectX::XMStoreFloat3(&start, bladeStart);
+            DirectX::XMStoreFloat3(&end, glowEnd);
+            swordTrailRenderer->AddVertex(start, {0.0f, age});
+            swordTrailRenderer->AddVertex(end, {1.0f + glowMargin, age});
         }
     }
 }

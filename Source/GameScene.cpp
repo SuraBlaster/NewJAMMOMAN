@@ -345,9 +345,6 @@ void GameScene::Render(float elapsedTime)
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
     shapeRenderer->Render(dc, camera.GetView(), camera.GetProjection());
 
-    // 剣の軌跡の頂点をバッファに積む
-    player->RenderTrail(primitiveRenderer);
-
     // ソードトレイル用ステートを明示
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Additive), nullptr, 0xFFFFFFFF);
     dc->OMSetDepthStencilState(renderState->GetDepthStencilState(DepthState::TestOnly), 0);
@@ -355,8 +352,7 @@ void GameScene::Render(float elapsedTime)
     // modelRendererによるステート変更を上書きする
     dc->RSSetState(renderState->GetRasterizerState(RasterizerState::SolidCullNone));
 
-    primitiveRenderer->Render(dc, camera.GetView(), camera.GetProjection(),
-                              D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    player->RenderTrail(dc, camera.GetView(), camera.GetProjection());
 
     // ステートを戻す（次のフレーム/後続処理のため）
     dc->OMSetBlendState(renderState->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);

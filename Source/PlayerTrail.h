@@ -3,7 +3,7 @@
 #include <memory>
 #include "Model.h"
 
-class PrimitiveRenderer;
+class SwordTrailRenderer;
 class ModelRenderer;
 
 class PlayerTrail
@@ -34,32 +34,65 @@ class PlayerTrail
         return trails;
     }
 
-    void RecordSword(const DirectX::XMFLOAT3& root, const DirectX::XMFLOAT3& tip, bool reset);
+    void RecordSword(const DirectX::XMFLOAT3& root, const DirectX::XMFLOAT3& tip, bool reset,
+                     float elapsedTime = 0.0f);
     void FadeSword(float elapsedTime);
 
     const DirectX::XMFLOAT3& GetPreviousRoot() const
     {
-        return trailPositions[0][1];
+        return swordSamples[1].root;
     }
 
     const DirectX::XMFLOAT3& GetPreviousTip() const
     {
-        return trailPositions[1][1];
+        return swordSamples[1].tip;
+    }
+
+    // 攻撃終了後の消える演出中も描画し続けるため
+    bool IsSwordVisible() const
+    {
+        return swordSampleCount > 0 && trailFadeTimer > 0.0f;
+    }
+
+    // 攻撃終了時に軌跡全体から光の粒を散らすため
+    int GetSwordSampleCount() const
+    {
+        return swordSampleCount;
+    }
+
+    const DirectX::XMFLOAT3& GetSwordRoot(int index) const
+    {
+        return swordSamples[index].root;
+    }
+
+    const DirectX::XMFLOAT3& GetSwordTip(int index) const
+    {
+        return swordSamples[index].tip;
     }
 
     // RenderSword の描画処理
-    void RenderSword(PrimitiveRenderer* primitiveRenderer) const;
+    void RenderSword(SwordTrailRenderer* swordTrailRenderer) const;
 
     // RenderMotion の描画処理
     void RenderMotion(ModelRenderer* modelRenderer) const;
 
   private:
 
-    static constexpr int MAX_POLYGON = 32;
+    struct SwordSample
+    {
+        DirectX::XMFLOAT3 root;
+        DirectX::XMFLOAT3 tip;
+        float age;
+    };
+
+    static constexpr int MAX_SWORD_SAMPLES = 64;
     static constexpr int MAX_TRAILS = 3;
     static constexpr float TRAIL_INTERVAL = 0.05f;
-    static constexpr float TRAIL_FADE_DURATION = 0.25f;
-    DirectX::XMFLOAT3 trailPositions[2][MAX_POLYGON];
+    static constexpr float TRAIL_FADE_DURATION = 0.3f;
+    // フレーム数ではなく時間で長さを決め、FPSが変わっても同じ長さにする
+    static constexpr float SWORD_TRAIL_LIFETIME = 0.18f;
+    SwordSample swordSamples[MAX_SWORD_SAMPLES]{};
+    int swordSampleCount = 0;
     std::deque<MotionSnapshot> trails;
     float trailRecordTimer = 0.0f;
     float trailFadeTimer = 0.0f;

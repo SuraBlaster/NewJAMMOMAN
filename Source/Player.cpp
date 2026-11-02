@@ -11,6 +11,7 @@
 #include "SetStage.h"
 #include "ShapeRenderer.h"
 #include <ImGui.h>
+#include "SwordTrailRenderer.h"
 
 namespace
 {
@@ -54,6 +55,7 @@ Player::Player(ID3D11Device* device)
     const char* filename = "./Data/Model/Jammo/Jammo_Player.gltf";
     model = ModelManager::Instance().CreateInstance(device, filename);
     animator = std::make_unique<Animator>(model.get(), 2);
+    swordTrailRenderer = std::make_unique<SwordTrailRenderer>(device);
 
     // 上半身マスクの生成
     upperBodyMask.BuildLayerMaskFromRoot(model.get(), "mixamorig:Spine1");
@@ -297,12 +299,16 @@ AABB Player::GetBodyAABB() const
 }
 
 // RenderTrail の描画処理
-void Player::RenderTrail(PrimitiveRenderer* primitiveRenderer)
+void Player::RenderTrail(ID3D11DeviceContext* dc, const DirectX::XMFLOAT4X4& view,
+                         const DirectX::XMFLOAT4X4& projection)
 {
-    if (isTrailActive)
+    if (isTrailActive || trail.IsSwordVisible())
     {
-        trail.RenderSword(primitiveRenderer);
+        trail.RenderSword(swordTrailRenderer.get());
     }
+
+    // 光の粒は軌跡が消えた後も漂うので常に描く
+    swordTrailRenderer->Render(dc, view, projection);
 }
 
 // 移動速度の更新処理
@@ -522,9 +528,12 @@ void Player::UpdateSwordTrail(float elapsedTime)
 
     if (isBladeActive)
     {
-        trail.RecordSword(currentRoot, currentTip, !prevBladeActive || (isTrailActive && !prevTrailActive));
+        trail.RecordSword(currentRoot, currentTip, !prevBladeActive || (isTrailActive && !prevTrailActive),
+                          elapsedTime);
 
         CheckSwordCollision(currentRoot, currentTip, trail.GetPreviousRoot(), trail.GetPreviousTip());
+        swordTrailRenderer->EmitSwingSparks(currentRoot, currentTip, trail.GetPreviousRoot(),
+                                            trail.GetPreviousTip(), elapsedTime);
 
         debugBladeRoot = currentRoot;
         debugBladeTip = currentTip;
@@ -534,8 +543,21 @@ void Player::UpdateSwordTrail(float elapsedTime)
     }
     else
     {
+        // 刃が消えた瞬間に、軌跡全体から光の粒を散らす
+        if (prevBladeActive)
+        {
+            const int sampleCount = (std::min)(trail.GetSwordSampleCount(), 24);
+
+            for (int i = 0; i < sampleCount; i += 2)
+            {
+                swordTrailRenderer->EmitBurst(trail.GetSwordRoot(i), trail.GetSwordTip(i), 2);
+            }
+        }
+
         trail.FadeSword(elapsedTime);
     }
+
+    swordTrailRenderer->Update(elapsedTime);
 
     prevBladeActive = isBladeActive;
     prevTrailActive = isTrailActive;

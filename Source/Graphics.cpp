@@ -95,6 +95,28 @@ void Graphics::Initialize(HWND hWnd)
         _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
     }
 
+    // シーン描画用のHDRバッファ
+    // 1.0を超える明るさを残しておき、ブルームで光としてにじませるため
+    {
+        D3D11_TEXTURE2D_DESC texture2dDesc{};
+        texture2dDesc.Width = screenWidth;
+        texture2dDesc.Height = screenHeight;
+        texture2dDesc.MipLevels = 1;
+        texture2dDesc.ArraySize = 1;
+        texture2dDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+        texture2dDesc.SampleDesc.Count = 1;
+        texture2dDesc.Usage = D3D11_USAGE_DEFAULT;
+        texture2dDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2d;
+        hr = device->CreateTexture2D(&texture2dDesc, nullptr, texture2d.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = device->CreateRenderTargetView(texture2d.Get(), nullptr, sceneRenderTargetView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        hr = device->CreateShaderResourceView(texture2d.Get(), nullptr,
+                                              sceneShaderResourceView.GetAddressOf());
+        _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+    }
+
     // ビューポート
     {
         viewport.Width = static_cast<float>(screenWidth);
@@ -112,13 +134,14 @@ void Graphics::Initialize(HWND hWnd)
     primitiveRenderer = std::make_unique<PrimitiveRenderer>(device.Get());
     shapeRenderer = std::make_unique<ShapeRenderer>(device.Get());
     modelRenderer = std::make_unique<ModelRenderer>(device.Get());
+    bloom = std::make_unique<Bloom>(device.Get(), screenWidth, screenHeight);
 }
 
 // クリア
 void Graphics::Clear(float r, float g, float b, float a)
 {
     float color[4]{r, g, b, a};
-    immediateContext->ClearRenderTargetView(renderTargetView.Get(), color);
+    immediateContext->ClearRenderTargetView(sceneRenderTargetView.Get(), color);
     immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
                                             1.0f, 0);
 }
@@ -127,7 +150,14 @@ void Graphics::Clear(float r, float g, float b, float a)
 void Graphics::SetRenderTargets()
 {
     immediateContext->RSSetViewports(1, &viewport);
-    immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+    immediateContext->OMSetRenderTargets(1, sceneRenderTargetView.GetAddressOf(), depthStencilView.Get());
+}
+
+// バックバッファ設定（ブルーム合成後のUI描画用）
+void Graphics::SetBackBufferTarget()
+{
+    immediateContext->RSSetViewports(1, &viewport);
+    immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
 }
 
 // 画面表示

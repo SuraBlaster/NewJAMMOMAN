@@ -86,6 +86,12 @@ void Framework::Render(float elapsedTime)
         EffectManager::Instance().Render(Camera::Instance().GetView(), Camera::Instance().GetProjection());
     }
 
+    // シーンにブルームをかけてバックバッファへ書き出す。UIはにじませたくないのでこの後に描く
+    Graphics& graphics = Graphics::Instance();
+    graphics.GetBloom()->Render(dc, graphics.GetSceneShaderResourceView(),
+                                graphics.GetBackBufferRenderTargetView(), graphics.GetViewport());
+    graphics.SetBackBufferTarget();
+
     // シーンGUI描画処理
     SceneManager::Instance().DrawGUI();
 
@@ -95,6 +101,7 @@ void Framework::Render(float elapsedTime)
 #ifdef _DEBUG
     // スタイライズドシェーディング調整GUI
     StylizedShading::Instance().DrawGUI();
+    graphics.GetBloom()->DrawGUI();
 #endif
 #if 0
     // IMGUIデモウインドウ描画（IMGUI機能テスト用）
