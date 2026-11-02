@@ -1,13 +1,15 @@
-﻿#include "SceneClear.h"
-#include "SceneTitle.h"
-#include "SceneManager.h"
+﻿#include <memory>
+
+#include <string>
+#include <algorithm>
+#include "SceneClear.h"
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
+#include "SceneManager.h"
+#include "SceneTitle.h"
 #include "TextRenderer.h"
 #include "Audio/Audio.h"
-#include <algorithm>
-#include <string>
 
 constexpr char MESSAGE[] = "Thank You For Playing";
 constexpr size_t MESSAGE_LENGTH = sizeof(MESSAGE) - 1;

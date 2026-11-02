@@ -1,8 +1,13 @@
-﻿#include <stdexcept>
-#include <cmath>
+﻿#include <memory>
+#include <utility>
+#include <stdexcept>
+#include <string>
 #include <algorithm>
-#include "Misc.h"
+#include <cmath>
+#include <fstream>
+#include <sstream>
 #include "Audio/Audio.h"
+#include "Misc.h"
 
 Audio* Audio::instance = nullptr;
 

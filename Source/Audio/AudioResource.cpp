@@ -1,8 +1,10 @@
-﻿#include "Audio/AudioResource.h"
-#include <fstream>
-#include <cstring>
+﻿#include <xaudio2.h>
+
 #include <stdexcept>
-#include <xaudio2.h>
+#include <cstring>
+#include <string>
+#include <fstream>
+#include "Audio/AudioResource.h"
 
 // コンストラクタ
 AudioResource::AudioResource(const char* filename)

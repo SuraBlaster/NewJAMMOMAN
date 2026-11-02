@@ -1,6 +1,8 @@
-﻿#include "StageObject.h"
+﻿#include <memory>
+
 #include <algorithm>
 #include <limits>
+#include "StageObject.h"
 
 // コンストラクタ
 StageObject::StageObject(std::shared_ptr<Model> model, const StageObjectData& stageObjectData,

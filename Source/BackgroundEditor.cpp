@@ -1,20 +1,25 @@
-﻿#include "BackgroundEditor.h"
+﻿#include <DirectXCollision.h>
+
+#include <memory>
+#include <utility>
+#include <stdexcept>
+#include <vector>
+#include <set>
+#include <string>
+#include <algorithm>
+#include <cmath>
+#include <cfloat>
+#include <filesystem>
+#include <fstream>
+#include <json.hpp>
+#include <imgui.h>
+#include <ImGuizmo.h>
+#include "BackgroundEditor.h"
+#include "Camera.h"
 #include "LaboratoryAssets.h"
 #include "ModelManager.h"
 #include "ModelRenderer.h"
-#include "Camera.h"
 #include "ViewVolume.h"
-#include <imgui.h>
-#include <ImGuizmo.h>
-#include <DirectXCollision.h>
-#include <json.hpp>
-#include <fstream>
-#include <filesystem>
-#include <set>
-#include <cmath>
-#include <algorithm>
-#include <stdexcept>
-#include <cfloat>
 
 using namespace DirectX;
 using json = nlohmann::json;

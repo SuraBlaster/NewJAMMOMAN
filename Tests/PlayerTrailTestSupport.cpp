@@ -1,7 +1,8 @@
-﻿#include "Model.h"
-#include "PrimitiveRenderer.h"
-#include "ModelRenderer.h"
+﻿#include <memory>
 #include <cstdlib>
+#include "Model.h"
+#include "ModelRenderer.h"
+#include "PrimitiveRenderer.h"
 
 Model::Model(ID3D11Device*, const char*, float) {}
 

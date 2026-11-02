@@ -1,6 +1,7 @@
-﻿#include "ModelManager.h"
-#include <stdexcept>
+﻿#include <stdexcept>
+
 #include <iostream>
+#include "ModelManager.h"
 
 static void Check(bool condition, const char* message)
 {

@@ -1,9 +1,8 @@
-﻿#include "ModelManager.h"
+﻿#include <cmath>
+
 #include "EnemyFan.h"
-
-#include <cmath>
-
 #include "Player.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyFan::EnemyFan(ID3D11Device* device, Player* player) : player(player)

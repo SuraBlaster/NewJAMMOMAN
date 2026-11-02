@@ -22,7 +22,7 @@ StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** に�
 
 ## 敵の配置
 
-`Tiled/EnemyPlacements.tsj` のタイルをオブジェクトレイヤー `Enemies` に配置してください。`Vacuum` はEnemyVacuumに対応します。1マスは32×32pxで、Mage・Bossは32×64px（1×2）、その他は32×32px（1×1）です。配置座標は下端中央を基準にします。Vacuumの初期方向は文字列プロパティ `direction` に `Left` または `Right` を指定します（省略時はRight）。
+統合版では `Tiled/Enemies.tsj` のタイル（Walkerを含む全10種類）をオブジェクトレイヤー `Enemies` に配置してください。`Vacuum` はEnemyVacuumに対応します。1マスは32×32pxで、Mage・Bossは32×64px（1×2）、Walkerは32×40px、その他は32×32px（1×1）です。配置座標は下端中央を基準にします。Vacuumの初期方向は文字列プロパティ `direction` に `Left` または `Right` を指定します（省略時はRight）。
 
 アイコン画像は `Tiled/EnemyPlacementIcons/` にあります。マップ・タイルセット・画像フォルダーをセットで保持してください。編集後は通常どおりConvertLaboratory.cmdで変換します。
 
@@ -34,8 +34,7 @@ StageConverterのGUIから変換する場合も、Pixels Per Unitは **32** に�
 
 ## 地形ブロックのバリエーション
 
-Tiledで `LaboratoryCombinedCourse.tmj` を開き、タイルセット **LaboratoryBlocks** を選びます。
-左から「オレンジ床（101）」「補強パネル（102）」「換気口（103）」です。
+Tiledで `LaboratoryCombinedCourse.tmj` を開き、タイルセット **Blocks** を選びます。通常ブロック（100）に続き、「オレンジ床（101）」「補強パネル（102）」「換気口（103）」です。
 既存の地形レイヤーで通常ブロックと同様に描画・置換し、保存後に `ConvertLaboratoryCombined.cmd` で変換してください。
 パレットが表示されない場合は、マップを開き直してください。
 
@@ -45,6 +44,6 @@ Tiledで `LaboratoryCombinedCourse.tmj` を開き、タイルセット **Laborat
 背景の装飾壁とは異なり、これらは足場・壁キックに使う地形として配置します。
 
 再出力ツール `Tools/export_stage_tiled.cjs` もID 100～103を保持します。
-統合版の新ブロックGIDは15～17です（14はWalker）。旧版・再出力ツールでは14～16です。既存の敵・ゲートのGIDは変更していません。
+統合版のタイルセットは Blocks（GID 1～4）、Enemies（GID 5～14）、OneWayGates（GID 15～16）の3つです。重複したCubeBlock参照を統合し、WalkerもEnemiesに含めています。旧版・再出力ツールのGID体系とは異なります。
 
 検証: `node Tests/LaboratoryStageSyncTests.cjs` で両マップと各JSONの一致・地形形状の維持を確認します。

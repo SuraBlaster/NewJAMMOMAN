@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <algorithm>
 #include <cstddef>
+#include <algorithm>
 
 template <class Keys>
 bool FindAnimationKeyframes(const Keys& keys, float time, size_t& left, size_t& right, float& rate)

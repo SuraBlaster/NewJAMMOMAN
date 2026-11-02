@@ -1,7 +1,8 @@
-﻿#include "SceneManager.h"
+﻿#include <memory>
 #include <cassert>
-#include <string>
 #include <vector>
+#include <string>
+#include "SceneManager.h"
 
 std::vector<std::string> events;
 

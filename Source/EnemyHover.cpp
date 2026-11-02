@@ -1,11 +1,11 @@
-﻿#include "ModelManager.h"
-#include "EnemyHover.h"
+﻿#include <memory>
 
 #include <algorithm>
 #include <cmath>
-
+#include "EnemyHover.h"
 #include "Player.h"
 #include "EnemyVisibility.h"
+#include "ModelManager.h"
 #include "Effect/Effect.h"
 
 // コンストラクタ

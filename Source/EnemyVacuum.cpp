@@ -1,11 +1,11 @@
-﻿#include "ModelManager.h"
-#include "EnemyVacuum.h"
+﻿#include <memory>
 
 #include <algorithm>
 #include <cmath>
-
+#include "EnemyVacuum.h"
 #include "Player.h"
 #include "CollisionManager.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyVacuum::EnemyVacuum(ID3D11Device* device, Player* player) : player(player)

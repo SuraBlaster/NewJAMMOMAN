@@ -1,8 +1,10 @@
-﻿#include "PlayerTrail.h"
-#include "PrimitiveRenderer.h"
-#include "ModelRenderer.h"
+﻿#include <memory>
+
 #include <algorithm>
 #include <cmath>
+#include "PlayerTrail.h"
+#include "ModelRenderer.h"
+#include "PrimitiveRenderer.h"
 
 void PlayerTrail::RecordMotion(float elapsedTime, const Model& model, const DirectX::XMFLOAT3& position,
                                const DirectX::XMFLOAT3& rotation, const DirectX::XMFLOAT3& scale)

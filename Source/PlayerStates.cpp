@@ -1,11 +1,13 @@
-﻿#include "Player.h"
-#include "EnemyBoss.h"
-#include "Audio/Audio.h"
-#include "SceneLoading.h"
-#include "SceneClear.h"
-#include "GameScene.h"
+﻿#include <memory>
+#include <algorithm>
+#include "Player.h"
 #include "Camera.h"
 #include "InputManager.h"
+#include "GameScene.h"
+#include "SceneClear.h"
+#include "SceneLoading.h"
+#include "EnemyBoss.h"
+#include "Audio/Audio.h"
 #include "HitStopManager.h"
 
 constexpr float GROUND_ATTACK_PLAYBACK_SPEED = 1.3f;
@@ -202,7 +204,23 @@ void Player::DashState::OnUpdate(float elapsedTime)
     owner->rigidTimer -= elapsedTime;
     owner->UpdateMotionTrail(elapsedTime);
 
-    // 開始直後の硬直中は操作によるダッシュの中断を受け付けない
+
+    if (owner->InputJump())
+    {
+        owner->isDashJump = true;
+
+        if (!owner->InputMove())
+        {
+            owner->velocity.x = 0.0f;
+            owner->velocity.z = 0.0f;
+        }
+
+        Audio::Instance().Stop("SE_PLAYER_DASH");
+        owner->SetState(StateId::Jump);
+        return;
+    }
+
+    // 開始直後の硬直中はジャンプ以外の操作によるダッシュの中断を受け付けない
     if (owner->rigidTimer > 0.0f)
     {
         return;
@@ -217,21 +235,6 @@ void Player::DashState::OnUpdate(float elapsedTime)
         owner->velocity.z = 0.0f;
         Audio::Instance().Stop("SE_PLAYER_DASH");
         owner->SetState(StateId::Idle);
-        return;
-    }
-
-    if (owner->InputJump())
-    {
-        owner->isDashJump = true;
-
-        if (!owner->InputMove())
-        {
-            owner->velocity.x = 0.0f;
-            owner->velocity.z = 0.0f;
-        }
-
-        Audio::Instance().Stop("SE_PLAYER_DASH");
-        owner->SetState(StateId::Jump);
         return;
     }
 
@@ -453,7 +456,6 @@ void Player::AttackState::OnUpdate(float elapsedTime)
         if (gamePad.GetButtonDown() & InputManager::BTN_X)
         {
             owner->hasNextComboInput = true;
-            Audio::Instance().Play("SE_PLAYER_SWISH");
         }
     }
 
@@ -483,6 +485,7 @@ void Player::AttackState::OnUpdate(float elapsedTime)
                     owner->swordHitEnemies.clear();
                     owner->prevBladeActive = false;
                     owner->animator->Play(0, "ComboAttack0302Seq", false, 0.03f);
+                    Audio::Instance().Play("SE_PLAYER_SWISH");
                 }
                 else if (owner->comboStep == 2)
                 {
@@ -491,6 +494,7 @@ void Player::AttackState::OnUpdate(float elapsedTime)
                     owner->swordHitEnemies.clear();
                     owner->prevBladeActive = false;
                     owner->animator->Play(0, "ComboAttack0401Seq", false, 0.03f);
+                    Audio::Instance().Play("SE_PLAYER_SWISH");
                 }
             }
             else
@@ -500,6 +504,7 @@ void Player::AttackState::OnUpdate(float elapsedTime)
                 owner->swordHitEnemies.clear();
                 owner->prevBladeActive = false;
                 owner->animator->Play(0, "ComboAttack0301Seq", false, 0.03f);
+                Audio::Instance().Play("SE_PLAYER_SWISH");
             }
         }
         else if (progress >= 0.45f || !isPlaying)
@@ -528,6 +533,8 @@ void Player::ClearState::OnEnter()
     OnExit();
     timer = 0.0f;
     clearAudioPlayed = exitStarted = sceneRequested = false;
+    centerX = Camera::Instance().GetFocus().x;
+    movingToCenter = false;
     EnemyBoss::SetDefeat(false);
     owner->velocity = {0.0f, 0.0f, 0.0f};
     owner->invincibleTime = SCENE_CHANGE_TIME;
@@ -554,6 +561,22 @@ void Player::ClearState::OnUpdate(float elapsedTime)
     if (!exitStarted)
     {
         owner->velocity.x = owner->velocity.z = 0.0f;
+        const float distance = centerX - owner->position.x;
+        const bool shouldMove = timer >= CLEAR_AUDIO_TIME && timer < EXIT_EFFECT_TIME &&
+                                std::abs(distance) > 0.01f;
+        if (shouldMove != movingToCenter)
+        {
+            movingToCenter = shouldMove;
+            owner->animator->Play(0, movingToCenter ? "Run_Fast_Loop_Seq_0" : "Idle_Seq_0", true, 0.1f);
+        }
+
+        if (movingToCenter && step > 0.0f)
+        {
+            const float speed = (std::min)(owner->moveSpeed, std::abs(distance) / step);
+            owner->velocity.x = distance > 0.0f ? speed : -speed;
+            owner->rotation.y = DirectX::XMConvertToRadians(distance > 0.0f ? 90.0f : -90.0f);
+        }
+
         owner->velocity.y -= owner->gravity * step;
         owner->MoveAndCollide(step);
     }

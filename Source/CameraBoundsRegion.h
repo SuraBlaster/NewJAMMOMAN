@@ -1,8 +1,8 @@
 ﻿#pragma once
 
+#include <vector>
 #include <algorithm>
 #include <limits>
-#include <vector>
 
 class CameraBoundsRegion
 {

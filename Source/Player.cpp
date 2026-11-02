@@ -1,16 +1,20 @@
-﻿#include "ModelManager.h"
+﻿#include <memory>
+#include <optional>
+#include <algorithm>
+#include <cmath>
+#include <imgui.h>
 #include "Player.h"
-#include "EnemyBoss.h"
-#include "Audio/Audio.h"
+#include "Graphics.h"
 #include "Camera.h"
 #include "InputManager.h"
-#include "Graphics.h"
-#include "CollisionManager.h"
-#include "Collision.h"
 #include "EnemyManager.h"
-#include "SetStage.h"
+#include "EnemyBoss.h"
+#include "Collision.h"
+#include "CollisionManager.h"
+#include "AttackAssistHitbox.h"
+#include "ModelManager.h"
 #include "ShapeRenderer.h"
-#include <ImGui.h>
+#include "Audio/Audio.h"
 
 static bool BuildCapsuleTransform(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end,
                                   DirectX::XMFLOAT4X4& transform, float& height)
@@ -316,6 +320,15 @@ void Player::DrawDebugPrimitive(ShapeRenderer* shapeRenderer) const
                     probeHit ? DirectX::XMFLOAT4{0, 1, 0, 1} : DirectX::XMFLOAT4{1, 0, 0, 1};
                 shapeRenderer->DrawBox(display.GetCenter(), {0, 0, 0}, display.GetHalfSize(), color);
             }
+        }
+    }
+    // 剣判定と同じ表示スイッチで、有効中の補助判定を黄色で表示する。
+    if (showSwordCollision)
+    {
+        if (const auto box = GetAttackAssistHitbox())
+        {
+            shapeRenderer->DrawBox(box->GetCenter(), {0, 0, 0}, box->GetHalfSize(),
+                                   {1.0f, 1.0f, 0.0f, 1.0f});
         }
     }
     if (!shapeRenderer || !showSwordCollision || !isBladeActive || !hasSwordCollisionDebugData)
@@ -658,11 +671,23 @@ bool Player::IntersectsSword(const DirectX::XMFLOAT3& spherePosition, float sphe
     return false;
 }
 
+std::optional<AABB> Player::GetAttackAssistHitbox() const
+{
+    // キャンセル予約のフレームにも補助判定を残さない。
+    if (!isBladeActive || currentState != StateId::Attack ||
+        (nextState != StateId::None && nextState != StateId::Attack) || !animator->IsPlaying(0))
+    {
+        return std::nullopt;
+    }
+    return AttackAssist::Build(position, sinf(rotation.y), comboStep, animator->GetProgress(0));
+}
+
 void Player::CheckSwordCollision(const DirectX::XMFLOAT3& bladeRoot, const DirectX::XMFLOAT3& bladeTip,
                                  const DirectX::XMFLOAT3& previousRoot, const DirectX::XMFLOAT3& previousTip)
 {
     constexpr int SWORD_DAMAGE = 1;
 
+    const auto assistBox = GetAttackAssistHitbox();
     EnemyManager& enemyManager = EnemyManager::Instance();
 
     for (size_t enemyIndex = 0; enemyIndex < enemyManager.GetEnemyCount(); ++enemyIndex)
@@ -689,6 +714,14 @@ void Player::CheckSwordCollision(const DirectX::XMFLOAT3& bladeRoot, const Direc
             hit = Collision::IntersectCapsuleVsCylinder(root, tip, SWORD_COLLISION_RADIUS,
                                                         enemy->GetPosition(), enemy->GetRadius(),
                                                         enemy->GetHeight(), contactPosition);
+        }
+
+        // 剣が奥行きや傾きで外れた場合のみ、前方の基本攻撃範囲で補う。
+        // 弾の打ち消し（IntersectsSword）は補助せず、敵へのダメージだけに使用する。
+        if (!hit && assistBox)
+        {
+            hit = AttackAssist::IntersectsCylinder(*assistBox, enemy->GetPosition(),
+                                                   enemy->GetRadius(), enemy->GetHeight());
         }
 
         if (hit && enemy->ApplyDamage(SWORD_DAMAGE))

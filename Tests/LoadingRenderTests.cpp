@@ -1,17 +1,18 @@
 ﻿#include <windows.h>
-#include <imgui.h>
+
 #include <DirectXTex.h>
+#include <memory>
+#include <stdexcept>
+#include <cassert>
+#include <cstdio>
+#include <algorithm>
+#include <atomic>
+#include <thread>
+#include <future>
+#include <imgui.h>
 #include "Graphics.h"
 #include "ImGuiRenderer.h"
 #include "SceneLoading.h"
-
-#include <algorithm>
-#include <cassert>
-#include <cstdio>
-#include <atomic>
-#include <future>
-#include <stdexcept>
-#include <thread>
 
 struct LoadedTestScene : Scene
 {

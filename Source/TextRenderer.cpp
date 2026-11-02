@@ -1,7 +1,8 @@
-﻿#include "TextRenderer.h"
-#include <imgui.h>
-#include <cmath>
+﻿#include <cmath>
+
 #include <filesystem>
+#include <imgui.h>
+#include "TextRenderer.h"
 
 ImFont* TextRenderer::font = nullptr;
 

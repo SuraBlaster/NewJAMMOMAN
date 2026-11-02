@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include <memory>
+#include <vector>
 #include "Scene.h"
 #include "Camera.h"
-#include "FreeCameraController.h"
 #include "Model.h"
+#include "FreeCameraController.h"
 
 // モデルビューアシーン
 class ModelViewerScene : public Scene

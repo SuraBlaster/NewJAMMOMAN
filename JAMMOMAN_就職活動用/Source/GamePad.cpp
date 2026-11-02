@@ -1,0 +1,178 @@
+﻿#include <windows.h>
+
+#include <Xinput.h>
+#include <algorithm>
+#include <math.h>
+#include "GamePad.h"
+#include "TimeUtils.h"
+
+// 更新
+void GamePad::Update()
+{
+    if (vibrating && GetTimeMilliseconds() >= vibrationEndMilliseconds)
+    {
+        StopVibration();
+    }
+
+    axisLx = axisLy = 0.0f;
+    axisRx = axisRy = 0.0f;
+    triggerL = triggerR = 0.0f;
+
+    GamePadButton newButtonState = 0;
+
+    // ボタン情報取得
+    XINPUT_STATE xinputState;
+
+    if (XInputGetState(slot, &xinputState) == ERROR_SUCCESS)
+    {
+
+        XINPUT_GAMEPAD& pad = xinputState.Gamepad;
+
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
+        {
+            newButtonState |= BTN_UP;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+        {
+            newButtonState |= BTN_RIGHT;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+        {
+            newButtonState |= BTN_DOWN;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+        {
+            newButtonState |= BTN_LEFT;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_A)
+        {
+            newButtonState |= BTN_A;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_B)
+        {
+            newButtonState |= BTN_B;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_X)
+        {
+            newButtonState |= BTN_X;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_Y)
+        {
+            newButtonState |= BTN_Y;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_START)
+        {
+            newButtonState |= BTN_START;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_BACK)
+        {
+            newButtonState |= BTN_BACK;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)
+        {
+            newButtonState |= BTN_LEFT_THUMB;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)
+        {
+            newButtonState |= BTN_RIGHT_THUMB;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+        {
+            newButtonState |= BTN_LEFT_SHOULDER;
+        }
+
+        if (pad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+        {
+            newButtonState |= BTN_RIGHT_SHOULDER;
+        }
+
+        if (pad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+        {
+            newButtonState |= BTN_LEFT_TRIGGER;
+        }
+
+        if (pad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+        {
+            newButtonState |= BTN_RIGHT_TRIGGER;
+        }
+
+        if ((pad.sThumbLX < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+             pad.sThumbLX > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) &&
+            (pad.sThumbLY < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE &&
+             pad.sThumbLY > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE))
+        {
+            pad.sThumbLX = 0;
+            pad.sThumbLY = 0;
+        }
+
+        if ((pad.sThumbRX < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+             pad.sThumbRX > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) &&
+            (pad.sThumbRY < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE &&
+             pad.sThumbRY > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE))
+        {
+            pad.sThumbRX = 0;
+            pad.sThumbRY = 0;
+        }
+
+        triggerL = static_cast<float>(pad.bLeftTrigger) / 255.0f;
+        triggerR = static_cast<float>(pad.bRightTrigger) / 255.0f;
+        axisLx = static_cast<float>(pad.sThumbLX) / static_cast<float>(0x8000);
+        axisLy = static_cast<float>(pad.sThumbLY) / static_cast<float>(0x8000);
+        axisRx = static_cast<float>(pad.sThumbRX) / static_cast<float>(0x8000);
+        axisRy = static_cast<float>(pad.sThumbRY) / static_cast<float>(0x8000);
+    }
+
+    {
+        buttonState[1] = buttonState[0]; // スイッチ履歴
+        buttonState[0] = newButtonState;
+
+        buttonDown = ~buttonState[1] & newButtonState; // 押した瞬間
+        buttonUp = ~newButtonState & buttonState[1];   // 離した瞬間
+    }
+}
+
+void GamePad::Vibrate(float left, float right, float duration)
+{
+    StopVibration();
+
+    if (duration <= 0.0f)
+    {
+        return;
+    }
+
+    XINPUT_VIBRATION value{};
+    value.wLeftMotorSpeed = static_cast<WORD>((std::clamp)(left, 0.0f, 1.0f) * 65535.0f);
+    value.wRightMotorSpeed = static_cast<WORD>((std::clamp)(right, 0.0f, 1.0f) * 65535.0f);
+
+    if (XInputSetState(slot, &value) != ERROR_SUCCESS)
+    {
+        return;
+    }
+
+    vibrating = true;
+    vibrationEndMilliseconds = GetTimeMilliseconds() + duration * 1000.0;
+}
+
+void GamePad::StopVibration()
+{
+    if (!vibrating)
+    {
+        return;
+    }
+
+    XINPUT_VIBRATION value{};
+    XInputSetState(slot, &value);
+    vibrating = false;
+}

@@ -1,9 +1,10 @@
 ﻿#include <windows.h>
-#include <math.h>
+
 #include <Xinput.h>
+#include <algorithm>
+#include <math.h>
 #include "GamePad.h"
 #include "TimeUtils.h"
-#include <algorithm>
 
 // 更新
 void GamePad::Update()

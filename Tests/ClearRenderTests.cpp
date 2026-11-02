@@ -1,13 +1,15 @@
 ﻿#include <windows.h>
-#include <imgui.h>
+
 #include <DirectXTex.h>
-#include "Graphics.h"
-#include "ImGuiRenderer.h"
-#include "SceneClear.h"
-#include "Audio/Audio.h"
-#include "SceneManager.h"
+#include <memory>
 #include <cassert>
 #include <cstdio>
+#include <imgui.h>
+#include "Graphics.h"
+#include "ImGuiRenderer.h"
+#include "SceneManager.h"
+#include "SceneClear.h"
+#include "Audio/Audio.h"
 
 class ObservedClear : public SceneClear
 {

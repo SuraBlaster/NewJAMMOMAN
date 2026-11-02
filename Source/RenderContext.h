@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "Camera.h"
 #include "RenderState.h"
+#include "Camera.h"
 #include "Light.h"
 
 struct RenderContext

@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include <memory>
-#include <Model.h>
-#include <CollisionManager.h>
-#include <StageData.h>
-#include <TileTypeManager.h>
 #include "Collision.h"
+#include "CollisionManager.h"
+#include "StageData.h"
+#include "TileTypeManager.h"
+#include "Model.h"
 
 class StageObject
 {

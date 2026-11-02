@@ -1,7 +1,8 @@
-﻿#include "HealthGaugeUI.h"
-#include <algorithm>
+﻿#include <memory>
 #include <stdexcept>
+#include <algorithm>
 #include <imgui.h>
+#include "HealthGaugeUI.h"
 #include "Graphics.h"
 #include "Player.h"
 #include "EnemyBoss.h"

@@ -2,9 +2,8 @@
 
 #include <DirectXMath.h>
 #include <memory>
-
-#include "Animator.h"
 #include "Model.h"
+#include "Animator.h"
 
 class Character
 {

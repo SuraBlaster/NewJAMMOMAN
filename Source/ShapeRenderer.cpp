@@ -1,6 +1,8 @@
-﻿#include "Misc.h"
-#include "GpuResourceUtils.h"
+﻿#include <vector>
+
 #include "ShapeRenderer.h"
+#include "GpuResourceUtils.h"
+#include "Misc.h"
 
 // コンストラクタ
 ShapeRenderer::ShapeRenderer(ID3D11Device* device)

@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-
 #include "Enemy.h"
 
 class ModelRenderer;

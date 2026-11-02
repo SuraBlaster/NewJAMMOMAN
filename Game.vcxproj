@@ -184,6 +184,7 @@
     <ClInclude Include="Source\ModelRenderer.h" />
     <ClInclude Include="Source\ModelViewerScene.h" />
     <ClInclude Include="Source\Player.h" />
+    <ClInclude Include="Source\AttackAssistHitbox.h" />
     <ClInclude Include="Source\PlayerTrail.h" />
     <ClInclude Include="Source\PrimitiveRenderer.h" />
     <ClInclude Include="Source\RenderContext.h" />

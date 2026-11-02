@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "ICommand.h"
-#include <stack>
 #include <memory>
+#include <stack>
+#include "ICommand.h"
 
 class CommandManager
 {

@@ -17,6 +17,7 @@ EmptyLineBeforeAccessModifier: Always
 EmptyLineAfterAccessModifier: Never
 MaxEmptyLinesToKeep: 1
 SortIncludes: Never
+IncludeBlocks: Preserve
 FixNamespaceComments: false
 ReflowComments: false
 PointerAlignment: Left

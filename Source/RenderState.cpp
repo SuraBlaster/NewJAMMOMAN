@@ -1,5 +1,6 @@
-﻿#include "Misc.h"
-#include "RenderState.h"
+﻿#include "RenderState.h"
+
+#include "Misc.h"
 
 // コンストラクタ
 RenderState::RenderState(ID3D11Device* device)

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Character.h"
+
 class ModelRenderer;
 
 class TitlePlayer : public Character

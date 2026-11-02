@@ -1,9 +1,8 @@
-﻿#include "BossSideProjectile.h"
-
-#include <algorithm>
+﻿#include <algorithm>
 #include <cmath>
-#include "Collision.h"
+#include "BossSideProjectile.h"
 #include "Player.h"
+#include "Collision.h"
 #include "ShapeRenderer.h"
 
 // コンストラクタ

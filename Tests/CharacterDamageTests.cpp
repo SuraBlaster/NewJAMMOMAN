@@ -1,6 +1,6 @@
-﻿#include "Character.h"
-#include <cassert>
+﻿#include <cassert>
 #include <cstdio>
+#include "Character.h"
 
 class TestCharacter final : public Character
 {

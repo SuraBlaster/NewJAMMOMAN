@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <memory>
 #include "Scene.h"
-#include "Sprite.h"
 #include "TitleAnimation.h"
+#include "Sprite.h"
 #include "TitlePlayer.h"
 
 class SceneTitle : public Scene

@@ -1,5 +1,6 @@
-﻿#include "InputManager.h"
-#include <cmath>
+﻿#include <cmath>
+
+#include "InputManager.h"
 
 // 初期化処理
 void InputManager::Initialize(HWND hWnd)
@@ -19,9 +20,9 @@ void InputManager::Update()
     gamePad.Update();
 
     const GamePadButton padButtons = gamePad.GetButton();
-    InputButton next = padButtons & ~GamePad::BTN_LEFT_TRIGGER;
+    InputButton next = padButtons;
 
-    if (padButtons & GamePad::BTN_LEFT_TRIGGER)
+    if (padButtons & GamePad::BTN_LEFT_SHOULDER)
     {
         next |= BTN_B;
     }

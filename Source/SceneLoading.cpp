@@ -1,14 +1,19 @@
-﻿#include "LoadingProfile.h"
-#include "SceneLoading.h"
-#include "Graphics.h"
-#include "TextRenderer.h"
-#include "Camera.h"
-#include "Light.h"
-#include "Audio/Audio.h"
+﻿#include <objbase.h>
+
+#include <memory>
+#include <utility>
+#include <stdexcept>
+#include <string>
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
-#include <objbase.h>
+#include <thread>
+#include "SceneLoading.h"
+#include "Graphics.h"
+#include "Camera.h"
+#include "Light.h"
+#include "TextRenderer.h"
+#include "Audio/Audio.h"
+#include "LoadingProfile.h"
 
 // デストラクタ
 SceneLoading::~SceneLoading()

@@ -1,8 +1,9 @@
-﻿#include "ModelManager.h"
+﻿#include <algorithm>
+
 #include "LoadingBoss.h"
 #include "Graphics.h"
+#include "ModelManager.h"
 #include "ModelRenderer.h"
-#include <algorithm>
 
 // コンストラクタ
 LoadingBoss::LoadingBoss()

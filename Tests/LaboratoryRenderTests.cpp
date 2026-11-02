@@ -1,18 +1,21 @@
 ﻿#include <windows.h>
+
 #include <DirectXTex.h>
+#include <memory>
 #include <cassert>
-#include <cmath>
 #include <cstdio>
+#include <vector>
+#include <cmath>
 #include "Graphics.h"
+#include "RenderContext.h"
+#include "CameraController.h"
 #include "Stage.h"
 #include "StageLoader.h"
-#include "ModelRenderer.h"
-#include "RenderContext.h"
 #include "BackgroundEditor.h"
-#include "CameraController.h"
-#include "ViewVolume.h"
-#include "BackgroundFog.h"
 #include "BackgroundCity.h"
+#include "BackgroundFog.h"
+#include "ModelRenderer.h"
+#include "ViewVolume.h"
 
 int main()
 {

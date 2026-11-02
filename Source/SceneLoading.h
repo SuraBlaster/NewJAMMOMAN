@@ -1,11 +1,12 @@
 ﻿#pragma once
-#include "SceneManager.h"
+#include <memory>
 #include <utility>
-#include <atomic>
 #include <exception>
-#include <thread>
-#include "Sprite.h"
 #include <string>
+#include <atomic>
+#include <thread>
+#include "SceneManager.h"
+#include "Sprite.h"
 #include "LoadingBoss.h"
 #include "LoadingPlayer.h"
 

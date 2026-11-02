@@ -1,7 +1,8 @@
-﻿#include "Audio/AudioSource.h"
+﻿#include <memory>
+#include <stdexcept>
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
+#include "Audio/AudioSource.h"
 
 // コンストラクタ
 AudioSource::AudioSource(IXAudio2* xaudio, const std::shared_ptr<AudioResource>& resource)
@@ -81,6 +82,7 @@ void AudioSource::SetVolume(float value)
         voice->SetVolume(volume);
     }
 }
+
 
 IXAudio2SourceVoice* AudioSource::FindFreeVoice()
 {

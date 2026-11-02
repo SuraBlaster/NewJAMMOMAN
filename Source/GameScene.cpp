@@ -1,25 +1,27 @@
-﻿#include <imgui.h>
-#include <iostream>
+﻿#include <memory>
+#include <optional>
+#include <cstddef>
 #include <stdexcept>
-#include <StageLoader.h>
-#include <cassert>
-#include <cmath>
 #include <algorithm>
-#include <array>
+#include <cmath>
+#include <iostream>
+#include <imgui.h>
 #include "GameScene.h"
-#include "EnemyFactory.h"
 #include "Graphics.h"
 #include "Camera.h"
-#include "Collision.h"
+#include "Light.h"
 #include "EnemyManager.h"
+#include "EnemyFactory.h"
 #include "EnemyBoss.h"
 #include "EnemyWave.h"
-#include "HitStopManager.h"
-#include "Audio/Audio.h"
-#include "LoadingProfile.h"
-#include "Light.h"
-#include "ViewVolume.h"
+#include "Collision.h"
+#include "StageLoader.h"
 #include "ModelManager.h"
+#include "ViewVolume.h"
+#include "Audio/Audio.h"
+#include "HitStopManager.h"
+#include "LoadingProfile.h"
+#include "InputManager.h"
 
 // コンストラクタ
 GameScene::GameScene(std::optional<DirectX::XMFLOAT3> savePosition)
@@ -31,6 +33,8 @@ GameScene::GameScene(std::optional<DirectX::XMFLOAT3> savePosition)
     backgroundCity = std::make_unique<BackgroundCity>(device);
     healthGaugeUI = std::make_unique<HealthGaugeUI>(device);
     readySprite = std::make_unique<Sprite>(device, "Data/Sprite/Ready.png");
+    instructionSprite = std::make_unique<Sprite>(device, "Data/Sprite/Instraction.png");
+    instructionGuideSprite = std::make_unique<Sprite>(device, "Data/Sprite/GuideInstraction.png");
     readyPlaying = !savePosition.has_value();
     const char* warningPaths[] = {
         "Data/Sprite/WarningLetters/01_W.png", "Data/Sprite/WarningLetters/02_A.png",
@@ -164,7 +168,7 @@ void GameScene::Initialize()
         UpdateCamera(100.0f);
     }
 
-    Audio::Instance().Play("BGM_STAGE");
+    Audio::Instance().Play("BGM_STAGE", true);
 }
 
 // デストラクタ
@@ -180,6 +184,25 @@ GameScene::~GameScene()
 // 更新処理
 void GameScene::Update(float elapsedTime)
 {
+    const auto& input = InputManager::Instance();
+    if (!backgroundEditor->IsEditing() &&
+        ((input.GetButtonDown() & InputManager::BTN_START) ||
+         (!ImGui::GetIO().WantCaptureKeyboard && input.GetInput().IsKeyDown(VK_ESCAPE))))
+    {
+        instructionVisible = !instructionVisible;
+    }
+    if (instructionVisible)
+    {
+        return;
+    }
+
+    const auto& velocity = player->GetVelocity();
+    const bool moving =
+        std::abs(velocity.x) > 0.1f || std::abs(velocity.y) > 0.1f || std::abs(velocity.z) > 0.1f;
+    const float targetAlpha = moving && !isPaused && !readyPlaying ? 0.3f : 1.0f;
+    const float fade = (std::min)(1.0f, (std::max)(0.0f, elapsedTime) * 8.0f);
+    instructionGuideAlpha += (targetAlpha - instructionGuideAlpha) * fade;
+
     backgroundFog->Update(isPaused ? 0.0f : elapsedTime);
     backgroundCity->Update(isPaused ? 0.0f : elapsedTime);
 
@@ -328,6 +351,7 @@ void GameScene::Render(float elapsedTime)
     }
     EnqueueReady();
     EnqueueBossWarning();
+    EnqueueInstructions();
     ID3D11DeviceContext* dc = Graphics::Instance().GetDeviceContext();
     RenderState* renderState = Graphics::Instance().GetRenderState();
     PrimitiveRenderer* primitiveRenderer = Graphics::Instance().GetPrimitiveRenderer();
@@ -924,6 +948,54 @@ void GameScene::TryStartBossEncounter()
     }
 }
 
+// 操作説明と左下ガイドの描画を予約する
+void GameScene::EnqueueInstructions()
+{
+    auto* hud = ImGui::GetForegroundDrawList();
+    if (instructionVisible)
+    {
+        const auto* viewport = ImGui::GetMainViewport();
+        hud->AddRectFilled(viewport->Pos,
+                           ImVec2(viewport->Pos.x + viewport->Size.x, viewport->Pos.y + viewport->Size.y),
+                           IM_COL32(0, 0, 0, 230));
+    }
+    hud->AddCallback([](const ImDrawList*, const ImDrawCmd* command)
+                     { static_cast<GameScene*>(command->UserCallbackData)->RenderInstructions(); }, this);
+    hud->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
+}
+
+// 画面サイズに合わせて操作説明またはガイドを描画する
+void GameScene::RenderInstructions()
+{
+    auto& graphics = Graphics::Instance();
+    auto* dc = graphics.GetDeviceContext();
+    auto* states = graphics.GetRenderState();
+    dc->OMSetBlendState(states->GetBlendState(BlendState::Transparency), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(states->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+    dc->RSSetState(states->GetRasterizerState(RasterizerState::SolidCullNone));
+    auto* sampler = states->GetSamplerState(SamplerState::LinearClamp);
+    dc->PSSetSamplers(0, 1, &sampler);
+
+    const float screenWidth = graphics.GetScreenWidth();
+    const float screenHeight = graphics.GetScreenHeight();
+    const float scale = (std::min)(screenWidth / 1280.0f, screenHeight / 720.0f);
+    if (instructionVisible)
+    {
+        const float width = 1248.0f * scale;
+        const float height = width * 3713.0f / 6600.0f;
+        instructionSprite->Render(dc, (screenWidth - width) * 0.5f, (screenHeight - height) * 0.5f, 0, width,
+                                  height, 0, 1, 1, 1, 1);
+    }
+    else
+    {
+        const float width = 280.0f * scale;
+        const float height = width * 386.0f / 1676.0f;
+        const float margin = 20.0f * scale;
+        instructionGuideSprite->Render(dc, margin, screenHeight - margin - height, 0, width, height, 0, 1, 1,
+                                       1, instructionGuideAlpha);
+    }
+}
+
 // READY文字の描画と横切る光を予約する
 void GameScene::EnqueueReady()
 {
@@ -971,8 +1043,11 @@ void GameScene::RenderReady()
     const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
     const float centerX = graphics.GetScreenWidth() * 0.5f;
     const float centerY = graphics.GetScreenHeight() * 0.45f;
-    const float reveal = std::clamp((readyTime - 0.22f) / 0.24f, 0.0f, 1.0f);
-    const float fade = std::clamp((READY_DURATION - readyTime) / 0.18f, 0.0f, 1.0f);
+    const float revealProgress = std::clamp((readyTime - 0.22f) / 0.4f, 0.0f, 1.0f);
+    const float reveal = revealProgress * revealProgress * (3.0f - 2.0f * revealProgress);
+    const float fadeProgress = std::clamp((READY_DURATION - readyTime) / 0.07f, 0.0f, 1.0f);
+    const float collapse = fadeProgress * fadeProgress * (3.0f - 2.0f * fadeProgress);
+    const float fade = std::clamp(fadeProgress / 0.2f, 0.0f, 1.0f);
     const float width = 640.0f * scale;
     const float height = width * 724.0f / 2172.0f;
     const auto draw = [&](float drawWidth, float drawHeight, float offsetY, float alpha)
@@ -996,7 +1071,7 @@ void GameScene::RenderReady()
 
     if (reveal > 0.0f)
     {
-        draw(width, height * (0.08f + reveal * 0.92f), 0, reveal * fade);
+        draw(width, height * (0.08f + reveal * 0.92f) * collapse, 0, reveal * fade);
     }
 }
 
@@ -1031,7 +1106,10 @@ void GameScene::EnqueueBossWarning()
     const float scale = (std::min)(graphics.GetScreenWidth() / 1280.0f, graphics.GetScreenHeight() / 720.0f);
     const float progress = std::clamp((warningTime - 0.9f) / 0.35f, 0.0f, 1.0f);
     const float center = graphics.GetScreenWidth() * 0.5f;
-    const float y = graphics.GetScreenHeight() * 0.32f + 82.0f * scale;
+    // 文字画像の下端から16px離して下線を配置する（1280×720基準）
+    const float textTop = graphics.GetScreenHeight() * 0.32f - 85.0f * scale;
+    const float textHeight = 390.0f * 0.43f * scale;
+    const float y = textTop + textHeight + 16.0f * scale;
     const float pulse = 0.65f + 0.35f * std::cos(warningTime * 12.0f);
     const float fade = std::clamp((WARNING_DURATION - warningTime) / 0.2f, 0.0f, 1.0f);
     if (progress > 0.0f)

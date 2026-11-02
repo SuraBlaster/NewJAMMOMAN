@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <optional>
-#include "Character.h"
-#include "Effect/Effect.h"
-#include "PlayerTrail.h"
+#include <deque>
 #include <unordered_set>
-#include <Collision.h>
+#include <string>
+#include "Character.h"
+#include "PlayerTrail.h"
+#include "Collision.h"
+#include "Effect/Effect.h"
 
 class Enemy;
 
@@ -79,6 +81,7 @@ private:
     void UpdateSwordTrail(float elapsedTime);
     void CheckSwordCollision(const DirectX::XMFLOAT3& bladeRoot, const DirectX::XMFLOAT3& bladeTip,
                              const DirectX::XMFLOAT3& previousRoot, const DirectX::XMFLOAT3& previousTip);
+    std::optional<AABB> GetAttackAssistHitbox() const;
 
     bool InputMove();
     bool InputJump();
@@ -414,6 +417,8 @@ public:
         static constexpr float EXIT_EFFECT_TIME = 11.0f;
         static constexpr float SCENE_CHANGE_TIME = 13.0f;
         float timer = 0.0f;
+        float centerX = 0.0f;
+        bool movingToCenter = false;
         bool clearAudioPlayed = false;
         bool exitStarted = false;
         bool sceneRequested = false;

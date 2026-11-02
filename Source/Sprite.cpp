@@ -1,7 +1,8 @@
 ﻿#include <fstream>
+
 #include "Sprite.h"
-#include "Misc.h"
 #include "GpuResourceUtils.h"
+#include "Misc.h"
 
 // コンストラクタ
 Sprite::Sprite(ID3D11Device* device) : Sprite(device, nullptr) {}

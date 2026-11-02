@@ -1,10 +1,11 @@
-﻿#include "ModelManager.h"
+﻿#include <stdexcept>
+
+#include <algorithm>
 #include "LoadingPlayer.h"
 #include "Graphics.h"
+#include "ModelManager.h"
 #include "ModelRenderer.h"
 #include "GpuResourceUtils.h"
-#include <algorithm>
-#include <stdexcept>
 
 // コンストラクタ
 LoadingPlayer::LoadingPlayer()

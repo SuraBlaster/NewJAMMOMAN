@@ -1,20 +1,21 @@
 ﻿#pragma once
 
-#include <memory>
-#include <array>
 #include <DirectXMath.h>
+#include <memory>
 #include <optional>
+#include <vector>
+#include <array>
 #include "Scene.h"
-#include "BossGate.h"
-#include "HealthGaugeUI.h"
-#include "Player.h"
-#include "Stage.h"
 #include "CameraController.h"
-#include "TileTypeManager.h"
+#include "Player.h"
+#include "BossGate.h"
+#include "Stage.h"
 #include "StageData.h"
+#include "TileTypeManager.h"
 #include "BackgroundEditor.h"
-#include "BackgroundFog.h"
 #include "BackgroundCity.h"
+#include "BackgroundFog.h"
+#include "HealthGaugeUI.h"
 
 class GameScene : public Scene
 {
@@ -36,6 +37,16 @@ public:
 
     // GUI描画処理
     void DrawGUI() override;
+
+    bool UsesEscapeKey() const override
+    {
+        return true;
+    }
+
+    bool IsGameplayPaused() const override
+    {
+        return instructionVisible || isPaused;
+    }
 
     bool IsBackgroundEditing() const override
     {
@@ -68,6 +79,13 @@ private:
     void HandleFallRespawn();
 
     void MakeSafetyMargin();
+
+    void EnqueueInstructions();
+    void RenderInstructions();
+    std::unique_ptr<Sprite> instructionSprite;
+    std::unique_ptr<Sprite> instructionGuideSprite;
+    bool instructionVisible = false;
+    float instructionGuideAlpha = 1.0f;
 
     void EnqueueReady();
     void RenderReady();

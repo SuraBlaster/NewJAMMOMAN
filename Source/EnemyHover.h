@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include <d3d11.h>
+#include <memory>
 #include <vector>
-
 #include "Enemy.h"
 #include "EnemyProjectile.h"
 

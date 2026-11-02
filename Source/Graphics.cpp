@@ -1,5 +1,7 @@
-﻿#include "Misc.h"
+﻿#include <memory>
+
 #include "Graphics.h"
+#include "Misc.h"
 
 // 初期化
 void Graphics::Initialize(HWND hWnd)

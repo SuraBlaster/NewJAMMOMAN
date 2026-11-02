@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include <windows.h>
-#include "TimeUtils.h"
+#include <utility>
+#include <vector>
+#include <string>
 #include <fstream>
 #include <iomanip>
-#include <string>
-#include <vector>
 #include <mutex>
+#include "TimeUtils.h"
 
 namespace LoadingProfile
 {

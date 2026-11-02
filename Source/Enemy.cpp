@@ -1,12 +1,12 @@
-﻿#include "Enemy.h"
-
-#include "ModelRenderer.h"
-#include "ShapeRenderer.h"
-#include "Collision.h"
-#include "Player.h"
+﻿#include <vector>
 
 #include <algorithm>
 #include <limits>
+#include "Enemy.h"
+#include "Player.h"
+#include "Collision.h"
+#include "ModelRenderer.h"
+#include "ShapeRenderer.h"
 
 // 描画処理
 void Enemy::Render(ModelRenderer* modelRenderer) const

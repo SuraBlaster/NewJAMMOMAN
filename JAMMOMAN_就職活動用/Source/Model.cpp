@@ -1,0 +1,582 @@
+﻿#include <stdexcept>
+
+#include <vector>
+#include <string>
+#include <filesystem>
+#include <fstream>
+#include <cereal/cereal.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
+#include "Model.h"
+#include "ModelSerialization.h"
+#include "GLTFImporter.h"
+#include "GpuResourceUtils.h"
+#include "AnimationKeyframeLookup.h"
+#include "LoadingProfile.h"
+#include "Misc.h"
+
+const std::vector<D3D11_INPUT_ELEMENT_DESC> Model::INPUT_ELEMENT_DESCS = {
+    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA,
+     0},
+    {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA,
+     0},
+    {"TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+     D3D11_INPUT_PER_VERTEX_DATA, 0},
+    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA,
+     0},
+    {"BONE_WEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+     D3D11_INPUT_PER_VERTEX_DATA, 0},
+    {"BONE_INDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+     D3D11_INPUT_PER_VERTEX_DATA, 0},
+};
+
+template <class Archive> void Model::Node::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(name), CEREAL_NVP(parentIndex), CEREAL_NVP(position), CEREAL_NVP(rotation),
+            CEREAL_NVP(scale));
+}
+
+template <class Archive> void Model::Material::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(name), CEREAL_NVP(baseTextureFileName), CEREAL_NVP(normalTextureFileName),
+            CEREAL_NVP(emissiveTextureFileName), CEREAL_NVP(occlusionTextureFileName),
+            CEREAL_NVP(metalnessRoughnessTextureFileName), CEREAL_NVP(baseColor), CEREAL_NVP(emissiveColor),
+            CEREAL_NVP(metalness), CEREAL_NVP(roughness), CEREAL_NVP(occlusionStrength),
+            CEREAL_NVP(alphaCutoff), CEREAL_NVP(alphaMode));
+}
+
+template <class Archive> void Model::Vertex::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(position), CEREAL_NVP(boneWeight), CEREAL_NVP(boneIndex), CEREAL_NVP(texcoord),
+            CEREAL_NVP(normal), CEREAL_NVP(tangent));
+}
+
+template <class Archive> void Model::Bone::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(nodeIndex), CEREAL_NVP(offsetTransform));
+}
+
+template <class Archive> void Model::Mesh::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(vertices), CEREAL_NVP(indices), CEREAL_NVP(bones), CEREAL_NVP(nodeIndex),
+            CEREAL_NVP(materialIndex));
+}
+
+template <class Archive> void Model::VectorKeyframe::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(seconds), CEREAL_NVP(value));
+}
+
+template <class Archive> void Model::QuaternionKeyframe::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(seconds), CEREAL_NVP(value));
+}
+
+template <class Archive> void Model::NodeAnim::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(positionKeyframes), CEREAL_NVP(rotationKeyframes), CEREAL_NVP(scaleKeyframes));
+}
+
+template <class Archive> void Model::Animation::serialize(Archive& archive)
+{
+    archive(CEREAL_NVP(name), CEREAL_NVP(secondsLength), CEREAL_NVP(nodeAnims));
+}
+
+// コンストラクタ
+Model::Model(const Model& other)
+    : materials(other.materials), meshes(other.meshes), nodes(other.nodes), animations(other.animations),
+      filename(other.filename)
+{
+    for (Node& node : nodes)
+    {
+        node.parent = (node.parentIndex >= 0) ? &nodes.at(node.parentIndex) : nullptr;
+        node.children.clear();
+    }
+
+    for (Node& node : nodes)
+    {
+        if (node.parent != nullptr)
+        {
+            node.parent->children.push_back(&node);
+        }
+    }
+
+    for (Mesh& mesh : meshes)
+    {
+        mesh.node = &nodes.at(mesh.nodeIndex);
+        mesh.material = &materials.at(mesh.materialIndex);
+
+        for (Bone& bone : mesh.bones)
+        {
+            bone.node = &nodes.at(bone.nodeIndex);
+        }
+    }
+}
+
+// コンストラクタ
+Model::Model(ID3D11Device* device, const char* filename, float sampleRate) : filename(filename)
+{
+    LoadingProfile::Scope profile(std::string("Model:") + filename);
+    std::filesystem::path filepath(filename);
+    std::filesystem::path dirpath(filepath.parent_path());
+
+    std::filesystem::path extension = filepath.extension();
+
+    bool loaded = false;
+
+    // 明示指定された独自形式だけを読み込み、元データからの変換では古いキャッシュを使わない
+    if (extension == ".cereal")
+    {
+        loaded = Deserialize(filename);
+    }
+    // 独自形式の読み込み結果を記録
+    profile.Step(loaded ? "cache_hit" : "cache_miss_or_incompatible");
+
+    if (!loaded && (extension == ".gltf" || extension == ".glb"))
+    {
+        nodes.clear();
+        materials.clear();
+        meshes.clear();
+        animations.clear();
+
+        // 汎用モデルファイルの読み込み
+        GLTFImporter importer(filename);
+        profile.Step("source_file_parse");
+
+        // マテリアルデータ読み取り
+        importer.LoadMaterials(materials, device);
+
+        // ノードデータ読み取り
+        importer.LoadNodes(nodes);
+
+        // メッシュデータ読み取り
+        importer.LoadMeshes(meshes, nodes);
+
+        // アニメーションデータ読み取り
+        importer.LoadAnimations(animations, nodes, sampleRate);
+        profile.Step("materials_meshes_animations");
+
+        loaded = true;
+    }
+    else if (!loaded)
+    {
+        throw std::runtime_error(std::string("Failed to load model: ") + filename);
+    }
+
+    // マテリアル構築
+    profile.Step("importer_cleanup");
+
+    for (Material& material : materials)
+    {
+        if (material.baseMap == nullptr)
+        {
+            if (material.baseTextureFileName.empty())
+            {
+                // ダミーテクスチャ作成
+                HRESULT hr =
+                    GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF, material.baseMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+            else
+            {
+                // ベーステクスチャ読み込み
+                std::filesystem::path diffuseTexturePath(dirpath / material.baseTextureFileName);
+                HRESULT hr = GpuResourceUtils::LoadTexture(device, diffuseTexturePath.string().c_str(),
+                                                           material.baseMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+        }
+
+        if (material.normalMap == nullptr)
+        {
+            if (material.normalTextureFileName.empty())
+            {
+                // 法線ダミーテクスチャ作成
+                HRESULT hr = GpuResourceUtils::CreateDummyTexture(device, 0xFFFF7F7F,
+                                                                  material.normalMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+            else
+            {
+                // 法線テクスチャ読み込み
+                std::filesystem::path texturePath(dirpath / material.normalTextureFileName);
+                HRESULT hr = GpuResourceUtils::LoadTexture(device, texturePath.string().c_str(),
+                                                           material.normalMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+        }
+
+        if (material.emissiveMap == nullptr)
+        {
+            if (material.emissiveTextureFileName.empty())
+            {
+                // 発光ダミーテクスチャ作成
+                HRESULT hr = GpuResourceUtils::CreateDummyTexture(device, 0xFF000000,
+                                                                  material.emissiveMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+            else
+            {
+                // 発光テクスチャ読み込み
+                std::filesystem::path texturePath(dirpath / material.emissiveTextureFileName);
+                HRESULT hr = GpuResourceUtils::LoadTexture(device, texturePath.string().c_str(),
+                                                           material.emissiveMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+        }
+
+        if (material.occlusionMap == nullptr)
+        {
+            if (material.occlusionTextureFileName.empty())
+            {
+                // オクルージョンダミーテクスチャ作成
+                HRESULT hr = GpuResourceUtils::CreateDummyTexture(device, 0xFFFFFFFF,
+                                                                  material.occlusionMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+            else
+            {
+                // オクルージョンテクスチャ読み込み
+                std::filesystem::path texturePath(dirpath / material.occlusionTextureFileName);
+                HRESULT hr = GpuResourceUtils::LoadTexture(device, texturePath.string().c_str(),
+                                                           material.occlusionMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+        }
+
+        if (material.metalnessRoughnessMap == nullptr)
+        {
+            if (material.metalnessRoughnessTextureFileName.empty())
+            {
+                // メタルネス・ラフネスダミーテクスチャ作成
+                HRESULT hr = GpuResourceUtils::CreateDummyTexture(
+                    device, 0xFFFFFFFF, material.metalnessRoughnessMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+            else
+            {
+                // メタルネス・ラフネステクスチャ読み込み
+                std::filesystem::path texturePath(dirpath / material.metalnessRoughnessTextureFileName);
+                HRESULT hr = GpuResourceUtils::LoadTexture(device, texturePath.string().c_str(),
+                                                           material.metalnessRoughnessMap.GetAddressOf());
+                _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+            }
+        }
+    }
+
+    // ノード構築
+    for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
+    {
+        Node& node = nodes.at(nodeIndex);
+
+        // 親子関係を構築
+        node.parent = node.parentIndex >= 0 ? &nodes.at(node.parentIndex) : nullptr;
+
+        if (node.parent != nullptr)
+        {
+            node.parent->children.emplace_back(&node);
+        }
+    }
+
+    // メッシュ構築
+    for (Mesh& mesh : meshes)
+    {
+        // 参照マテリアル設定
+        mesh.material = &materials.at(mesh.materialIndex);
+
+        // 参照ノード設定
+        mesh.node = &nodes.at(mesh.nodeIndex);
+
+        // 頂点バッファ
+        {
+            D3D11_BUFFER_DESC bufferDesc = {};
+            D3D11_SUBRESOURCE_DATA subresourceData = {};
+
+            bufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * mesh.vertices.size());
+            bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+            bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            bufferDesc.CPUAccessFlags = 0;
+            bufferDesc.MiscFlags = 0;
+            bufferDesc.StructureByteStride = 0;
+            subresourceData.pSysMem = mesh.vertices.data();
+            subresourceData.SysMemPitch = 0;
+            subresourceData.SysMemSlicePitch = 0;
+
+            HRESULT hr =
+                device->CreateBuffer(&bufferDesc, &subresourceData, mesh.vertexBuffer.GetAddressOf());
+            _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        }
+
+        // インデックスバッファ
+        {
+            D3D11_BUFFER_DESC bufferDesc = {};
+            D3D11_SUBRESOURCE_DATA subresourceData = {};
+
+            bufferDesc.ByteWidth = static_cast<UINT>(sizeof(uint32_t) * mesh.indices.size());
+            bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+            bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+            bufferDesc.CPUAccessFlags = 0;
+            bufferDesc.MiscFlags = 0;
+            bufferDesc.StructureByteStride = 0;
+            subresourceData.pSysMem = mesh.indices.data();
+            subresourceData.SysMemPitch = 0;
+            subresourceData.SysMemSlicePitch = 0;
+            HRESULT hr = device->CreateBuffer(&bufferDesc, &subresourceData, mesh.indexBuffer.GetAddressOf());
+            _ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+        }
+
+        // ボーン構築
+        for (Bone& bone : mesh.bones)
+        {
+            // 参照ノード設定
+            bone.node = &nodes.at(bone.nodeIndex);
+        }
+    }
+
+    // 行列初期化
+    DirectX::XMFLOAT4X4 worldTransform;
+    DirectX::XMStoreFloat4x4(&worldTransform, DirectX::XMMatrixIdentity());
+    UpdateTransform(worldTransform);
+    profile.Step("gpu_resources_and_transforms");
+}
+
+// アニメーション追加読み込み
+void Model::AppendAnimations(const char* filename)
+{
+    LoadingProfile::Scope profile(std::string("Model:") + filename);
+    std::filesystem::path filepath(filename);
+    std::filesystem::path dirpath(filepath.parent_path());
+
+    if (filepath.extension() == ".gltf" || filepath.extension() == ".glb")
+    {
+        // 汎用モデルファイルの読み込み
+        GLTFImporter importer(filename);
+        profile.Step("source_file_parse");
+
+        // アニメーションデータ読み取り
+        importer.LoadAnimations(animations, nodes);
+    }
+    else
+    {
+        throw std::runtime_error(std::string("Failed to load model: ") + filename);
+    }
+}
+
+// アニメーションインデックス取得
+int Model::GetAnimationIndex(const char* name) const
+{
+    for (size_t animationIndex = 0; animationIndex < animations.size(); ++animationIndex)
+    {
+        if (animations.at(animationIndex).name == name)
+        {
+            return static_cast<int>(animationIndex);
+        }
+    }
+
+    return -1;
+}
+
+// ノードインデックス取得
+int Model::GetNodeIndex(const char* name) const
+{
+    for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
+    {
+        if (nodes.at(nodeIndex).name == name)
+        {
+            return static_cast<int>(nodeIndex);
+        }
+    }
+
+    return -1;
+}
+
+// トランスフォーム更新処理
+void Model::UpdateTransform(const DirectX::XMFLOAT4X4& worldTransform)
+{
+    DirectX::XMMATRIX parentWorldTransform = DirectX::XMLoadFloat4x4(&worldTransform);
+
+    for (Node& node : nodes)
+    {
+        // ローカル行列算出
+        DirectX::XMMATRIX s = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
+        DirectX::XMMATRIX r = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotation));
+        DirectX::XMMATRIX t = DirectX::XMMatrixTranslation(node.position.x, node.position.y, node.position.z);
+        DirectX::XMMATRIX localTransformMatrix = s * r * t;
+
+        // グローバル行列算出
+        DirectX::XMMATRIX parentGlobalTransform;
+
+        if (node.parent != nullptr)
+        {
+            parentGlobalTransform = DirectX::XMLoadFloat4x4(&node.parent->globalTransform);
+        }
+        else
+        {
+            parentGlobalTransform = DirectX::XMMatrixIdentity();
+        }
+
+        DirectX::XMMATRIX globalTransformMatrix = localTransformMatrix * parentGlobalTransform;
+
+        // ワールド行列算出
+        DirectX::XMMATRIX worldTransformMatrix = globalTransformMatrix * parentWorldTransform;
+
+        // 計算結果を格納
+        DirectX::XMStoreFloat4x4(&node.localTransform, localTransformMatrix);
+        DirectX::XMStoreFloat4x4(&node.globalTransform, globalTransformMatrix);
+        DirectX::XMStoreFloat4x4(&node.worldTransform, worldTransformMatrix);
+    }
+}
+
+void Model::ComputeAnimation(int animationIndex, int nodeIndex, float time, NodePose& nodePose) const
+{
+    const auto& track = animations.at(animationIndex).nodeAnims.at(nodeIndex);
+    size_t left = 0, right = 0;
+    float rate = 0;
+
+    if (FindAnimationKeyframes(track.positionKeyframes, time, left, right, rate))
+    {
+        const auto a = DirectX::XMLoadFloat3(&track.positionKeyframes[left].value);
+        const auto b = DirectX::XMLoadFloat3(&track.positionKeyframes[right].value);
+        DirectX::XMStoreFloat3(&nodePose.position, DirectX::XMVectorLerp(a, b, rate));
+    }
+
+    if (FindAnimationKeyframes(track.rotationKeyframes, time, left, right, rate))
+    {
+        const auto a = DirectX::XMLoadFloat4(&track.rotationKeyframes[left].value);
+        const auto b = DirectX::XMLoadFloat4(&track.rotationKeyframes[right].value);
+        DirectX::XMStoreFloat4(&nodePose.rotation, DirectX::XMQuaternionSlerp(a, b, rate));
+    }
+
+    if (FindAnimationKeyframes(track.scaleKeyframes, time, left, right, rate))
+    {
+        const auto a = DirectX::XMLoadFloat3(&track.scaleKeyframes[left].value);
+        const auto b = DirectX::XMLoadFloat3(&track.scaleKeyframes[right].value);
+        DirectX::XMStoreFloat3(&nodePose.scale, DirectX::XMVectorLerp(a, b, rate));
+    }
+}
+
+// アニメーション計算
+void Model::ComputeAnimation(int animationIndex, float time, std::vector<NodePose>& nodePoses) const
+{
+    if (nodePoses.size() != nodes.size())
+    {
+        nodePoses.resize(nodes.size());
+    }
+
+    for (size_t nodeIndex = 0; nodeIndex < nodePoses.size(); ++nodeIndex)
+    {
+        ComputeAnimation(animationIndex, static_cast<int>(nodeIndex), time, nodePoses.at(nodeIndex));
+    }
+}
+
+// ノードポーズ設定
+void Model::SetNodePoses(const std::vector<NodePose>& nodePoses)
+{
+    for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
+    {
+        const NodePose& pose = nodePoses.at(nodeIndex);
+        Node& node = nodes.at(nodeIndex);
+
+        node.position = pose.position;
+        node.rotation = pose.rotation;
+        node.scale = pose.scale;
+    }
+}
+
+// ノードポーズ取得
+void Model::GetNodePoses(std::vector<NodePose>& nodePoses) const
+{
+    if (nodePoses.size() != nodes.size())
+    {
+        nodePoses.resize(nodes.size());
+    }
+
+    for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
+    {
+        const Node& node = nodes.at(nodeIndex);
+        NodePose& pose = nodePoses.at(nodeIndex);
+
+        pose.position = node.position;
+        pose.rotation = node.rotation;
+        pose.scale = node.scale;
+    }
+}
+
+// 元データから独自形式へ変換
+void Model::ConvertToCereal(const char* sourceFilename, float sampleRate)
+{
+    Model model;
+    GLTFImporter importer(sourceFilename);
+    importer.LoadMaterials(model.materials);
+    importer.LoadNodes(model.nodes);
+    importer.LoadMeshes(model.meshes, model.nodes);
+    importer.LoadAnimations(model.animations, model.nodes, sampleRate);
+    if (model.meshes.empty())
+    {
+        throw std::runtime_error(std::string("No meshes in model: ") + sourceFilename);
+    }
+    std::filesystem::path output(sourceFilename);
+    output.replace_extension(".cereal");
+    model.Serialize(output.string().c_str());
+}
+
+// シリアライズ
+void Model::Serialize(const char* filename)
+{
+    std::ofstream ostream(filename, std::ios::binary | std::ios::trunc);
+    if (!ostream)
+    {
+        throw std::runtime_error(std::string("Cannot write model: ") + filename);
+    }
+    ostream.write("JAMMDL01", 8);
+    cereal::BinaryOutputArchive archive(ostream);
+    archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
+    ostream.flush();
+    if (!ostream)
+    {
+        throw std::runtime_error(std::string("Failed to write model: ") + filename);
+    }
+}
+
+// デシリアライズ
+bool Model::Deserialize(const char* filename)
+{
+    std::ifstream istream(filename, std::ios::binary);
+
+    if (!istream.is_open())
+    {
+        return false;
+    }
+
+    try
+    {
+        char magic[8] = {};
+        istream.read(magic, sizeof(magic));
+        if (std::string(magic, sizeof(magic)) != "JAMMDL01")
+        {
+            return false;
+        }
+        cereal::BinaryInputArchive archive(istream);
+        archive(CEREAL_NVP(nodes), CEREAL_NVP(materials), CEREAL_NVP(meshes), CEREAL_NVP(animations));
+        return true;
+    }
+    catch (const std::exception& exception)
+    {
+        std::string message = "Model cereal load failed: ";
+        message += filename;
+        message += " (";
+        message += exception.what();
+        message += ")\n";
+        OutputDebugStringA(message.c_str());
+    }
+    catch (...)
+    {
+        std::string message = "Model cereal load failed: ";
+        message += filename;
+        message += "\n";
+        OutputDebugStringA(message.c_str());
+    }
+
+    return false;
+}

@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include <memory>
 #include <d3d11.h>
 #include <wrl.h>
+#include <memory>
 #include "Sprite.h"
 #include "HealthGaugeTrail.h"
 

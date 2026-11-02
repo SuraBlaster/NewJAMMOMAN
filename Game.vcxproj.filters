@@ -333,6 +333,9 @@
     <ClInclude Include="Source\Player.h">
       <Filter>Source\Character</Filter>
     </ClInclude>
+    <ClInclude Include="Source\AttackAssistHitbox.h">
+      <Filter>Source\Character</Filter>
+    </ClInclude>
     <ClInclude Include="Source\PlayerTrail.h">
       <Filter>Source\Character</Filter>
     </ClInclude>

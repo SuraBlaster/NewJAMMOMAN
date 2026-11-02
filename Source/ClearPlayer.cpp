@@ -1,8 +1,9 @@
-﻿#include "ClearPlayer.h"
-#include "ModelManager.h"
+﻿#include <algorithm>
+
+#include "ClearPlayer.h"
 #include "Graphics.h"
+#include "ModelManager.h"
 #include "ModelRenderer.h"
-#include <algorithm>
 
 // コンストラクタ
 ClearPlayer::ClearPlayer()

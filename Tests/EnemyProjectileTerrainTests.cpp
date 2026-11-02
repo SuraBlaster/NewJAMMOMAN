@@ -1,11 +1,12 @@
 ﻿#include <windows.h>
-#include <imgui.h>
-#include <iostream>
-#include <stdexcept>
 
+#include <memory>
+#include <stdexcept>
+#include <iostream>
+#include <imgui.h>
 #include "Framework.h"
-#include "CollisionManager.h"
 #include "EnemyProjectile.h"
+#include "CollisionManager.h"
 #include "Effect/Effect.h"
 #include "Effect/EffectManager.h"
 

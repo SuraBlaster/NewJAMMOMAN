@@ -1,10 +1,9 @@
 ﻿#pragma once
 
-#include <map>
+#include <vector>
 #include <filesystem>
 #include <tiny_gltf.h>
 #include "Model.h"
-#include <string>
 
 class GLTFImporter
 {

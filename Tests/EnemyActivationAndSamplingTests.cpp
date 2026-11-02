@@ -1,9 +1,11 @@
-﻿#include "../Source/EnemyActivation.h"
-#include "../Source/AnimationKeyframeLookup.h"
-#include "../Source/ViewVolume.h"
-#include <cassert>
-#include <iostream>
+﻿#include <cassert>
+
 #include <vector>
+#include <cmath>
+#include <iostream>
+#include "../Source/EnemyActivation.h"
+#include "../Source/ViewVolume.h"
+#include "../Source/AnimationKeyframeLookup.h"
 
 struct Key
 {

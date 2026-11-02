@@ -1,12 +1,13 @@
-﻿#include "EnemyWalkerPatrol.h"
-#include "EnemyActivation.h"
-#include "Character.h"
-#include "Model.h"
+﻿#include <stdexcept>
 
+#include <vector>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <stdexcept>
+#include "Character.h"
+#include "EnemyActivation.h"
+#include "EnemyWalkerPatrol.h"
+#include "Model.h"
 
 using namespace DirectX;
 

@@ -1,10 +1,11 @@
 ﻿#pragma once
+#include <DirectXCollision.h>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <string>
 #include "Model.h"
 #include "Command/CommandManager.h"
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <DirectXCollision.h>
 
 class ModelRenderer;
 class BackgroundStateCommand;

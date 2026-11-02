@@ -1,6 +1,7 @@
-﻿#include "Character.h"
+﻿#include <cstdlib>
+
+#include "Character.h"
 #include "CollisionManager.h"
-#include <cstdlib>
 
 void Model::UpdateTransform(const DirectX::XMFLOAT4X4&)
 {

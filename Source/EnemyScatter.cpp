@@ -1,10 +1,9 @@
-﻿#include "ModelManager.h"
-#include "EnemyScatter.h"
+﻿#include <cstdlib>
 
 #include <cmath>
-#include <cstdlib>
-
+#include "EnemyScatter.h"
 #include "Player.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyScatter::EnemyScatter(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition)

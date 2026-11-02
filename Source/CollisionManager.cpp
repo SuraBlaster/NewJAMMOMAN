@@ -1,4 +1,8 @@
 ﻿#include <DirectXCollision.h>
+
+#include <vector>
+#include <algorithm>
+#include <cmath>
 #include "CollisionManager.h"
 #include "Model.h"
 

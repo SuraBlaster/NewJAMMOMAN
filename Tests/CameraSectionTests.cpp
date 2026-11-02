@@ -1,7 +1,10 @@
-﻿#include "../Source/CameraSectionState.h"
-#include "../Source/CameraBoundsRegion.h"
-#include <cassert>
+﻿#include <cassert>
+
+#include <vector>
+#include <cmath>
 #include <iostream>
+#include "../Source/CameraBoundsRegion.h"
+#include "../Source/CameraSectionState.h"
 
 static CameraLimitZoneData Zone(float left, float right, const char* section, bool trigger = false)
 {

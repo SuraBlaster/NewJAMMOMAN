@@ -1,7 +1,8 @@
-﻿#include "SetStage.h"
-#include <fstream>
+﻿#include <DirectXMath.h>
+
 #include <string>
-#include <DirectXMath.h>
+#include <fstream>
+#include "SetStage.h"
 
 using json = nlohmann::json;
 

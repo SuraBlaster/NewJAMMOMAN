@@ -1,8 +1,8 @@
-﻿#include "EnemyActivation.h"
-#include "EnemyVisibility.h"
+﻿#include <stdexcept>
 
 #include <iostream>
-#include <stdexcept>
+#include "EnemyActivation.h"
+#include "EnemyVisibility.h"
 
 static void Check(bool condition, const char* message)
 {

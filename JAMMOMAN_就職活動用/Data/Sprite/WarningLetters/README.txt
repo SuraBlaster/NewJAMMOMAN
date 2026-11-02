@@ -1,0 +1,4 @@
+WARNING letter sprites — generated using built-in image_gen.
+Order: 01_W.png, 02_A.png, 03_R.png, 04_N.png, 05_I.png, 06_N.png, 07_G.png.
+All individual PNGs have transparent backgrounds and a common 390px canvas height. Preserve each aspect ratio when rendering; use the same scale for all seven files. Warning-sheet.png is the generated source sheet. Existing Warning.png is unchanged.
+Final generation prompt: Seven isolated uppercase glyphs W A R N I N G in one horizontal row on transparent alpha. Mega Man X4 inspired sharp angular tall geometric sci-fi typography, vivid scarlet red faces, subtle dark red edges. Consistent cap height and baseline. No yellow, orange, gradient, black outline, glow, shadow, underline, captions, grid or frame. Separate glyphs with transparent gaps for individual extraction.

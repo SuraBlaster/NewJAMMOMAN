@@ -1,12 +1,18 @@
-﻿#include <fstream>
-#define TINYGLTF_IMPLEMENTATION
+﻿#define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
 
-#include "Misc.h"
-#include "GpuResourceUtils.h"
+#include <memory>
+#include <vector>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include "GLTFImporter.h"
+#include "GpuResourceUtils.h"
+#include "Misc.h"
 
 bool LoadImageData(tinygltf::Image*, const int, std::string*, std::string*, int, int, const unsigned char*,
                    int, void* userPointer)

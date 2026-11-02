@@ -1,11 +1,10 @@
-﻿#include "ModelManager.h"
+﻿#include <cmath>
+
 #include "EnemyWave.h"
-
-#include <cmath>
-
-#include "Collision.h"
 #include "Player.h"
 #include "EnemyVisibility.h"
+#include "Collision.h"
+#include "ModelManager.h"
 
 constexpr float ENEMY_SCALE = 0.01f;
 constexpr float DESPAWN_DISTANCE = 14.0f;

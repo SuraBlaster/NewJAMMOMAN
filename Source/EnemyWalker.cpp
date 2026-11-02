@@ -1,13 +1,11 @@
-﻿#include "EnemyWalker.h"
-
-#include <algorithm>
+﻿#include <algorithm>
 #include <cmath>
-
-#include "CollisionManager.h"
-#include "EnemyWalkerPatrol.h"
-#include "ModelManager.h"
+#include "EnemyWalker.h"
 #include "Player.h"
 #include "EnemyVisibility.h"
+#include "EnemyWalkerPatrol.h"
+#include "CollisionManager.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyWalker::EnemyWalker(ID3D11Device* device, Player* player) : player(player)

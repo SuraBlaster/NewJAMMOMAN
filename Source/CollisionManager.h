@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <vector>
 #include <DirectXMath.h>
+#include <vector>
 #include "Collision.h"
 
 class Model;

@@ -1,5 +1,6 @@
-﻿#include <algorithm>
-#include <DirectXMath.h>
+﻿#include <DirectXMath.h>
+
+#include <algorithm>
 #include "SphereCast.h"
 
 // 外部の点に対する三角形内部の最近点を算出する

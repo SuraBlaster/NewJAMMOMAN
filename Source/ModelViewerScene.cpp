@@ -1,10 +1,12 @@
-﻿#include <functional>
+﻿#include <memory>
+#include <functional>
+#include <vector>
 #include <imgui.h>
 #include "ModelViewerScene.h"
 #include "Graphics.h"
+#include "Light.h"
 #include "TransformUtils.h"
 #include "Dialog.h"
-#include "Light.h"
 
 // コンストラクタ
 ModelViewerScene::ModelViewerScene()

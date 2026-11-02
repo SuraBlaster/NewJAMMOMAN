@@ -1,13 +1,13 @@
-﻿#include "ModelManager.h"
-#include "EnemyBoss.h"
-#include "Audio/Audio.h"
-
+﻿#include <memory>
+#include <cstdlib>
+#include <array>
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
-
+#include "EnemyBoss.h"
 #include "Player.h"
+#include "ModelManager.h"
 #include "ShapeRenderer.h"
+#include "Audio/Audio.h"
 
 bool EnemyBoss::defeatFlag = false;
 

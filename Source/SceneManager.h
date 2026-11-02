@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <functional>
 #include <memory>
+#include <functional>
 #include "Scene.h"
 
 class SceneManager
@@ -26,6 +26,16 @@ public:
     bool IsBackgroundEditing() const
     {
         return currentScene && currentScene->IsBackgroundEditing();
+    }
+
+    bool UsesEscapeKey() const
+    {
+        return currentScene && currentScene->UsesEscapeKey();
+    }
+
+    bool IsGameplayPaused() const
+    {
+        return currentScene && currentScene->IsGameplayPaused();
     }
 
     void Clear();
