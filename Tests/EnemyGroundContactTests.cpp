@@ -1,8 +1,9 @@
-﻿#include "../Source/Character.h"
-#include "../Source/CollisionManager.h"
+﻿#include <stdexcept>
+
 #include <cmath>
 #include <iostream>
-#include <stdexcept>
+#include "../Source/Character.h"
+#include "../Source/CollisionManager.h"
 
 static void Check(bool ok, const char* message)
 {

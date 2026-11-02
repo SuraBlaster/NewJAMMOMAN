@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include <d3d11.h>
+#include <memory>
+#include <utility>
 #include <vector>
 #include <array>
 #include <random>
-
 #include "Enemy.h"
 #include "EnemyProjectile.h"
 #include "BossSideProjectile.h"

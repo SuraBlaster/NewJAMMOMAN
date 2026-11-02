@@ -1,5 +1,5 @@
-#include "Skinning.hlsli"
 #include "Basic.hlsli"
+#include "Skinning.hlsli"
 
 VsOutput main(float4 position : POSITION, float4 boneWeights : BONE_WEIGHTS, uint4 boneIndices : BONE_INDICES,
               float2 texcoord : TEXCOORD)

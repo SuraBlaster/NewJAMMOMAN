@@ -2,6 +2,8 @@
 #include "SwordTrailRenderer.h"
 #include "ModelRenderer.h"
 #include "StylizedShading.h"
+#include <memory>
+
 #include <algorithm>
 #include <cmath>
 

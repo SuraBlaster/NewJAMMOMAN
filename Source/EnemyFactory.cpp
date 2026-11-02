@@ -1,4 +1,6 @@
-﻿#include "EnemyFactory.h"
+﻿#include <memory>
+
+#include "EnemyFactory.h"
 #include "Player.h"
 #include "EnemyBoss.h"
 #include "EnemyEgg.h"
@@ -7,9 +9,9 @@
 #include "EnemyHover.h"
 #include "EnemyMage.h"
 #include "EnemyScatter.h"
-#include "EnemyWave.h"
 #include "EnemyVacuum.h"
 #include "EnemyWalker.h"
+#include "EnemyWave.h"
 
 std::shared_ptr<Enemy> EnemyFactory::CreateFromSpawnData(ID3D11Device* device, Player* player,
                                                          const EnemySpawnData& spawnData)

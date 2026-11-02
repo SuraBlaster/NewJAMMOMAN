@@ -1,9 +1,10 @@
-﻿#include "ModelManager.h"
+﻿#include <algorithm>
+
 #include "TitlePlayer.h"
-#include "Audio/Audio.h"
 #include "Graphics.h"
+#include "ModelManager.h"
 #include "ModelRenderer.h"
-#include <algorithm>
+#include "Audio/Audio.h"
 
 // コンストラクタ
 TitlePlayer::TitlePlayer()

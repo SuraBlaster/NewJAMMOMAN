@@ -1,13 +1,14 @@
-﻿#include "StageLoader.h"
-#include "BossGate.h"
+﻿#include <utility>
+#include <cstddef>
+#include <array>
+#include <string>
+#include <string_view>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <json.hpp>
-#include <cstddef>
-#include <cmath>
-#include <utility>
-#include <array>
-#include <string_view>
+#include "StageLoader.h"
+#include "BossGate.h"
 #include "TileTypeManager.h"
 
 using json = nlohmann::json;

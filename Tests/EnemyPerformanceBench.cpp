@@ -1,12 +1,14 @@
-﻿#include "Character.h"
-#include "EnemyWalkerPatrol.h"
-#include "Animator.h"
+﻿#include <memory>
 
-#include <json.hpp>
-#include <chrono>
+#include <vector>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <memory>
+#include <chrono>
+#include <json.hpp>
+#include "Character.h"
+#include "EnemyWalkerPatrol.h"
+#include "Animator.h"
 
 class WalkingProbe final : public Character
 {

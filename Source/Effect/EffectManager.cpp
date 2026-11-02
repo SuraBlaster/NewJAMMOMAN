@@ -1,8 +1,8 @@
-﻿#include "Graphics.h"
-#include "EffectManager.h"
-#include <cmath>
+﻿#include <stdexcept>
 #include <cstring>
-#include <stdexcept>
+#include <cmath>
+#include "EffectManager.h"
+#include "Graphics.h"
 
 // 初期化処理
 void EffectManager::Initialize()

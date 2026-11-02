@@ -1,6 +1,6 @@
-﻿#include "PlayerTrail.h"
-#include <cassert>
+﻿#include <cassert>
 #include <cstdio>
+#include "PlayerTrail.h"
 
 static bool Equal(const DirectX::XMFLOAT3& a, const DirectX::XMFLOAT3& b)
 {

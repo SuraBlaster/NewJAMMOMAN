@@ -1,6 +1,7 @@
 ﻿#include "Model.h"
 #include "SwordTrailRenderer.h"
 #include "ModelRenderer.h"
+#include <memory>
 #include <cstdlib>
 
 Model::Model(ID3D11Device*, const char*, float) {}

@@ -1,4 +1,6 @@
-﻿#include <algorithm>
+﻿#include <vector>
+
+#include <algorithm>
 #include <cmath>
 #include "Animator.h"
 

@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include <DirectXMath.h>
+#include <vector>
 #include <imgui.h>
-#include "StageData.h"
 #include "CameraBoundsRegion.h"
 #include "CameraSectionState.h"
+#include "StageData.h"
 
 // カメラコントローラー
 class CameraController

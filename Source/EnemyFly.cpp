@@ -1,12 +1,12 @@
-﻿#include "ModelManager.h"
-#include "EnemyFly.h"
+﻿#include <memory>
 
 #include <cmath>
-
-#include "EnemyEgg.h"
-#include "EnemyManager.h"
+#include "EnemyFly.h"
 #include "Player.h"
+#include "EnemyManager.h"
+#include "EnemyEgg.h"
 #include "EnemyVisibility.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyFly::EnemyFly(ID3D11Device* device, Player* player) : device(device), player(player)

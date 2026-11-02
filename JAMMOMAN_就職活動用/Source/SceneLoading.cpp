@@ -1,0 +1,299 @@
+﻿#include <objbase.h>
+
+#include <memory>
+#include <utility>
+#include <stdexcept>
+#include <string>
+#include <algorithm>
+#include <cmath>
+#include <thread>
+#include "SceneLoading.h"
+#include "Graphics.h"
+#include "Camera.h"
+#include "Light.h"
+#include "TextRenderer.h"
+#include "Audio/Audio.h"
+#include "LoadingProfile.h"
+
+// デストラクタ
+SceneLoading::~SceneLoading()
+{
+    JoinLoading();
+}
+
+void SceneLoading::JoinLoading()
+{
+    if (loadingThread.joinable())
+    {
+        loadingThread.join();
+    }
+}
+
+void SceneLoading::StartLoading()
+{
+    if (!factory || loadingThread.joinable() || loadComplete.load())
+    {
+        return;
+    }
+
+    loadingThread = std::thread(
+        [this]
+        {
+            const HRESULT com = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+            try
+            {
+                if (FAILED(com))
+                {
+                    throw std::runtime_error("Failed to initialize loading thread COM.");
+                }
+
+                loadedScene = factory();
+
+                if (!loadedScene)
+                {
+                    throw std::runtime_error("Scene loading returned null.");
+                }
+            }
+            catch (...)
+            {
+                loadError = std::current_exception();
+            }
+
+            if (SUCCEEDED(com))
+            {
+                CoUninitialize();
+            }
+
+            loadComplete.store(true, std::memory_order_release);
+        });
+}
+
+// 初期化処理
+void SceneLoading::Initialize()
+{
+    JoinLoading();
+    loadedScene.reset();
+    loadError = nullptr;
+    loadComplete.store(false);
+    LoadingProfile::gameReady = false;
+    LoadingProfile::firstGameFrame = false;
+    LoadingProfile::loadingStart = GetTimeMilliseconds();
+    LoadingProfile::Scope profile("Loading.prepare");
+    timer = 0.0f;
+    presented = requested = false;
+    descriptionPresented = false;
+    readTimer = 0.0f;
+    displayedDescription.clear();
+
+    if (showTitleIntro)
+    {
+        background = std::make_unique<Sprite>(Graphics::Instance().GetDevice(),
+                                              "Data/Sprite/LoadingBackground.png", true);
+        profile.Step("background");
+        boss = std::make_unique<LoadingBoss>();
+        profile.Step("boss");
+        Audio::Instance().Play("SE_LOADING");
+    }
+
+    player = std::make_unique<LoadingPlayer>();
+    profile.Step("player");
+    LoadingProfile::waitStart = GetTimeMilliseconds();
+}
+
+// 終了処理
+void SceneLoading::Finalize()
+{
+    JoinLoading();
+    loadedScene.reset();
+    background.reset();
+    boss.reset();
+    player.reset();
+}
+
+// 更新処理
+void SceneLoading::Update(float elapsedTime)
+{
+
+    const float dt = presented ? (std::clamp)(elapsedTime, 0.0f, 0.05f) : 0.0f;
+
+    if (presented)
+    {
+        StartLoading();
+    }
+
+    if (loadComplete.load(std::memory_order_acquire) && loadError)
+    {
+        JoinLoading();
+        std::rethrow_exception(loadError);
+    }
+
+    presented = false;
+    timer += dt;
+
+    if (boss)
+    {
+        boss->Update(dt);
+    }
+
+    player->Update(dt);
+
+    if (!showTitleIntro)
+    {
+        if (loadComplete.load(std::memory_order_acquire) && !requested && timer >= MINIMAL_DISPLAY_TIME)
+        {
+            requested = true;
+            LoadingProfile::Record("Loading.presentation_wait",
+                                   LoadingProfile::Milliseconds(LoadingProfile::waitStart));
+            JoinLoading();
+            SceneManager::Instance().ChangeScene(std::move(loadedScene));
+        }
+
+        return;
+    }
+
+    if (descriptionPresented)
+    {
+        readTimer += dt;
+    }
+
+    const float progress = (std::max)(0.0f, timer - TYPEWRITER_DELAY) / LETTER_INTERVAL;
+    const size_t count = static_cast<size_t>((std::min)(progress, static_cast<float>(description.size())));
+    displayedDescription = description.substr(0, count);
+
+    const float readTime = INTRO_READ_TIME;
+
+    if (loadComplete.load(std::memory_order_acquire) && descriptionPresented && !requested &&
+        readTimer >= readTime)
+    {
+        requested = true;
+        LoadingProfile::Record("Loading.presentation_wait",
+                               LoadingProfile::Milliseconds(LoadingProfile::waitStart));
+        JoinLoading();
+        SceneManager::Instance().ChangeScene(std::move(loadedScene));
+    }
+}
+
+// 描画処理
+void SceneLoading::Render(float elapsedTime)
+{
+    auto& graphics = Graphics::Instance();
+
+    if (!showTitleIntro)
+    {
+        graphics.Clear(0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    auto* dc = graphics.GetDeviceContext();
+    auto* state = graphics.GetRenderState();
+    dc->OMSetBlendState(state->GetBlendState(BlendState::Opaque), nullptr, 0xFFFFFFFF);
+    dc->OMSetDepthStencilState(state->GetDepthStencilState(DepthState::NoTestNoWrite), 0);
+    dc->RSSetState(state->GetRasterizerState(RasterizerState::SolidCullNone));
+    auto* sampler = state->GetSamplerState(SamplerState::LinearClamp);
+    dc->PSSetSamplers(0, 1, &sampler);
+
+    if (background)
+    {
+        background->Render(dc, 0, 0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(), 0, 1, 1, 1, 1);
+    }
+
+    RenderCharacters();
+}
+
+// RenderCharacters の描画処理
+void SceneLoading::RenderCharacters()
+{
+    auto& graphics = Graphics::Instance();
+    auto* dc = graphics.GetDeviceContext();
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280, graphics.GetScreenHeight() / 720);
+    D3D11_VIEWPORT previous = {};
+    UINT count = 1;
+    dc->RSGetViewports(&count, &previous);
+    const D3D11_VIEWPORT viewport = {(graphics.GetScreenWidth() - 1280 * scale) * 0.5f,
+                                     (graphics.GetScreenHeight() - 720 * scale) * 0.5f,
+                                     1280 * scale,
+                                     720 * scale,
+                                     0,
+                                     1};
+    dc->RSSetViewports(1, &viewport);
+    auto& camera = Camera::Instance();
+    camera.SetPerspectiveFov(DirectX::XMConvertToRadians(45), 1280.0f / 720, 0.1f, 1000);
+    camera.SetLookAt({0, 0, -20}, {0, 0, 0}, {0, 1, 0});
+    auto* renderer = graphics.GetModelRenderer();
+
+    if (boss)
+    {
+        boss->Render(renderer);
+    }
+
+    player->Render(renderer);
+    RenderContext context = {};
+    context.deviceContext = dc;
+    context.renderState = graphics.GetRenderState();
+    context.camera = &camera;
+    context.lightManager = &LightManager::Instance();
+    renderer->Render(context);
+    dc->RSSetViewports(1, &previous);
+}
+
+// デバッグ画面の描画処理
+void SceneLoading::DrawGUI()
+{
+    auto& graphics = Graphics::Instance();
+    const float scale = (std::min)(graphics.GetScreenWidth() / 1280, graphics.GetScreenHeight() / 720);
+    const float offsetX = (graphics.GetScreenWidth() - 1280 * scale) * 0.5f;
+    const float offsetY = (graphics.GetScreenHeight() - 720 * scale) * 0.5f;
+    const DirectX::XMFLOAT4 headingColor = {0.06f, 0.20f, 0.36f, 1};
+
+    if (showTitleIntro)
+    {
+        TextRenderer::DrawCentered(offsetX + 640 * scale, offsetY + 150 * scale, "WIND", 84 * scale,
+                                   headingColor);
+        TextRenderer::DrawCentered(offsetX + 640 * scale, offsetY + 470 * scale, "GER", 84 * scale,
+                                   headingColor);
+        DrawDescription(scale, offsetX, offsetY);
+
+        if (displayedDescription.size() == description.size())
+        {
+            descriptionPresented = true;
+        }
+    }
+
+    DrawLoadingText(scale, offsetX, offsetY);
+    presented = true;
+}
+
+// DrawDescription の描画処理
+void SceneLoading::DrawDescription(float scale, float offsetX, float offsetY)
+{
+
+    std::string text = displayedDescription;
+    const size_t lineBreak = description.find(" At");
+
+    if (text.size() > lineBreak)
+    {
+        text[lineBreak] = '\n';
+    }
+
+    TextRenderer::Draw(offsetX + 100 * scale, offsetY + 315 * scale, text.c_str(), 30 * scale,
+                       {0.04f, 0.07f, 0.12f, 1});
+}
+
+// DrawLoadingText の描画処理
+void SceneLoading::DrawLoadingText(float scale, float offsetX, float offsetY)
+{
+    const char* text = "Now Loading";
+    const float fontSize = 42 * scale;
+    float x = offsetX + 1216 * scale - TextRenderer::Measure(text, fontSize).x;
+    const float baseY = offsetY + 634 * scale;
+    const float envelope = std::pow(std::sin(timer * 2.0f), 2.0f);
+
+    for (size_t i = 0; text[i]; ++i)
+    {
+        const char letter[] = {text[i], '\0'};
+        const float wave = (1 + std::sin(1.5708f + timer * 8.0f + i * 0.5f)) * 0.5f;
+        const float y = baseY - envelope * wave * 14 * scale;
+        TextRenderer::Draw(x, y, letter, fontSize, {0.88f, 0.95f, 1, 1});
+        x += TextRenderer::Measure(letter, fontSize).x;
+    }
+}

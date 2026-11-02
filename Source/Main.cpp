@@ -1,8 +1,7 @@
 ﻿#include <windows.h>
+#include <tchar.h>
 #include <memory>
 #include <assert.h>
-#include <tchar.h>
-
 #include "Framework.h"
 
 struct ComApartment

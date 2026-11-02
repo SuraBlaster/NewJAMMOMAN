@@ -1,12 +1,12 @@
 ﻿#pragma once
 
-#include <memory>
-#include <vector>
-#include <wrl.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
-#include "Model.h"
+#include <wrl.h>
+#include <memory>
+#include <vector>
 #include "Shader.h"
+#include "Model.h"
 
 enum class ShaderId
 {

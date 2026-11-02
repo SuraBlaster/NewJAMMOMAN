@@ -1,12 +1,11 @@
-﻿#include "GuiApplication.h"
-#include "Converter.h"
-
-#include <Windows.h>
+﻿#include <windows.h>
 #include <shellapi.h>
-
+#include <cstddef>
 #include <exception>
-#include <string>
 #include <vector>
+#include <string>
+#include "Converter.h"
+#include "GuiApplication.h"
 
 constexpr int CONVERTER_EXIT_SUCCESS = 0;
 constexpr int EXIT_INVALID_ARGUMENTS = 1;

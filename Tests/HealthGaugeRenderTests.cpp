@@ -1,9 +1,10 @@
 ﻿#include <windows.h>
+
 #include <DirectXTex.h>
 #include <cassert>
 #include <cstdio>
-#include "Sprite.h"
 #include "RenderState.h"
+#include "Sprite.h"
 #include "HealthGaugeTrail.h"
 
 int main()

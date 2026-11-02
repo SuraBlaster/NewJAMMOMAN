@@ -1,9 +1,10 @@
-﻿#include "InputManager.h"
-#include "CameraController.h"
-#include "Camera.h"
-#include "Player.h"
+﻿#include <vector>
 
 #include <cmath>
+#include "CameraController.h"
+#include "Camera.h"
+#include "InputManager.h"
+#include "Player.h"
 
 // 更新処理
 void CameraController::Update(float elapsedTime, const DirectX::XMFLOAT3& playerPos,

@@ -1,8 +1,11 @@
-﻿#include <filesystem>
+﻿#include <DirectXTex.h>
 #include <wrl.h>
-#include <DirectXTex.h>
-#include "Misc.h"
+#include <memory>
+#include <string>
+#include <algorithm>
+#include <filesystem>
 #include "GpuResourceUtils.h"
+#include "Misc.h"
 
 // 頂点シェーダー読み込み
 HRESULT GpuResourceUtils::LoadVertexShader(ID3D11Device* device, const char* filename,

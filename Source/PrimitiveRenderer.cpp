@@ -1,6 +1,7 @@
-﻿#include "Misc.h"
+﻿#include "PrimitiveRenderer.h"
+
 #include "GpuResourceUtils.h"
-#include "PrimitiveRenderer.h"
+#include "Misc.h"
 
 // コンストラクタ
 PrimitiveRenderer::PrimitiveRenderer(ID3D11Device* device)

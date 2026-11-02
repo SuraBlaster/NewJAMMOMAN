@@ -1,10 +1,12 @@
-﻿#include "LoadingProfile.h"
-#include "Stage.h"
-#include "BossGate.h"
+﻿#include <memory>
+#include <cstddef>
 #include <stdexcept>
+#include <vector>
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
+#include "Stage.h"
+#include "BossGate.h"
+#include "LoadingProfile.h"
 
 static bool TryMergeTerrainBoxes(const AABB& a, const AABB& b, int mergeAxis, AABB& merged)
 {

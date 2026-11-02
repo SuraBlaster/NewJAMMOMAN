@@ -1,10 +1,10 @@
 ﻿#pragma once
 
+#include <optional>
 #include <cstddef>
+#include <string>
 #include <filesystem>
 #include <iosfwd>
-#include <optional>
-#include <string>
 
 // 1ゲーム単位を何ピクセルとして扱うかの既定値
 inline constexpr double DEFAULT_PIXELS_PER_UNIT = 1.0;

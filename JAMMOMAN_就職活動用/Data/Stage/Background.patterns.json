@@ -1,0 +1,1141 @@
+{
+  "formatVersion": 1,
+  "patterns": [
+    {
+      "name": "Wall panel 6 x 4m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support column 6m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 1,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            2,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Equipment shelf 5.2m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 5.2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 2,
+          "position": [
+            0,
+            0.15,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            5.2,
+            0.3,
+            0.65
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terminal 1.8m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 3,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.2,
+            1.2,
+            1.2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Specimen capsule 2.5m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 4,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.25,
+            1.25
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Horizontal pipes 6m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 5,
+          "position": [
+            0,
+            0.1899,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2,
+            1.2,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vent 1.35m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 6,
+          "position": [
+            0,
+            0.3973,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wall pipes 3m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 7,
+          "position": [
+            0,
+            1.5,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.5,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cargo crate 1.2m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 9,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.6,
+            1.6,
+            1.6
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Service vessel 2.8m",
+      "description": "Current laboratory size; place from bottom center.",
+      "width": 2,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 10,
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.4,
+            1.4,
+            1.4
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Specimen laboratory bay",
+      "description": "6m-wide wall and current-size equipment. Base Z = back wall.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            0,
+            6,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 1,
+          "position": [
+            -3,
+            0,
+            -0.35
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            2,
+            1
+          ]
+        },
+        {
+          "asset": 5,
+          "position": [
+            0,
+            4.2,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2,
+            1.2,
+            1
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            2.2,
+            3.1,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1
+          ]
+        },
+        {
+          "asset": 7,
+          "position": [
+            -2.3,
+            2.1,
+            -0.8000000000000007
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.5,
+            1
+          ]
+        },
+        {
+          "asset": 2,
+          "position": [
+            0,
+            0.15000000000000002,
+            -0.9499999999999993
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            5.2,
+            0.3,
+            0.65
+          ]
+        },
+        {
+          "asset": 4,
+          "position": [
+            -1.1,
+            0.30000000000000004,
+            -1.0500000000000007
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.25,
+            1.25
+          ]
+        },
+        {
+          "asset": 3,
+          "position": [
+            1.2000000000000002,
+            0.30000000000000004,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.2,
+            1.2,
+            1.2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Power service bay",
+      "description": "6m-wide wall and current-size equipment. Base Z = back wall.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            0,
+            6,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 1,
+          "position": [
+            -3,
+            0,
+            -0.35
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            2,
+            1
+          ]
+        },
+        {
+          "asset": 5,
+          "position": [
+            0,
+            4.199999999999999,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2,
+            1.2,
+            1
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            2.2,
+            3.0999999999999996,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1
+          ]
+        },
+        {
+          "asset": 7,
+          "position": [
+            -2.3,
+            2.0999999999999996,
+            -0.8000000000000007
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.5,
+            1
+          ]
+        },
+        {
+          "asset": 2,
+          "position": [
+            0,
+            0.15000000000000036,
+            -0.9499999999999993
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            5.2,
+            0.3,
+            0.65
+          ]
+        },
+        {
+          "asset": 10,
+          "position": [
+            -1.15,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.4,
+            1.4,
+            1.4
+          ]
+        },
+        {
+          "asset": 10,
+          "position": [
+            0,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.15,
+            1.15,
+            1.15
+          ]
+        },
+        {
+          "asset": 3,
+          "position": [
+            1.3499999999999996,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.2,
+            1.2,
+            1.2
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            1,
+            4,
+            -0.8000000000000007
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2,
+            2,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cargo storage bay",
+      "description": "6m-wide wall and current-size equipment. Base Z = back wall.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            0,
+            6,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 1,
+          "position": [
+            -3,
+            0,
+            -0.35
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            2,
+            1
+          ]
+        },
+        {
+          "asset": 5,
+          "position": [
+            0,
+            4.199999999999999,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2,
+            1.2,
+            1
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            2.1999999999999993,
+            3.1000000000000014,
+            -0.75
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1
+          ]
+        },
+        {
+          "asset": 7,
+          "position": [
+            -2.3,
+            2.1000000000000014,
+            -0.8000000000000007
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.25,
+            1.5,
+            1
+          ]
+        },
+        {
+          "asset": 2,
+          "position": [
+            0,
+            0.14999999999999858,
+            -0.9499999999999993
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            5.2,
+            0.3,
+            0.65
+          ]
+        },
+        {
+          "asset": 9,
+          "position": [
+            -1.2999999999999998,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.6,
+            1.6,
+            1.6
+          ]
+        },
+        {
+          "asset": 9,
+          "position": [
+            0,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.3,
+            1.3,
+            1.3
+          ]
+        },
+        {
+          "asset": 3,
+          "position": [
+            1.5,
+            0.3000000000000007,
+            -1.0999999999999996
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.2,
+            1.2,
+            1.2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security corridor bay",
+      "description": "Wall, terminal, vent and shelf; 3m passage height.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            1.5,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            3,
+            1
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            0,
+            2.1,
+            -0.8
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1
+          ]
+        },
+        {
+          "asset": 3,
+          "position": [
+            -1,
+            0.7,
+            -1.1
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.15,
+            1.15,
+            1.15
+          ]
+        },
+        {
+          "asset": 2,
+          "position": [
+            -1,
+            0.55,
+            -0.95
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.4,
+            0.3,
+            0.6
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Boss reactor bank",
+      "description": "One side of the symmetric boss-room service equipment.",
+      "width": 6,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            0,
+            6,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 7,
+          "position": [
+            0,
+            4,
+            -0.8
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2.5,
+            3,
+            1
+          ]
+        },
+        {
+          "asset": 6,
+          "position": [
+            0,
+            7.5,
+            -0.85
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2.5,
+            2.5,
+            1
+          ]
+        },
+        {
+          "asset": 10,
+          "position": [
+            0,
+            0.7,
+            -1.05
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1.8,
+            1.8,
+            1.8
+          ]
+        },
+        {
+          "asset": 2,
+          "position": [
+            0,
+            0.55,
+            -0.95
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            2.4,
+            0.3,
+            0.7
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Observation window 12m",
+      "description": "Open center for the city background; modular wall surround.",
+      "width": 12,
+      "userCreated": false,
+      "objects": [
+        {
+          "asset": 0,
+          "position": [
+            -3,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            3,
+            2,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            -3,
+            10,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 0,
+          "position": [
+            3,
+            10,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            6,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 1,
+          "position": [
+            -6,
+            0,
+            -0.35
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            4,
+            1
+          ]
+        },
+        {
+          "asset": 1,
+          "position": [
+            6,
+            0,
+            -0.35
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            4,
+            1
+          ]
+        }
+      ]
+    }
+  ]
+}

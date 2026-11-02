@@ -1,5 +1,6 @@
-﻿#include "Camera.h"
-#include <cstdlib>
+﻿#include <cstdlib>
+
+#include "Camera.h"
 
 // コンストラクタ
 Camera::Camera()

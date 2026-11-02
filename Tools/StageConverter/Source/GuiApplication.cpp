@@ -1,25 +1,22 @@
-﻿#include "GuiApplication.h"
-
-#include "Converter.h"
-
-#include <Windows.h>
-#include <d3d11.h>
+﻿#include <windows.h>
 #include <shobjidl.h>
+#include <d3d11.h>
 #include <wrl/client.h>
-
-#include <algorithm>
+#include <optional>
+#include <cstddef>
+#include <stdexcept>
 #include <array>
+#include <string>
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
-#include <iterator>
-#include <optional>
 #include <sstream>
-#include <stdexcept>
-#include <string>
-
+#include <iterator>
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include "GuiApplication.h"
+#include "Converter.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND window, UINT message, WPARAM wordParameter,
                                                              LPARAM longParameter);

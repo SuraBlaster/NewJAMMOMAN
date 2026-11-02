@@ -1,6 +1,7 @@
-﻿#include "TitleAnimation.h"
-#include <cassert>
+﻿#include <cassert>
 #include <cstdio>
+#include <cmath>
+#include "TitleAnimation.h"
 
 int main()
 {

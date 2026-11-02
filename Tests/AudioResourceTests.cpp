@@ -1,10 +1,10 @@
-﻿#include "Audio/AudioResource.h"
+﻿#include <stdexcept>
+#include <cstring>
+#include <vector>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
-#include <vector>
-#include <cstring>
+#include "Audio/AudioResource.h"
 
 static void require(bool value)
 {

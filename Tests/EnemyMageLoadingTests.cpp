@@ -1,17 +1,18 @@
 ﻿#include <windows.h>
+
 #include <d3d11sdklayers.h>
-#include <imgui.h>
-#include <atomic>
-#include <exception>
-#include <iostream>
 #include <memory>
+#include <exception>
 #include <stdexcept>
-#include <thread>
 #include <vector>
+#include <iostream>
+#include <atomic>
+#include <thread>
+#include <imgui.h>
 #include "Framework.h"
 #include "Graphics.h"
-#include "EnemyMage.h"
 #include "Player.h"
+#include "EnemyMage.h"
 #include "Effect/EffectManager.h"
 
 int main()

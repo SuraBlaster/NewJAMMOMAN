@@ -1,6 +1,7 @@
 ﻿#pragma once
-#include <deque>
 #include <memory>
+#include <vector>
+#include <deque>
 #include "Model.h"
 
 class SwordTrailRenderer;

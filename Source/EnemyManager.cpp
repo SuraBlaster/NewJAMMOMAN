@@ -1,6 +1,7 @@
-﻿#include "EnemyManager.h"
+﻿#include <memory>
 
 #include <algorithm>
+#include "EnemyManager.h"
 #include "Camera.h"
 #include "ViewVolume.h"
 

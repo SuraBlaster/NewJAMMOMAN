@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "GamePad.h"
 #include "Input.h"
+#include "GamePad.h"
 #include "Mouse.h"
 
 using InputButton = unsigned int;

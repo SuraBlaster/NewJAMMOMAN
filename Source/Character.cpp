@@ -1,6 +1,7 @@
-﻿#include "Character.h"
+﻿#include <memory>
 
 #include <algorithm>
+#include "Character.h"
 #include "CollisionManager.h"
 
 // 変換行列の更新処理

@@ -1,10 +1,12 @@
-﻿#include "BossGate.h"
-#include "StageLoader.h"
-#include "TileTypeManager.h"
-#include <cassert>
+﻿#include <cassert>
+
+#include <vector>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include "BossGate.h"
+#include "StageLoader.h"
+#include "TileTypeManager.h"
 
 int main()
 {

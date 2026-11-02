@@ -1,8 +1,8 @@
-﻿#include "TextRenderer.h"
-#include <imgui.h>
-#include <cassert>
-#include <cmath>
+﻿#include <cassert>
 #include <cstdio>
+#include <cmath>
+#include <imgui.h>
+#include "TextRenderer.h"
 
 int main()
 {

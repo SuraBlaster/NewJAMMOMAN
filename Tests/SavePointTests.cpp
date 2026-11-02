@@ -1,9 +1,10 @@
-#include "Converter.h"
-#include "StageLoader.h"
-#include "TileTypeManager.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include "StageLoader.h"
+#include "TileTypeManager.h"
+#include "Converter.h"
+
 int main()
 {
     stage_converter::ConverterOptions options;

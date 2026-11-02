@@ -1,6 +1,5 @@
-﻿#include "ModelManager.h"
-#include "LoadingProfile.h"
-#include <memory>
+﻿#include <memory>
+
 #include <sstream>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -8,17 +7,19 @@
 
 #include "Framework.h"
 #include "Graphics.h"
-#include "Effect/EffectManager.h"
 #include "Camera.h"
 #include "InputManager.h"
 #include "ImGuiRenderer.h"
-#include "ModelViewerScene.h"
 #include "GameScene.h"
 #include "SceneManager.h"
-#include "SceneTitle.h"
 #include "SceneClear.h"
 #include "SceneLoading.h"
 #include "StylizedShading.h"
+#include "SceneTitle.h"
+#include "ModelManager.h"
+#include "ModelViewerScene.h"
+#include "Effect/EffectManager.h"
+#include "LoadingProfile.h"
 
 // 垂直同期間隔設定（性能計測のためSceneウインドウから切り替えられるようにしている）
 static int syncInterval = 1;
@@ -173,7 +174,10 @@ void Framework::Update(float elapsedTime)
 
     if (!SceneManager::Instance().IsBackgroundEditing())
     {
-        EffectManager::Instance().Update(elapsedTime);
+        if (!SceneManager::Instance().IsGameplayPaused())
+        {
+            EffectManager::Instance().Update(elapsedTime);
+        }
     }
 }
 
@@ -378,7 +382,7 @@ LRESULT CALLBACK Framework::HandleMessage(HWND hWnd, UINT msg, WPARAM wParam, LP
     case WM_CREATE:
         break;
     case WM_KEYDOWN:
-        if (wParam == VK_ESCAPE)
+        if (wParam == VK_ESCAPE && !SceneManager::Instance().UsesEscapeKey())
         {
             PostMessage(hWnd, WM_CLOSE, 0, 0);
         }

@@ -1,28 +1,33 @@
 ﻿#include <windows.h>
-#include <imgui.h>
-#include <algorithm>
-#include <array>
-#include <chrono>
-#include <cmath>
-#include <cstdio>
-#include <fstream>
+
 #include <memory>
-#include <random>
+#include <stdexcept>
+#include <cstdio>
+#include <array>
 #include <unordered_set>
+#include <string>
+#include <algorithm>
+#include <cmath>
+#include <random>
+#include <fstream>
+#include <chrono>
+#include <imgui.h>
+#include "Input.h"
+#include "GamePad.h"
+#include "Mouse.h"
+#include "PlayerTrail.h"
+#include "EnemyActivation.h"
+#include "Collision.h"
 #include "Model.h"
 #include "Animator.h"
 #include "Effect/Effect.h"
-#include "PlayerTrail.h"
-#include "Collision.h"
-#include "GamePad.h"
-#include "Input.h"
-#include "Mouse.h"
-#include "EnemyActivation.h"
+
 #define private public
 #define protected public
+#include "InputManager.h"
 #include "Player.h"
 #include "EnemyWave.h"
-#include "InputManager.h"
+
 #undef protected
 #undef private
 
@@ -32,24 +37,26 @@
     linker, "/alternatename:?SetState@Player@@QEAAXW4StateId@1@@Z=?SetState@Player@@AEAAXW4StateId@1@@Z")
 #pragma comment(                                                                                             \
     linker, "/alternatename:?CollideWithPlayer@EnemyWave@@QEAAXXZ=?CollideWithPlayer@EnemyWave@@AEAAXXZ")
+#include <optional>
 #include "Framework.h"
 #include "Graphics.h"
+#include "CameraController.h"
+#include "EnemyManager.h"
+#include "CollisionManager.h"
+#include "BossGate.h"
 #include "Stage.h"
 #include "StageLoader.h"
 #include "TileTypeManager.h"
-#include "CollisionManager.h"
+#include "BackgroundEditor.h"
+#include "BackgroundCity.h"
+#include "BackgroundFog.h"
+#include "HealthGaugeUI.h"
 #include "Effect/EffectManager.h"
 #include "HitStopManager.h"
-#include "BossGate.h"
-#include "HealthGaugeUI.h"
-#include "CameraController.h"
-#include "BackgroundEditor.h"
-#include "BackgroundFog.h"
-#include "BackgroundCity.h"
-#include "EnemyManager.h"
-#include <optional>
+
 #define private public
 #include "GameScene.h"
+
 #undef private
 #pragma comment(                                                                                             \
     linker, "/alternatename:?HandleFallRespawn@GameScene@@QEAAXXZ=?HandleFallRespawn@GameScene@@AEAAXXZ")

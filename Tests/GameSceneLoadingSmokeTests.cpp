@@ -1,8 +1,11 @@
 ﻿#include <windows.h>
 #include <crtdbg.h>
-#include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <vector>
+#include <algorithm>
 #include <cmath>
+#include <iostream>
 #include "Framework.h"
 #include "GameScene.h"
 #include "StageLoader.h"

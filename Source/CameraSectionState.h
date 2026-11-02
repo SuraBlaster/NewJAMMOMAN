@@ -1,6 +1,8 @@
 ﻿#pragma once
-#include "StageData.h"
+#include <vector>
+#include <string>
 #include <algorithm>
+#include "StageData.h"
 
 class CameraSectionState
 {

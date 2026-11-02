@@ -1,6 +1,7 @@
-﻿#include "LoadingProfile.h"
-#include "SceneManager.h"
+﻿#include <memory>
 #include <utility>
+#include "SceneManager.h"
+#include "LoadingProfile.h"
 
 // 更新処理
 void SceneManager::Update(float elapsedTime)

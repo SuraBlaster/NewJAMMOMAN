@@ -1,8 +1,8 @@
 ﻿#pragma once
+#include <memory>
 #include "Scene.h"
 #include "Sprite.h"
 #include "ClearPlayer.h"
-#include <memory>
 
 class SceneClear : public Scene
 {

@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include <memory>
 #include <xaudio2.h>
+#include <memory>
+#include <vector>
 #include "Audio/AudioResource.h"
 
 // オーディオソース
@@ -26,7 +27,6 @@ public:
 
     //音量設定
     void SetVolume(float volume);
-
 private:
     IXAudio2SourceVoice* FindFreeVoice();
 

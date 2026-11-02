@@ -1,6 +1,7 @@
-﻿#include "Misc.h"
+﻿#include "BasicShader.h"
+
 #include "GpuResourceUtils.h"
-#include "BasicShader.h"
+#include "Misc.h"
 
 // コンストラクタ
 BasicShader::BasicShader(ID3D11Device* device)

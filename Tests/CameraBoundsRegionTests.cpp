@@ -1,7 +1,9 @@
-﻿#include "../Source/CameraBoundsRegion.h"
-#include <cassert>
+﻿#include <cassert>
+
+#include <vector>
 #include <cmath>
 #include <iostream>
+#include "../Source/CameraBoundsRegion.h"
 
 using Rect = CameraBoundsRegion::Rect;
 

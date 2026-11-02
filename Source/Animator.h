@@ -1,10 +1,8 @@
 ﻿#pragma once
 
-#include "Model.h"
-#include <vector>
-#include <array>
-#include <string>
 #include <DirectXMath.h>
+#include <vector>
+#include "Model.h"
 
 // アニメーションの合成モード
 enum class AnimationBlendMode

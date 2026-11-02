@@ -1,11 +1,10 @@
 ﻿#pragma once
 
 #include <xaudio2.h>
-#include "Audio/AudioSource.h"
-#include <fstream>
-#include <sstream>
-#include <string>
+#include <memory>
 #include <map>
+#include <string>
+#include "Audio/AudioSource.h"
 
 // オーディオ
 class Audio

@@ -25,6 +25,16 @@ public:
     // GUI描画処理
     virtual void DrawGUI() {}
 
+    virtual bool UsesEscapeKey() const
+    {
+        return false;
+    }
+
+    virtual bool IsGameplayPaused() const
+    {
+        return false;
+    }
+
     virtual bool IsBackgroundEditing() const
     {
         return false;

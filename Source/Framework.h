@@ -1,9 +1,10 @@
 ﻿#pragma once
 
 #include <windows.h>
-#include "HighResolutionTimer.h"
+#include <memory>
 #include "Scene.h"
 #include "Audio/Audio.h"
+#include "HighResolutionTimer.h"
 
 class Framework
 {

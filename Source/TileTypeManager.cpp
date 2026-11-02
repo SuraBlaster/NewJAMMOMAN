@@ -1,15 +1,16 @@
-﻿#include "TileTypeManager.h"
-
-#include <algorithm>
-#include <array>
+﻿#include <utility>
 #include <cctype>
+#include <array>
+#include <unordered_map>
+#include <string>
+#include <string_view>
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <string_view>
 #include <system_error>
-#include <utility>
+#include "TileTypeManager.h"
 
 constexpr int SUPPORTED_FORMAT_VERSION = 1;
 

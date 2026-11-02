@@ -1,15 +1,19 @@
-﻿#include "LoadingProfile.h"
+﻿#include <memory>
+
+#include <algorithm>
+#include <cmath>
+#include <imgui.h>
 #include "SceneTitle.h"
-#include "Audio/Audio.h"
-#include "SceneLoading.h"
-#include "SceneManager.h"
-#include "GameScene.h"
-#include "InputManager.h"
 #include "Graphics.h"
 #include "Camera.h"
 #include "Light.h"
+#include "InputManager.h"
+#include "GameScene.h"
+#include "SceneManager.h"
+#include "SceneLoading.h"
 #include "TextRenderer.h"
-#include <imgui.h>
+#include "Audio/Audio.h"
+#include "LoadingProfile.h"
 
 // 初期化処理
 void SceneTitle::Initialize()

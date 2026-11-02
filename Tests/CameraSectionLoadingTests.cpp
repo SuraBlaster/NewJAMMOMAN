@@ -1,9 +1,10 @@
-﻿#include "../Source/StageLoader.h"
-#include "../Source/TileTypeManager.h"
-#include <json.hpp>
+﻿#include <cassert>
+
 #include <fstream>
-#include <cassert>
 #include <iostream>
+#include <json.hpp>
+#include "../Source/StageLoader.h"
+#include "../Source/TileTypeManager.h"
 
 int main()
 {

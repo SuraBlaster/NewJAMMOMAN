@@ -1,12 +1,14 @@
 ﻿#include <windows.h>
-#include <imgui.h>
+
 #include <DirectXTex.h>
+#include <cassert>
+#include <cstdio>
+#include <algorithm>
+#include <imgui.h>
 #include "Graphics.h"
 #include "ImGuiRenderer.h"
 #include "SceneTitle.h"
 #include "TitleAnimation.h"
-#include <cassert>
-#include <cstdio>
 
 int main()
 {

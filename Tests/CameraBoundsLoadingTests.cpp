@@ -1,8 +1,9 @@
-﻿#include "StageLoader.h"
-#include "TileTypeManager.h"
-#include <cassert>
+﻿#include <cassert>
+
 #include <fstream>
 #include <iostream>
+#include "StageLoader.h"
+#include "TileTypeManager.h"
 
 int main()
 {

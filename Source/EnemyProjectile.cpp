@@ -1,12 +1,12 @@
-﻿#include "EnemyProjectile.h"
-
-#include "Collision.h"
-#include "CollisionManager.h"
-#include "Player.h"
-#include "ShapeRenderer.h"
-#include "Effect/Effect.h"
+﻿#include <memory>
 
 #include <algorithm>
+#include "EnemyProjectile.h"
+#include "Player.h"
+#include "Collision.h"
+#include "CollisionManager.h"
+#include "ShapeRenderer.h"
+#include "Effect/Effect.h"
 
 struct EnemyProjectile::VisualEffect
 {

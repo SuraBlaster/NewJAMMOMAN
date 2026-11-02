@@ -1,7 +1,8 @@
-﻿#include "Effect.h"
-#include "EffectManager.h"
-#include <Windows.h>
+﻿#include <windows.h>
+
 #include <string>
+#include "Effect.h"
+#include "EffectManager.h"
 
 // コンストラクタ
 Effect::Effect(const char* filename)

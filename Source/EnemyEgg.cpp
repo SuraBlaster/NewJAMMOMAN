@@ -1,8 +1,9 @@
-﻿#include "ModelManager.h"
-#include "EnemyEgg.h"
+﻿#include <memory>
 
+#include "EnemyEgg.h"
 #include "EnemyManager.h"
 #include "EnemyScatter.h"
+#include "ModelManager.h"
 
 // コンストラクタ
 EnemyEgg::EnemyEgg(ID3D11Device* device, Player* player, const DirectX::XMFLOAT3& spawnPosition)
